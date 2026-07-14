@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>DIP ALERT</title>
+<style>
+  :root{--bg:#eef2f7;--card:#fff;--ink:#1f2937;--sub:#8b95a3;--line:#e5e9f0;
+    --blue:#2f6bff;--red:#e5484d;--green:#1a9c5b;--amber:#f2a516;--shadow:0 2px 10px rgba(30,50,90,.06);}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    padding:14px 12px 40px;max-width:520px;margin:0 auto;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 12px;}
+  header h1{font-size:19px;font-weight:800;margin:0;letter-spacing:.5px;}
+  .keybar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:var(--shadow);}
+  .keybar.hide{display:none;}
+  .keybar p{margin:0 0 6px;font-size:13px;font-weight:700;}
+  .keybar small{color:var(--sub);font-weight:400;}
+  .keyrow{display:flex;gap:8px;margin-bottom:8px;}
+  .keyrow input{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:13px;}
+  .keybar button.save{border:none;background:var(--blue);color:#fff;border-radius:10px;padding:0 16px;font-weight:700;font-size:13px;cursor:pointer;}
+  .keylink{display:block;font-size:12px;color:var(--blue);margin-top:2px;text-decoration:none;}
+  .miniedit{font-size:12px;color:var(--sub);background:none;border:none;cursor:pointer;text-decoration:underline;}
+  .tickerSel{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 12px;}
+  .tickerSel button{border:1px solid var(--line);background:#fff;color:var(--sub);padding:6px 13px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;}
+  .tickerSel button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .top{background:var(--card);border-radius:18px;box-shadow:var(--shadow);display:flex;overflow:hidden;margin-bottom:12px;}
+  .top .half{flex:1;padding:15px 5px;text-align:center;min-width:0;}
+  .top .half:not(:last-child){border-right:1px solid var(--line);}
+  .lbl{font-size:12.5px;color:var(--sub);font-weight:700;margin-bottom:6px;}
+  .big{font-size:22px;font-weight:800;line-height:1.15;white-space:nowrap;}
+  .sub{font-size:12px;color:var(--sub);margin-top:6px;}
+  .chg-red{color:var(--red);font-weight:700;}.chg-green{color:var(--green);font-weight:700;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px 10px;text-align:center;min-height:104px;display:flex;flex-direction:column;justify-content:center;}
+  .card .t{font-size:13.5px;font-weight:700;margin-bottom:9px;}
+  .card .v{font-size:25px;font-weight:800;line-height:1;}
+  .card .s{font-size:11px;color:var(--sub);margin-top:8px;}
+  a.card{text-decoration:none;color:inherit;}
+  .foot{margin-top:18px;text-align:center;font-size:12px;color:var(--sub);}
+  .foot button{margin-top:8px;border:1px solid var(--line);background:#fff;color:var(--blue);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;}
+  .warn{font-size:11px;color:var(--sub);margin-top:14px;line-height:1.5;text-align:center;}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
+  .pulse{animation:p 1.4s infinite;}@keyframes p{0%,100%{opacity:.35}50%{opacity:1}}
+  .tabbar{display:flex;gap:8px;margin:0 2px 14px;}
+  .tabbar button{flex:1;border:1px solid var(--line);background:#fff;color:var(--sub);padding:10px 0;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;}
+  .tabbar button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .sec{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px 14px;margin-bottom:12px;}
+  .sec h2{font-size:15px;margin:0 0 4px;font-weight:800;}
+  .sec h3{font-size:13px;margin:14px 0 4px;font-weight:800;color:var(--blue);}
+  .sec p,.sec li{font-size:12.5px;line-height:1.6;color:var(--ink);margin:4px 0;}
+  .sec ul{margin:4px 0;padding-left:18px;}
+  .sec table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;}
+  .sec th,.sec td{border:1px solid var(--line);padding:5px 4px;text-align:center;}
+  .sec th{background:#f5f7fb;}
+  .linkrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);}
+  .linkrow:last-child{border-bottom:none;}
+  .linkrow .nm{font-size:13px;font-weight:700;}
+  .linkrow .ds{font-size:11px;color:var(--sub);margin-top:2px;line-height:1.4;}
+  .linkrow .go{color:var(--blue);font-weight:800;font-size:18px;flex:0 0 auto;}
+  .tip{background:#fff7e6;border:1px solid #ffe2ad;border-radius:10px;padding:8px 10px;font-size:11.5px;color:#8a6d3b;margin-top:8px;}
+  .idxbar{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:0 0 12px;}
+  .idx{min-width:0;background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:9px 6px;text-align:center;}
+  .idx .n{font-size:10.5px;color:var(--sub);font-weight:700;white-space:nowrap;}
+  .idx .p{font-size:14px;font-weight:800;margin-top:3px;white-space:nowrap;}
+  .idx .c{font-size:10.5px;font-weight:700;margin-top:1px;white-space:nowrap;}
+  .signal{border-radius:12px;padding:11px 12px;margin:0 0 12px;font-size:13px;font-weight:800;text-align:center;line-height:1.4;}
+  .signal.buy{background:#e7f7ee;color:#0f7a43;border:1px solid #b7e6ca;}
+  .signal.watch{background:#fff7e6;color:#8a6d3b;border:1px solid #ffe2ad;}
+  .signal.sell{background:#fdeaea;color:#c0343a;border:1px solid #f5c2c4;}
+  .signal.neutral{background:#f2f4f8;color:#8b95a3;border:1px solid #e5e9f0;font-weight:700;}
+</style>
+</head>
+<body>
+  <header><h1>📈 DIP ALERT</h1><span id="clock" class="sub"></span></header>
+
+  <div class="tabbar">
+    <button id="tabBtnHome" class="on" onclick="showTab('home')">📊 실시간</button>
+    <button id="tabBtnStrat" onclick="showTab('strat')">📚 전략·링크</button>
+  </div>
+
+  <div id="tabHome">
+
+  <div class="signal neutral" id="signal">신호 계산 대기…</div>
+  <div style="font-size:10.5px;color:var(--sub);text-align:center;margin:-6px 0 12px;line-height:1.4;">
+    🔔 알림 조건 · 매수: RSI≤35 · 공포탐욕≤25 · VIX≥40 &nbsp;/&nbsp; 경계: RSI≥70 · 공포탐욕≥75
+  </div>
+
+  <div class="idxbar" id="idxbar">
+    <div class="idx"><div class="n">코스피</div><div class="p" id="idx_KS11">—</div><div class="c" id="idxc_KS11"></div></div>
+    <div class="idx"><div class="n">나스닥100</div><div class="p" id="idx_NDX">—</div><div class="c" id="idxc_NDX"></div></div>
+    <div class="idx"><div class="n">S&P500</div><div class="p" id="idx_GSPC">—</div><div class="c" id="idxc_GSPC"></div></div>
+    <div class="idx"><div class="n">원/달러</div><div class="p" id="idx_USDKRW">—</div><div class="c" id="idxc_USDKRW"></div></div>
+  </div>
+
+  <div class="keybar" id="keybar">
+    <p>🔑 무료 API 키 2개를 넣어주세요 <small>(한 번만, 이 브라우저에 저장)</small></p>
+    <div class="keyrow">
+      <input id="tdKey" type="text" placeholder="① Twelve Data 키 (가격·RSI)" autocomplete="off">
+    </div>
+    <a class="keylink" href="https://twelvedata.com/pricing" target="_blank" rel="noopener">→ Twelve Data 무료 키 발급</a>
+    <div class="keyrow" style="margin-top:10px;">
+      <input id="fmpKey" type="text" placeholder="② FMP 키 (VIX·국채)" autocomplete="off">
+      <button class="save" onclick="saveKeys()">저장</button>
+    </div>
+    <a class="keylink" href="https://site.financialmodelingprep.com/developer/docs" target="_blank" rel="noopener">→ Financial Modeling Prep 무료 키 발급</a>
+    <div class="keyrow" style="margin-top:10px;">
+      <input id="wkUrl" type="text" placeholder="③ (선택) Cloudflare Worker 주소 — CNN 공포탐욕용" autocomplete="off">
+    </div>
+    <span class="keylink" style="color:var(--sub)">비워두면 공개 프록시로 시도합니다. Worker 주소를 넣으면 안정적으로 작동합니다.</span>
+  </div>
+
+  <div class="tickerSel" id="tickerSel"></div>
+
+  <div class="top">
+    <div class="half"><div class="lbl">역대 최고가</div><div class="big" id="ath">—</div><div class="sub" id="athDate">—</div></div>
+    <div class="half"><div class="lbl">현재 가격</div><div class="big" id="price">—</div><div class="sub" id="priceChg">—</div></div>
+    <div class="half"><div class="lbl">최고가 대비</div><div class="big" id="drawdown">—</div><div class="sub">고점 대비 낙폭</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="t">🧠 CNN 공포탐욕</div><div class="v" id="fng">—</div><div class="s" id="fngTxt">—</div></div>
+    <div class="card"><div class="t">⚡ VIX 변동성</div><div class="v" id="vix">—</div><div class="s" id="vixTxt">—</div></div>
+    <div class="card"><div class="t">📊 RSI (14)</div><div class="v" id="rsi">—</div><div class="s">70↑과매수 / 30↓과매도</div></div>
+    <a class="card" id="calCard" href="https://tradingeconomics.com/united-states/calendar" target="_blank" rel="noopener">
+      <div class="t">📅 미국 중요 발표</div>
+      <div class="v" id="calDday" style="color:var(--red)">—</div>
+      <div class="s" id="calEvent">불러오는 중…</div></a>
+  </div>
+
+  <div class="top" style="margin-top:12px;">
+    <div class="half"><div class="lbl">📈 10년 국채</div><div class="big" id="tnx">—</div><div class="sub">10년물 금리</div></div>
+    <div class="half"><div class="lbl">📈 2년 국채</div><div class="big" id="two">—</div><div class="sub">2년물 금리</div></div>
+    <div class="half"><div class="lbl">🔀 10Y-2Y</div><div class="big" id="spread">—</div><div class="sub" id="spreadTxt">역전 시 침체</div></div>
+  </div>
+
+  <div class="foot">
+    <div><span id="statusDot" class="dot" style="background:var(--sub)"></span><span id="status">API 키를 입력하면 시작됩니다.</span></div>
+    <button onclick="loadAll(true)">🔄 새로고침</button>
+    <button class="miniedit" id="notifBtn" onclick="enableNotif()">🔔 알림 켜기</button>
+    <button class="miniedit" onclick="showKeybar()">키 변경</button>
+  </div>
+
+  <div class="warn">
+    데이터: Twelve Data(가격·RSI) · FMP(VIX·국채) · CNN(공포탐욕). 무료 키 한도(FMP 250회/일 등) 때문에
+    자동 새로고침은 5분 간격이며 국채·공포탐욕은 하루치를 캐시합니다. 수 분 지연·오차 가능, 매매 전 원본 재확인 필수.
+  </div>
+  </div><!-- /tabHome -->
+
+  <div id="tabStrat" style="display:none">
+
+    <div class="sec">
+      <h2>🎯 아레스 베타 투자법 핵심</h2>
+      <p>시장 전체(베타)에 올라타되, 레버리지(공격)와 현금(방패)을 함께 들고 상황에 맞게 베타를 조절하는 전략.</p>
+      <h3>자산별 베타(β)</h3>
+      <table>
+        <tr><th>자산</th><th>β</th><th>성격</th></tr>
+        <tr><td>TQQQ</td><td>3.5~4.0</td><td>공격의 검</td></tr>
+        <tr><td>SOXL</td><td>~4.6</td><td>초고베타</td></tr>
+        <tr><td>QLD</td><td>2.2~2.4</td><td>중간</td></tr>
+        <tr><td>QQQ</td><td>1.1~1.2</td><td>기준</td></tr>
+        <tr><td>S&amp;P500</td><td>1.0</td><td>시장 기준</td></tr>
+        <tr><td>현금·GLD</td><td>0</td><td>방패</td></tr>
+        <tr><td>TLT(장기채)</td><td>-0.3~0</td><td>방어</td></tr>
+      </table>
+      <h3>핵심 전략 · 공식</h3>
+      <ul>
+        <li>예: 1억 중 TQQQ 3,000만 + 현금 7,000만 ≈ QQQ 1억 노출(β≈1) + 하락 시 매수 여력</li>
+        <li>포트폴리오 베타 = Σ(자산 베타 × 비중). 예) TQQQ 30%×3.5 + 현금 70%×0 = 1.05</li>
+        <li>현금은 원화가 아닌 <b>달러·채권</b>으로 보유</li>
+      </ul>
+      <h3>운용 원칙</h3>
+      <ul>
+        <li>평시: 베타 1 이상 유지 (TQQQ 20~33% + 현금 67~80%)</li>
+        <li>상승장: 베타 1.5~2.5 / 하락장: 0.5~1.0 이하</li>
+        <li>현금: 변동성 클 때 30~50%, 확신 상승장 10~20%</li>
+      </ul>
+      <h3>매수 · 매도 신호</h3>
+      <ul>
+        <li>🟢 매수: RSI 35↓ · 공포탐욕 0~25 · VIX 40↑(60이면 적극) · 정크본드 스프레드 축소</li>
+        <li>🔴 축소·현금화: RSI 70↑ · 공포탐욕 75↑ · 버핏지수 극단 고평가</li>
+        <li>원칙: 모두 환희일 때 현금 확보, 모두 공포일 때 매수</li>
+      </ul>
+      <div class="tip">⭐ 최적 진입: RSI 과매도 + VIX 급등 + 공포탐욕 극도공포(0~25)가 겹치는 순간</div>
+    </div>
+
+    <div class="sec">
+      <h2>💧 4대 핵심 유동성 지표</h2>
+      <p>시장에 돈이 풀리는지(호재)·회수되는지(악재)를 판단하는 최우선 지표.</p>
+      <a class="linkrow" href="https://fred.stlouisfed.org/series/M2SL" target="_blank" rel="noopener"><div><div class="nm">M2 광의통화</div><div class="ds">시중 통화 총량. 꺾이면 유동성 축소=악재 (주간용: WM2NS)</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://fred.stlouisfed.org/series/WTREGEN" target="_blank" rel="noopener"><div><div class="nm">TGA 재무부계정</div><div class="ds">잔고↓=정부 지출(유동성 공급, 호재) / 잔고↑=흡수(악재). 일간: WDTGAL</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://home.treasury.gov/policy-issues/financing-the-government/quarterly-refunding" target="_blank" rel="noopener"><div><div class="nm">국채 발행계획(Quarterly Refunding)</div><div class="ds">장기채 발행↑ → 유동성 흡수·금리 상승 → 시장 부담</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noopener"><div><div class="nm">FOMC 일정·점도표</div><div class="ds">위원 금리 전망(SEP). 향후 금리 경로 확인</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank" rel="noopener"><div><div class="nm">CME FedWatch</div><div class="ds">시장이 보는 다음 회의 금리 확률(실시간 %)</div></div><span class="go">→</span></a>
+    </div>
+
+    <div class="sec">
+      <h2>🔎 보조 유동성 지표</h2>
+      <a class="linkrow" href="https://fred.stlouisfed.org/series/WALCL" target="_blank" rel="noopener"><div><div class="nm">연준 대차대조표(총자산)</div><div class="ds">QE=호재 / QT로 하락=유동성 축소</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://fred.stlouisfed.org/series/RRPONTSYD" target="_blank" rel="noopener"><div><div class="nm">역레포 잔고</div><div class="ds">잔고↓=대기자금이 증시·채권으로 유입</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://www.ici.org/research/stats/mmf" target="_blank" rel="noopener"><div><div class="nm">MMF 잔고</div><div class="ds">단기 부동자금. 증시로 이동 여부 관찰</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank" rel="noopener"><div><div class="nm">10Y-2Y 금리차</div><div class="ds">0 아래(역전)=침체 선행. 재정상화 전환도 경계</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://finance.yahoo.com/quote/DX-Y.NYB" target="_blank" rel="noopener"><div><div class="nm">DXY 달러 인덱스</div><div class="ds">급등 시 실적 우려·신흥국 자금 이탈 → 증시 압박</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://fred.stlouisfed.org/series/NFCI" target="_blank" rel="noopener"><div><div class="nm">FCI 금융환경지수(NFCI)</div><div class="ds">0 위로 상승=금융환경 긴축·위험 확대</div></div><span class="go">→</span></a>
+    </div>
+
+    <div class="sec">
+      <h2>📊 기술적 지표</h2>
+      <a class="linkrow" href="https://www.tradingview.com/chart/" target="_blank" rel="noopener"><div><div class="nm">TradingView (RSI·MACD·MFI)</div><div class="ds">RSI 35↓ + MFI 20 부근 = 강한 과매도</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://stockcharts.com/h-sc/ui?s=$NYMO" target="_blank" rel="noopener"><div><div class="nm">맥클레란 오실레이터 <span class="badge">$NYMO</span></div><div class="ds">+100↑ 과열 / -100↓ 과매도 (비율조정 버전)</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank" rel="noopener"><div><div class="nm">VIX 변동성</div><div class="ds">20↓ 평온 / 40↑ 공포 / 60≈ 역사적 바닥</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener"><div><div class="nm">CNN 공포탐욕지수</div><div class="ds">0~25 극도공포=분할매수 / 75~100 극심탐욕=경계</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://www.currentmarketvaluation.com/models/buffett-indicator.php" target="_blank" rel="noopener"><div><div class="nm">버핏 지수(시총/GDP)</div><div class="ds">장기 과열도 판단·현금 비중 조절 기준</div></div><span class="go">→</span></a>
+    </div>
+
+    <div class="sec">
+      <h2>📈 경기 사이클 지표</h2>
+      <a class="linkrow" href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank" rel="noopener"><div><div class="nm">하이일드 스프레드(정크본드)</div><div class="ds">급등=신용경색 신호. 800bp↑ 침체급 (탄광 속 카나리아)</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://tradingeconomics.com/united-states/calendar" target="_blank" rel="noopener"><div><div class="nm">🇺🇸 미국 경제 일정</div><div class="ds">미국만 표시 — CPI·PPI·NFP·FOMC 일정 및 예측vs실제</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://tradingeconomics.com/south-korea/calendar" target="_blank" rel="noopener"><div><div class="nm">🇰🇷 한국 경제 일정</div><div class="ds">한국만 표시 — 기준금리·CPI·수출입 등</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://kr.investing.com/economic-calendar/" target="_blank" rel="noopener"><div><div class="nm">🌐 전체(Investing.com)</div><div class="ds">여러 나라 일정 한눈에 (기존 방식)</div></div><span class="go">→</span></a>
+      <a class="linkrow" href="https://www.google.com/finance/quote/USD-KRW" target="_blank" rel="noopener"><div><div class="nm">원/달러 환율</div><div class="ds">실시간 환율 확인</div></div><span class="go">→</span></a>
+      <p style="margin-top:10px;color:var(--sub)">🔭 사무엘 베너 사이클(장기): 21년(공황)/27년(기술)/11년(원자재) 주기. 저자는 2029~2030년 대공황 가능성 경계.</p>
+    </div>
+
+  </div><!-- /tabStrat -->
+
+<script>
+function showTab(t){
+  document.getElementById("tabHome").style.display  = t==="home" ?"block":"none";
+  document.getElementById("tabStrat").style.display = t==="strat"?"block":"none";
+  document.getElementById("tabBtnHome").classList.toggle("on",t==="home");
+  document.getElementById("tabBtnStrat").classList.toggle("on",t==="strat");
+  window.scrollTo(0,0);
+}
+</script>
+<script>
+const TICKERS=["QLD","TQQQ","QQQ","SOXL","SPY"];
+const TD="https://api.twelvedata.com";
+const FMP="https://financialmodelingprep.com/stable";
+let current=localStorage.getItem("dip_ticker")||"QLD";
+let tdKey=localStorage.getItem("dip_tdkey")||"";
+let fmpKey=localStorage.getItem("dip_fmpkey")||"";
+let wkUrl=localStorage.getItem("dip_wkurl")||"";
+let histCache={}, bondCache={date:"",data:null};
+const sig={rsi:null,fng:null,vix:null};
+let lastSigState=null;
+function notifReady(){ return ("Notification" in window) && Notification.permission==="granted"; }
+function enableNotif(){
+  if(!("Notification" in window)){ alert("이 브라우저는 알림을 지원하지 않습니다."); return; }
+  Notification.requestPermission().then(p=>{
+    const b=document.getElementById("notifBtn");
+    if(b) b.textContent = p==="granted" ? "🔔 알림 켜짐" : "🔔 알림 꺼짐";
+    if(p==="granted"){ try{ new Notification("DIP ALERT", {body:"신호 알림이 켜졌습니다."}); }catch(e){} }
+  });
+}
+
+function renderSignal(){
+  const el=document.getElementById("signal"); if(!el) return;
+  const r=sig.rsi, f=sig.fng, v=sig.vix;
+  const buy=[], sell=[];
+  if(r!=null){ if(r<=30) buy.push("RSI 과매도 "+r.toFixed(1)); else if(r<=35) buy.push("RSI 과매도 근접 "+r.toFixed(1)); if(r>=70) sell.push("RSI 과매수 "+r.toFixed(1)); }
+  if(f!=null){ if(f<=25) buy.push("공포탐욕 극도공포 "+Math.round(f)); if(f>=75) sell.push("탐욕 과열 "+Math.round(f)); }
+  if(v!=null){ if(v>=40) buy.push("VIX 급등 "+v.toFixed(1)); }
+  const trinity=(r!=null&&r<=35)&&(f!=null&&f<=25)&&(v!=null&&v>=40);
+  let cls="neutral", txt="특이 신호 없음 · 평시 베타 유지";
+  if(trinity){ cls="buy"; txt="★ 삼위일체 매수 타점 — "+buy.join(" · "); }
+  else if(buy.length>=2){ cls="buy"; txt="🟢 매수 신호 — "+buy.join(" · "); }
+  else if(buy.length===1){ cls="watch"; txt="👀 관찰 — "+buy[0]; }
+  else if(sell.length>=1){ cls="sell"; txt="🔴 과열 경계 — "+sell.join(" · ")+" · 현금 확보 검토"; }
+  el.className="signal "+cls;
+  el.textContent=txt;
+  if((cls==="buy"||cls==="sell") && cls!==lastSigState && notifReady()){
+    try{ new Notification("DIP ALERT — "+(cls==="buy"?"매수 신호":"과열 경계"), {body:txt}); }catch(e){}
+  }
+  lastSigState=cls;
+}
+
+function saveKeys(){
+  const a=document.getElementById("tdKey").value.trim();
+  const b=document.getElementById("fmpKey").value.trim();
+  if(!a||!b){ alert("Twelve Data · FMP 두 키를 모두 입력해 주세요."); return; }
+  const w=document.getElementById("wkUrl").value.trim();
+  tdKey=a; fmpKey=b; wkUrl=w;
+  localStorage.setItem("dip_tdkey",a); localStorage.setItem("dip_fmpkey",b);
+  localStorage.setItem("dip_wkurl",w);
+  document.getElementById("keybar").classList.add("hide");
+  histCache={}; bondCache={date:"",data:null};
+  loadAll(true);
+}
+function showKeybar(){
+  document.getElementById("tdKey").value=tdKey;
+  document.getElementById("fmpKey").value=fmpKey;
+  document.getElementById("wkUrl").value=wkUrl;
+  document.getElementById("keybar").classList.remove("hide");
+}
+
+async function td(path){
+  const sep=path.includes("?")?"&":"?";
+  const j=await (await fetch(`${TD}/${path}${sep}apikey=${encodeURIComponent(tdKey)}`,{cache:"no-store"})).json();
+  if(j.status==="error"||j.code) throw new Error(j.message||"TD 오류");
+  return j;
+}
+async function fmp(path){
+  const sep=path.includes("?")?"&":"?";
+  const j=await (await fetch(`${FMP}/${path}${sep}apikey=${encodeURIComponent(fmpKey)}`,{cache:"no-store"})).json();
+  if(j && j["Error Message"]) throw new Error(j["Error Message"]);
+  return j;
+}
+function fmt(n,d=2){return (n==null||isNaN(n))?"—":Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});}
+
+function wilderRSI(c,period=14){
+  if(c.length<period+1) return null;
+  let g=0,l=0;
+  for(let i=1;i<=period;i++){const d=c[i]-c[i-1];if(d>=0)g+=d;else l-=d;}
+  let ag=g/period,al=l/period;
+  for(let i=period+1;i<c.length;i++){const d=c[i]-c[i-1];ag=(ag*(period-1)+(d>0?d:0))/period;al=(al*(period-1)+(d<0?-d:0))/period;}
+  if(al===0) return 100;
+  return 100-100/(1+ag/al);
+}
+
+async function loadHistory(){
+  if(histCache[current]) return histCache[current];
+  const j=await td(`time_series?symbol=${current}&interval=1day&outputsize=5000`);
+  const chrono=[...(j.values||[])].reverse();
+  const highs=chrono.map(v=>parseFloat(v.high));
+  const closes=chrono.map(v=>parseFloat(v.close));
+  let ai=0; for(let i=1;i<highs.length;i++) if(highs[i]>highs[ai]) ai=i;
+  const res={ath:highs[ai],athDate:chrono[ai]?.datetime||"",rsi:wilderRSI(closes,14)};
+  histCache[current]=res; return res;
+}
+async function loadQuote(){
+  const q=await td(`quote?symbol=${current}`);
+  const price=parseFloat(q.close),chg=parseFloat(q.change),pct=parseFloat(q.percent_change);
+  document.getElementById("price").textContent="$"+fmt(price);
+  document.getElementById("priceChg").innerHTML=`<span class="${chg>=0?'chg-green':'chg-red'}">${chg>=0?'+':''}$${fmt(chg)} (${chg>=0?'+':''}${fmt(pct)}%)</span>`;
+  return price;
+}
+function paintHistory(h,price){
+  document.getElementById("ath").textContent="$"+fmt(h.ath);
+  document.getElementById("athDate").textContent=h.athDate||"—";
+  const dd=(price/h.ath-1)*100,de=document.getElementById("drawdown");
+  de.textContent=fmt(dd)+"%"; de.style.color=dd<0?"var(--red)":"var(--green)";
+  const re=document.getElementById("rsi");
+  re.textContent=h.rsi==null?"—":fmt(h.rsi,1);
+  re.style.color=h.rsi==null?"var(--ink)":(h.rsi>=70?"var(--red)":h.rsi<=30?"var(--green)":"var(--ink)");
+  sig.rsi=h.rsi;
+}
+
+// VIX via FMP
+async function loadVIX(){
+  try{
+    const a=await fmp(`quote?symbol=^VIX`);
+    const q=Array.isArray(a)?a[0]:a; const v=parseFloat(q.price);
+    document.getElementById("vix").textContent=fmt(v,1);
+    document.getElementById("vixTxt").textContent=v<20?"안정 구간":v<30?"보통 구간":v<40?"경계 구간":"공포 구간";
+    document.getElementById("vix").style.color=v<20?"var(--blue)":v<40?"var(--amber)":"var(--red)";
+    sig.vix=v;
+  }catch(e){ document.getElementById("vixTxt").textContent="오류: "+e.message.slice(0,20); }
+}
+
+// 10Y·2Y·스프레드 via FMP (하루 한 번 캐시)
+async function loadBonds(){
+  const today=new Date().toISOString().slice(0,10);
+  let row=bondCache.data;
+  if(bondCache.date!==today || !row){
+    const arr=await fmp(`treasury-rates`);
+    row=Array.isArray(arr)?arr[0]:arr;
+    bondCache={date:today,data:row};
+  }
+  const y10=parseFloat(row.year10 ?? row["10 year"]);
+  const y2 =parseFloat(row.year2  ?? row["2 year"]);
+  document.getElementById("tnx").textContent=fmt(y10,2)+"%"; document.getElementById("tnx").style.color="var(--green)";
+  document.getElementById("two").textContent=fmt(y2,2)+"%";  document.getElementById("two").style.color="var(--green)";
+  const sp=y10-y2, se=document.getElementById("spread");
+  se.textContent=(sp>=0?"+":"")+fmt(sp,2)+"%p";
+  se.style.color=sp<0?"var(--red)":"var(--ink)";
+  document.getElementById("spreadTxt").textContent=sp<0?"⚠ 역전(침체 경계)":"정상(비역전)";
+}
+
+// 미국 중요 경제 발표 D-day (FMP 캘린더, 하루 캐시)
+let calCache={date:"",ev:null};
+const CAL_KEY=["CPI","Consumer Price","PPI","Producer Price","FOMC","Fed Interest Rate","Federal Funds","Nonfarm","Non-Farm","Unemployment Rate","GDP","PCE","Retail Sales","ISM"];
+function shortName(n){
+  n=n||""; const L=n.toLowerCase();
+  if(L.includes("core cpi")||L.includes("cpi")||L.includes("consumer price")) return "CPI";
+  if(L.includes("ppi")||L.includes("producer price")) return "PPI";
+  if(L.includes("fomc")||L.includes("federal funds")||L.includes("fed interest")||L.includes("interest rate decision")) return "FOMC 금리결정";
+  if(L.includes("nonfarm")||L.includes("non-farm")) return "고용보고서(NFP)";
+  if(L.includes("unemployment")) return "실업률";
+  if(L.includes("pce")) return "PCE 물가";
+  if(L.includes("gdp")) return "GDP";
+  if(L.includes("retail sales")) return "소매판매";
+  if(L.includes("ism")) return "ISM 지수";
+  return n.length>16?n.slice(0,16)+"…":n;
+}
+function nextNFP(){
+  const now=new Date();
+  const firstFri=(y,m)=>{const d=new Date(y,m,1);return new Date(y,m,1+((5-d.getDay()+7)%7));};
+  let f=firstFri(now.getFullYear(),now.getMonth());
+  const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  if(f<t0) f=firstFri(now.getFullYear(),now.getMonth()+1);
+  return {t:f.getTime(),name:"Nonfarm Payrolls"};
+}
+function paintCal(ev){
+  const d=new Date(ev.t), t0=new Date(), d0=new Date(d);
+  t0.setHours(0,0,0,0); d0.setHours(0,0,0,0);
+  const dd=Math.round((d0-t0)/864e5);
+  const el=document.getElementById("calDday");
+  el.textContent = dd<=0?"D-DAY":("D-"+dd);
+  el.style.color = dd<=1?"var(--red)":dd<=3?"var(--amber)":"var(--ink)";
+  document.getElementById("calEvent").textContent = shortName(ev.name)+" · "+(d.getMonth()+1)+"/"+d.getDate();
+}
+async function loadCalendar(){
+  const today=new Date(), iso=d=>d.toISOString().slice(0,10);
+  if(calCache.date===iso(today)&&calCache.ev){ paintCal(calCache.ev); return; }
+  try{
+    const to=new Date(today.getTime()+45*864e5);
+    const arr=await fmp(`economic-calendar?from=${iso(today)}&to=${iso(to)}`);
+    const now=Date.now()-6*3600e3;
+    const list=(arr||[]).filter(e=>{
+        const c=(e.country||"").toUpperCase();
+        if(!(c==="US"||c==="USA"||c==="UNITED STATES")) return false;
+        const hi=String(e.impact||"").toLowerCase()==="high";
+        const named=CAL_KEY.some(k=>(e.event||"").toLowerCase().includes(k.toLowerCase()));
+        return hi||named;
+      })
+      .map(e=>({t:new Date((e.date||"").replace(" ","T")).getTime(),name:e.event}))
+      .filter(e=>!isNaN(e.t)&&e.t>=now)
+      .sort((a,b)=>a.t-b.t);
+    const ev=list.length?list[0]:nextNFP();
+    calCache={date:iso(today),ev}; paintCal(ev);
+  }catch(e){
+    const ev=nextNFP(); calCache={date:iso(today),ev}; paintCal(ev);
+    document.getElementById("calEvent").textContent += " (추정)";
+  }
+}
+
+// CNN 공포탐욕: 여러 프록시 시도 + 마지막 성공값 캐시
+async function loadFNG(){
+  const target="https://production.dataviz.cnn.io/index/fearandgreed/graphdata";
+  const sources=[];
+  if(wkUrl) sources.push(()=>wkUrl);              // ① 내 Cloudflare Worker (최우선)
+  sources.push(u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(target));
+  sources.push(u=>"https://api.codetabs.com/v1/proxy/?quest="+target);
+  sources.push(u=>"https://corsproxy.io/?url="+encodeURIComponent(target));
+  for(const p of sources){
+    try{
+      const j=await (await fetch(p(),{cache:"no-store"})).json();
+      const s=j.fear_and_greed.score, r=j.fear_and_greed.rating;
+      paintFNG(s,r);
+      localStorage.setItem("dip_fng",JSON.stringify({s,r,t:Date.now()}));
+      return;
+    }catch(e){}
+  }
+  // 실패 시 캐시값 표시
+  const c=localStorage.getItem("dip_fng");
+  if(c){ const o=JSON.parse(c); paintFNG(o.s,o.r,true); }
+  else document.getElementById("fngTxt").textContent="일시 지연";
+}
+function paintFNG(s,r,cached){
+  const map={"extreme fear":"극도의 공포","fear":"공포","neutral":"중립","greed":"탐욕","extreme greed":"극심한 탐욕"};
+  const e=document.getElementById("fng"); e.textContent=Math.round(s);
+  document.getElementById("fngTxt").textContent=(map[r]||r)+(cached?" (캐시)":"");
+  e.style.color=s<25?"var(--red)":s<45?"var(--amber)":s<55?"var(--sub)":s<75?"var(--green)":"var(--red)";
+  sig.fng=Number(s); renderSignal();
+}
+
+// 상단 지수 띠 (야후 파이낸스 — Worker 경유, 없으면 공개 프록시)
+const IDX=[
+  {sym:"^KS11", id:"KS11",  dec:2},
+  {sym:"^NDX",  id:"NDX",   dec:2},
+  {sym:"^GSPC", id:"GSPC",  dec:2},
+  {sym:"KRW=X", id:"USDKRW",dec:1}
+];
+function idxProxy(u){
+  return wkUrl ? (wkUrl+(wkUrl.includes("?")?"&":"?")+"url="+encodeURIComponent(u))
+              : ("https://api.allorigins.win/raw?url="+encodeURIComponent(u));
+}
+async function loadIndices(){
+  await Promise.all(IDX.map(async x=>{
+    const pe=document.getElementById("idx_"+x.id), ce=document.getElementById("idxc_"+x.id);
+    if(!pe) return;
+    try{
+      const yu=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(x.sym)}?range=1d&interval=1d`;
+      const j=await (await fetch(idxProxy(yu),{cache:"no-store"})).json();
+      const m=j.chart.result[0].meta;
+      const price=Number(m.regularMarketPrice);
+      const prev=Number(m.chartPreviousClose ?? m.previousClose);
+      pe.textContent=isNaN(price)?"—":price.toLocaleString("en-US",{minimumFractionDigits:x.dec,maximumFractionDigits:x.dec});
+      if(!isNaN(price)&&!isNaN(prev)&&prev){
+        const pct=(price/prev-1)*100;
+        ce.textContent=(pct>=0?"▲ +":"▼ ")+pct.toFixed(2)+"%";
+        ce.style.color=pct>=0?"var(--green)":"var(--red)";
+      }
+    }catch(e){ if(ce) ce.textContent="지연"; }
+  }));
+}
+
+let loading=false;
+async function loadAll(){
+  if(!tdKey||!fmpKey){ document.getElementById("keybar").classList.remove("hide"); return; }
+  if(loading) return; loading=true;
+  setStatus("loading","데이터 불러오는 중…");
+  try{
+    const price=await loadQuote();
+    const h=await loadHistory(); paintHistory(h,price);
+    await loadVIX();
+    await loadBonds();
+    await loadCalendar();
+    loadIndices();
+    loadFNG();
+    renderSignal();
+    const t=new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    setStatus("ok","마지막 업데이트 "+t);
+  }catch(e){ setStatus("err","오류: "+e.message+" (키·한도 확인)"); }
+  loading=false;
+}
+function setStatus(kind,msg){
+  document.getElementById("status").textContent=msg;
+  const d=document.getElementById("statusDot");
+  d.classList.toggle("pulse",kind==="loading");
+  d.style.background=kind==="ok"?"var(--green)":kind==="loading"?"var(--amber)":kind==="err"?"var(--red)":"var(--sub)";
+}
+function buildTickers(){
+  const w=document.getElementById("tickerSel");
+  TICKERS.forEach(t=>{
+    const b=document.createElement("button"); b.textContent=t; if(t===current)b.classList.add("on");
+    b.onclick=()=>{current=t;localStorage.setItem("dip_ticker",t);
+      [...w.children].forEach(c=>c.classList.remove("on"));b.classList.add("on");
+      ["price","priceChg","ath","athDate","drawdown","rsi"].forEach(id=>document.getElementById(id).textContent="—");
+      loadAll(true);};
+    w.appendChild(b);
+  });
+}
+function tick(){document.getElementById("clock").textContent=new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});}
+
+buildTickers(); tick(); setInterval(tick,10000);
+if(tdKey&&fmpKey){ document.getElementById("keybar").classList.add("hide"); loadAll(true); }
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&tdKey&&fmpKey) loadAll(); });
+setInterval(()=>{ if(tdKey&&fmpKey&&!document.hidden) loadAll(); },300000);
+</script>
+</body>
+</html>
