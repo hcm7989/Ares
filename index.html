@@ -71,6 +71,45 @@
   .signal.watch{background:#fff7e6;color:#8a6d3b;border:1px solid #ffe2ad;}
   .signal.sell{background:#fdeaea;color:#c0343a;border:1px solid #f5c2c4;}
   .signal.neutral{background:#f2f4f8;color:#8b95a3;border:1px solid #e5e9f0;font-weight:700;}
+  .hero{text-align:center;}
+  .hlab{font-size:12px;color:var(--sub);font-weight:700;}
+  .hval{font-size:27px;font-weight:800;margin:4px 0 8px;}
+  .hbadges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .badge2{font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:20px;}
+  .chips{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .chip{background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:left;}
+  .chip .k{font-size:11px;color:var(--sub);}
+  .chip .v{font-size:14px;font-weight:800;margin-top:2px;}
+  .sname{font-size:12.5px;font-weight:600;color:#1f2937;}
+  .schips{margin-top:4px;}
+  .mchip{display:inline-block;background:#eef2f7;border-radius:6px;padding:1px 7px;font-size:10px;margin-right:4px;color:var(--sub);white-space:nowrap;}
+  .prow.flash{animation:flashbg 1.3s ease;}
+  @keyframes flashbg{0%{background:#fff3bf}100%{background:transparent}}
+  .prow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line);font-size:13px;}
+  .prow:last-child{border-bottom:none;}
+  .dot2{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle;flex:0 0 auto;}
+  .chartbox{position:relative;width:100%;}
+  .pacc{border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 1px 3px rgba(30,50,90,.05);margin-bottom:9px;overflow:hidden;}
+  .pacc:last-child{margin-bottom:0;}
+  .pacc .prow{border-bottom:none;align-items:flex-start;padding:12px 13px;}
+  .accname{font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;min-width:0;}
+  .accnum{text-align:right;flex:0 0 auto;}
+  .accval{font-size:14px;font-weight:800;}
+  .accmeta{font-size:11px;color:var(--sub);margin-top:3px;}
+  .substocks{background:#f8fafc;border-top:1px solid var(--line);margin:0;padding:2px 13px 6px;}
+  .srow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #e7ebf1;}
+  .srow:last-child{border-bottom:none;}
+  .sleft{min-width:0;}
+  .sright{text-align:right;flex:0 0 auto;}
+  .sval{font-size:12.5px;font-weight:700;color:var(--ink);}
+  .sret{font-size:10.5px;margin-top:3px;}
+  .scode{color:#9aa4b2;font-size:10.5px;}
+  .caret{color:var(--sub);font-size:10px;margin-left:3px;}
+  .fold{cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;}
+  .foldcaret{color:var(--sub);font-size:13px;font-weight:400;}
+  .modetog{display:flex;gap:6px;background:#eef1f6;border-radius:10px;padding:4px;margin:6px 0 12px;}
+  .modetog button{flex:1;border:none;background:transparent;color:var(--sub);font-weight:800;font-size:13px;padding:8px 0;border-radius:8px;cursor:pointer;}
+  .modetog button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.10);}
 </style>
 </head>
 <body>
@@ -78,6 +117,7 @@
 
   <div class="tabbar">
     <button id="tabBtnHome" class="on" onclick="showTab('home')">📊 실시간</button>
+    <button id="tabBtnPort" onclick="showTab('port')">💼 포트폴리오</button>
     <button id="tabBtnStrat" onclick="showTab('strat')">📚 전략·링크</button>
   </div>
 
@@ -227,14 +267,446 @@
 
   </div><!-- /tabStrat -->
 
+  <div id="tabPort" style="display:none">
+    <div class="keybar" id="csvbar">
+      <p>🔗 구글시트 '웹에 게시' CSV 주소 <small>(한 번만, 이 브라우저에 저장)</small></p>
+      <div class="keyrow">
+        <input id="csvUrl" type="text" placeholder="https://docs.google.com/.../pub?output=csv" autocomplete="off">
+        <button class="save" onclick="saveCsv()">저장</button>
+      </div>
+      <span class="keylink" style="color:var(--sub)">구글시트 → 파일 → 공유 → 웹에 게시 → '쉼표로 구분된 값(.csv)' → 링크 복사</span>
+    </div>
+
+    <div class="sec hero">
+      <div class="hlab">💼 총 평가 금액</div>
+      <div class="hval" id="portTotal">—</div>
+      <div class="hbadges" id="hbadges"></div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="sec">
+      <h2 class="fold" onclick="toggleCard('assetBody','asset',this)"><span>자산 변화 <span style="font-size:11px;font-weight:400;color:var(--sub)">(자산 vs 원금)</span></span><span class="foldcaret">▸</span></h2>
+      <div id="assetBody" style="display:none">
+        <div class="chartbox" style="height:230px;"><canvas id="asset"></canvas></div>
+        <div id="assetNote" class="sub" style="text-align:center;margin-top:6px"></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2 class="fold" onclick="toggleCard('monthlyBody','monthly',this)"><span>월별 손익 <span style="font-size:11px;font-weight:400;color:var(--sub)">(막대 + 누적)</span></span><span class="foldcaret">▸</span></h2>
+      <div id="monthlyBody" style="display:none">
+        <div class="chartbox" style="height:220px;"><canvas id="monthly"></canvas></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>비중</h2>
+      <div class="modetog">
+        <button id="mAcct" class="on" onclick="setMode('acct')">계좌별</button>
+        <button id="mTick" onclick="setMode('tick')">종목별</button>
+        <button id="mTheme" onclick="setMode('theme')">유형별</button>
+      </div>
+      <div class="chartbox" style="height:250px;"><canvas id="donut"></canvas></div>
+      <div id="modeSub" class="sub" style="text-align:center;margin-top:6px;"></div>
+      <div class="sub" style="text-align:center;font-size:10.5px;margin-top:2px;">조각을 누르면 아래 목록에서 강조됩니다</div>
+    </div>
+
+    <div class="sec">
+      <h2 id="listTitle">계좌별 보유 종목</h2>
+      <div id="portTable"></div>
+    </div>
+
+    <div class="sec">
+      <h2>종목 시세 · 일간 수익률 <span style="font-size:11px;font-weight:400;color:var(--sub)">(상승 🔴 / 하락 🔵)</span></h2>
+      <div id="quoteTable"></div>
+    </div>
+
+    <div class="foot">
+      <div><span id="portStatus" class="sub">포트폴리오 탭을 열면 불러옵니다.</span></div>
+      <button onclick="loadPortfolio()">🔄 새로고침</button>
+      <button class="miniedit" onclick="document.getElementById('csvbar').style.display='block'">주소 변경</button>
+    </div>
+  </div><!-- /tabPort -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script>
 function showTab(t){
   document.getElementById("tabHome").style.display  = t==="home" ?"block":"none";
   document.getElementById("tabStrat").style.display = t==="strat"?"block":"none";
+  document.getElementById("tabPort").style.display  = t==="port" ?"block":"none";
   document.getElementById("tabBtnHome").classList.toggle("on",t==="home");
   document.getElementById("tabBtnStrat").classList.toggle("on",t==="strat");
+  document.getElementById("tabBtnPort").classList.toggle("on",t==="port");
   window.scrollTo(0,0);
+  if(t==="port") loadPortfolio();
 }
+
+/* ── 포트폴리오 (구글시트 CSV) ── */
+let csvUrl = localStorage.getItem("dip_csv")||"";
+let donutChart=null, barChart=null, dlReg=false;
+let portMode="acct", PORT=null, assetChart=null, monthlyChart=null;
+const PAL=["#2f6bff","#1a9c5b","#f2a516","#e5484d","#8b5cf6","#06b6d4","#ec4899","#84cc16","#f97316","#0ea5e9","#d946ef","#14b8a6","#eab308","#64748b"];
+function saveCsv(){
+  const v=document.getElementById("csvUrl").value.trim();
+  if(!v){ alert("CSV 주소를 입력해 주세요."); return; }
+  csvUrl=v; localStorage.setItem("dip_csv",v);
+  document.getElementById("csvbar").style.display="none";
+  loadPortfolio();
+}
+function parseCSV(text){
+  const rows=[]; let row=[], cur="", q=false;
+  for(let i=0;i<text.length;i++){ const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else { if(c==='"') q=true;
+      else if(c===','){ row.push(cur); cur=""; }
+      else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=""; }
+      else if(c!=='\r') cur+=c; } }
+  if(cur.length||row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
+function pnum(x){ return parseFloat(String(x==null?"":x).replace(/[,$₩\s]/g,"")); }
+const TICK=/^[A-Za-z]{1,6}$/;
+function extractHoldings(rows){
+  const nameN=["계좌명","종목명","종목","티커","symbol","ticker","자산명","name"];
+  const valPref=["총 평가 금액","평가 금액","평가금액","평가액","현재 평가","market value","current value","평가금"];
+  const isSummary=s=>/합계|소계|^\s*계\s*$|total/i.test(s);
+  let nameCol=-1,valCol=-1,retCol=-1,hRow=-1;
+  for(let r=0;r<rows.length && hRow<0;r++){
+    let nc=-1,vc=-1;
+    for(let c=0;c<rows[r].length;c++){
+      const cell=(rows[r][c]||"").toString().trim(), low=cell.toLowerCase();
+      if(nc<0 && nameN.some(n=>low.includes(n.toLowerCase()))) nc=c;
+      if(vc<0 && valPref.some(n=>cell.includes(n))) vc=c;
+    }
+    if(nc>=0 && vc>=0){
+      nameCol=nc; valCol=vc; hRow=r;
+      for(let c=0;c<rows[r].length;c++){ const cell=(rows[r][c]||"").toString().trim();
+        if(cell.replace(/\s/g,"").includes("수익률")){ retCol=c; break; } }
+    }
+  }
+  let cur="$", out=[];
+  if(hRow>=0){
+    for(let r=hRow+1;r<rows.length;r++){
+      const name=(rows[r][nameCol]||"").trim(), raw=(rows[r][valCol]||"").toString(), v=pnum(raw);
+      if(!name || isSummary(name) || !(v>0)) continue;
+      if(/원|₩/.test(raw)) cur="₩";
+      out.push({t:name, v, ret:retCol>=0?(rows[r][retCol]||"").toString().trim():""});
+    }
+  }
+  if(!out.length){ // 베타계산기(D=티커, H=평가액$) 폴백
+    for(let r=0;r<rows.length;r++){
+      const t=(rows[r][3]||"").trim(), raw=(rows[r][7]||"").toString(), v=pnum(raw);
+      if(/^[A-Za-z]{1,6}$/.test(t)&&v>0){ if(/원|₩/.test(raw)) cur="₩"; out.push({t,v}); }
+    }
+  }
+  return {items:out, cur};
+}
+function extractStocks(rows){
+  let hRow=-1,accCol=-1,nameCol=-1,codeCol=-1,themeCol=-1,dayCol=-1,priceCol=-1,weekCol=-1,monthCol=-1,retCol=-1; const evals=[];
+  for(let r=0;r<rows.length;r++){
+    const row=rows[r]; let a=-1,n=-1; const ev=[];
+    for(let c=0;c<row.length;c++){
+      const cell=(row[c]||"").toString().trim();
+      if(a<0 && cell.includes("증권사")) a=c;
+      if(n<0 && cell.includes("종목명")) n=c;
+      if(cell.replace(/\s/g,"").includes("평가금액")) ev.push(c);
+    }
+    if(a>=0 && n>=0 && ev.length){
+      hRow=r; accCol=a; nameCol=n; ev.forEach(x=>evals.push(x));
+      for(let c=0;c<row.length;c++){ const cell=(row[c]||"").toString().trim();
+        if(cell.includes("종목코드")) codeCol=c;
+        if(cell.includes("테마")) themeCol=c;
+        if(cell.includes("전일대비")) dayCol=c;
+        if(cell.includes("현재가")) priceCol=c;
+        if(cell.includes("1주일전")) weekCol=c;
+        if(cell.includes("1달전")) monthCol=c;
+        if(cell==="수익률") retCol=c;
+      }
+      break;
+    }
+  }
+  const valCol=evals.length?evals[evals.length-1]:-1;
+  const flat=[], byAcc={};
+  const g=(row,c)=>c>=0?(row[c]||"").toString().trim():"";
+  if(hRow>=0){
+    for(let r=hRow+1;r<rows.length;r++){
+      const row=rows[r];
+      const acc=g(row,accCol), name=g(row,nameCol), v=pnum(row[valCol]);
+      if(!name || acc==="현금" || !(v>0)) continue;
+      const o={acc,name,code:g(row,codeCol),theme:g(row,themeCol)||"기타",
+        price:g(row,priceCol),day:g(row,dayCol),week:g(row,weekCol),month:g(row,monthCol),ret:g(row,retCol),v};
+      flat.push(o);
+      const key=acc.replace(/\s/g,"");
+      (byAcc[key]=byAcc[key]||{acc,items:[]}).items.push({name,code:o.code,v,day:o.day,week:o.week,month:o.month,ret:o.ret});
+    }
+  }
+  return {flat, byAcc};
+}
+function extractSummary(rows){
+  const findRight=(label)=>{
+    for(let r=0;r<rows.length;r++) for(let c=0;c<rows[r].length;c++){
+      if((rows[r][c]||"").toString().trim()===label){
+        for(let k=c+1;k<rows[r].length;k++){ const nv=(rows[r][k]||"").toString().trim(); if(nv) return nv; }
+      }
+    }
+    return "";
+  };
+  const metrics={
+    "총수익률":findRight("총 수익률"),
+    "총평가손익":findRight("총 평가 손익"),
+    "총수익":findRight("26년 총 수익"),
+    "주식수익":findRight("26년 주식 수익"),
+    "무매수익":findRight("무매수익")
+  };
+  const mm={};
+  for(let r=0;r<rows.length;r++) for(let c=0;c<rows[r].length;c++){
+    const m=(rows[r][c]||"").toString().trim().match(/^(\d{1,2})월\s*손익$/);
+    if(m){ const mon=+m[1]; const val=rows[r+1]?rows[r+1][c]:""; mm[mon]=pnum(val)||0; }
+  }
+  const months=[]; for(let i=1;i<=12;i++) months.push({m:i, v:mm[i]||0});
+  return {metrics, months};
+}
+function extractHistory(rows){
+  let hRow=-1,dCol=-1,invCol=-1,proCol=-1;
+  for(let r=0;r<rows.length;r++){
+    const row=rows[r]; let d=-1,inv=-1,pro=-1;
+    for(let c=0;c<row.length;c++){
+      const cell=(row[c]||"").toString().trim(), nb=cell.replace(/\s/g,"");
+      if(d<0 && cell==="날짜") d=c;
+      if(inv<0 && nb.includes("총투자금액")) inv=c;
+      if(pro<0 && nb==="총수익금") pro=c;
+    }
+    if(d>=0 && inv>=0){ hRow=r; dCol=d; invCol=inv; proCol=pro; break; }
+  }
+  const parseDate=s=>{ const m=String(s).match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/); return m?{key:+m[1]*10000+(+m[2])*100+(+m[3]),y:+m[1],mo:+m[2]}:null; };
+  const pts=[];
+  if(hRow>=0){
+    for(let r=hRow+1;r<rows.length;r++){
+      const row=rows[r];
+      const pd=parseDate((row[dCol]||"").toString());
+      const inv=pnum(row[invCol]), pro=proCol>=0?pnum(row[proCol]):0;
+      if(!pd || !(inv>0)) continue;
+      pts.push({key:pd.key, dstr:(pd.y%100)+"."+pd.mo, invest:inv, asset:inv+(isNaN(pro)?0:pro)});
+    }
+  }
+  const map={}; pts.forEach(p=>map[p.key]=p);
+  return Object.values(map).sort((a,b)=>a.key-b.key);
+}
+function toggleAcc(i){
+  const box=document.querySelector('.pacc[data-i="'+i+'"] .substocks');
+  const car=document.querySelector('.pacc[data-i="'+i+'"] .caret');
+  if(!box) return;
+  const opening=box.style.display==="none";
+  box.style.display=opening?"block":"none";
+  if(car) car.textContent=opening?"▾":"▸";
+}
+async function fetchCsv(u){
+  const tries=[ u ];
+  if(typeof wkUrl!=="undefined" && wkUrl) tries.push(wkUrl+(wkUrl.includes("?")?"&":"?")+"url="+encodeURIComponent(u));
+  tries.push("https://corsproxy.io/?url="+encodeURIComponent(u));
+  tries.push("https://api.allorigins.win/raw?url="+encodeURIComponent(u));
+  tries.push("https://api.codetabs.com/v1/proxy/?quest="+u);
+  let err;
+  for(const t of tries){
+    try{ const r=await fetch(t,{cache:"no-store"}); if(r.ok){ const txt=await r.text(); if(txt && txt.indexOf(",")>=0) return txt; } err=new Error("HTTP "+r.status); }
+    catch(e){ err=e; }
+  }
+  throw err || new Error("불러오기 실패");
+}
+async function loadPortfolio(){
+  const st=document.getElementById("portStatus");
+  if(!csvUrl){ document.getElementById("csvbar").style.display="block"; st.textContent="CSV 주소를 입력하세요."; return; }
+  st.textContent="불러오는 중…";
+  try{
+    const text=await fetchCsv(csvUrl);
+    const rows0=parseCSV(text);
+    const res=extractHoldings(rows0);
+    const h=res.items, cur=res.cur;
+    if(!h.length){ st.textContent="종목/계좌를 못 찾았습니다. 시트에 이름·평가금액 열이 있는지 확인하세요."; return; }
+    h.sort((a,b)=>b.v-a.v);
+    const total=h.reduce((s,x)=>s+x.v,0);
+    document.getElementById("portTotal").textContent=cur+Number(total).toLocaleString("en-US",{maximumFractionDigits:0});
+    const summ=extractSummary(rows0);
+    let hist=null;
+    try{
+      const base=csvUrl.split("/pub")[0];
+      const htext=await fetchCsv(base+"/pub?gid=408980709&single=true&output=csv");
+      hist=extractHistory(parseCSV(htext));
+    }catch(e){}
+    let sres={flat:[],byAcc:{}};
+    try{
+      const base=csvUrl.split("/pub")[0];
+      const stext=await fetchCsv(base+"/pub?gid=0&single=true&output=csv");
+      sres=extractStocks(parseCSV(stext));
+    }catch(e){}
+    const tick={};
+    sres.flat.forEach(s=>{ const k=s.code||s.name; const o=tick[k]||(tick[k]={t:s.name,code:s.code,v:0,price:s.price,day:s.day,week:s.week,month:s.month}); o.v+=s.v; });
+    const th={};
+    sres.flat.forEach(s=>{ const k=s.theme||"기타"; (th[k]||(th[k]={t:k,v:0})).v+=s.v; });
+    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th)};
+    drawHero(); drawAsset(); drawMonthly(); drawPort(); drawQuotes();
+    st.textContent="업데이트 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
+    document.getElementById("csvbar").style.display="none";
+  }catch(e){ st.textContent="오류: "+e.message+" (웹 게시·공개 설정 확인)"; }
+}
+function setMode(m){
+  portMode=m;
+  [["acct","mAcct"],["tick","mTick"],["theme","mTheme"]].forEach(([k,id])=>{
+    const b=document.getElementById(id); if(b) b.classList.toggle("on",k===m);
+  });
+  drawPort();
+}
+function chgSpan(s){
+  const t=String(s||"").trim();
+  if(!t||t==="0%"||t==="0") return '<b style="color:var(--sub)">-</b>';
+  const neg=t.startsWith("-");
+  return `<b style="color:${neg?'var(--blue)':'var(--red)'}">${t}</b>`;
+}
+function mchip(lab,s){
+  const t=String(s||"").trim();
+  const inner = (!t||t==="0%"||t==="0") ? '<b style="color:var(--sub)">-</b>'
+    : `<b style="color:${t.startsWith("-")?'var(--blue)':'var(--red)'}">${t}</b>`;
+  return `<span class="mchip">${lab} ${inner}</span>`;
+}
+function highlightRow(name){
+  const tb=document.getElementById("portTable");
+  let target=null;
+  tb.querySelectorAll('.prow[data-name]').forEach(r=>{ if(r.getAttribute('data-name')===name) target=r; });
+  if(!target) return;
+  target.scrollIntoView({behavior:"smooth",block:"center"});
+  target.classList.remove("flash"); void target.offsetWidth; target.classList.add("flash");
+}
+function drawPort(){
+  if(!PORT) return;
+  const cur=PORT.cur, M=v=>cur+Number(v).toLocaleString("en-US",{maximumFractionDigits:0});
+  let data = portMode==="acct"?PORT.accounts : portMode==="tick"?PORT.byTicker : PORT.byTheme;
+  data=data.slice().sort((a,b)=>b.v-a.v);
+  const mt=data.reduce((s,x)=>s+x.v,0)||1;
+  const colFull=data.map((_,i)=>PAL[i%PAL.length]);
+  document.getElementById("modeSub").textContent=
+    (portMode==="acct"?"계좌 "+data.length+"개":portMode==="tick"?"종목 "+data.length+"개":"유형 "+data.length+"개")+" · 합계 "+M(mt);
+  const big=[]; let etc=0;
+  data.forEach(x=>{ if(x.v/mt>=0.02) big.push(x); else etc+=x.v; });
+  const dd = etc>0? big.concat([{t:"기타",v:etc}]) : big;
+  const labels=dd.map(x=>x.t), vals=dd.map(x=>x.v);
+  const cols=dd.map((x,i)=> x.t==="기타"?"#cbd5e1":colFull[i]);
+  if(!dlReg && window.ChartDataLabels){ Chart.register(window.ChartDataLabels); dlReg=true; }
+  if(donutChart) donutChart.destroy();
+  donutChart=new Chart(document.getElementById("donut"),{type:"doughnut",
+    data:{labels,datasets:[{data:vals,backgroundColor:cols,borderColor:"#fff",borderWidth:2}]},
+    options:{maintainAspectRatio:false,cutout:"56%",layout:{padding:8},
+      onClick:(e,els)=>{ if(els&&els.length) highlightRow(donutChart.data.labels[els[0].index]); },
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${M(c.parsed)} (${(c.parsed/mt*100).toFixed(1)}%)`}},
+        datalabels:{color:"#fff",font:{weight:"bold",size:12},textStrokeColor:"rgba(0,0,0,.45)",textStrokeWidth:3,
+          formatter:(v)=>{ const p=v/mt*100; return p>=5? Math.round(p)+"%":""; }}}}});
+  const lt=document.getElementById("listTitle"), tb=document.getElementById("portTable");
+  if(portMode==="acct"){
+    lt.innerHTML='계좌별 보유 종목 <span style="font-size:11px;font-weight:400;color:var(--sub)">(클릭해 펼치기)</span>';
+    tb.innerHTML=data.map((x,i)=>{
+      const gg=PORT.byAcc[x.t.replace(/\s/g,"")]; const items=gg?gg.items.slice().sort((a,b)=>b.v-a.v):[];
+      const sub=items.length?`<div class="substocks" style="display:none">`+items.map(s=>
+        `<div class="srow"><div class="sleft"><div class="sname">${s.name}${s.code?` <span class="scode">${s.code}</span>`:""}</div>`+
+        `<div class="schips">${mchip("전일",s.day)}${mchip("주",s.week)}${mchip("월",s.month)}</div></div>`+
+        `<div class="sright"><div class="sval">${M(s.v)}</div><div class="sret">수익 ${chgSpan(s.ret)}</div></div></div>`).join("")+`</div>`:"";
+      const caret=items.length?` <span class="caret">▸</span>`:"";
+      const retMeta = x.ret ? ` · 수익률 ${chgSpan(x.ret)}` : "";
+      return `<div class="pacc" data-i="${i}"><div class="prow" data-name="${x.t}"${items.length?` style="cursor:pointer" onclick="toggleAcc(${i})"`:""}>`+
+        `<div class="accname"><span class="dot2" style="background:${colFull[i]}"></span>${x.t}${caret}</div>`+
+        `<div class="accnum"><div class="accval">${M(x.v)}</div><div class="accmeta">비중 ${(x.v/mt*100).toFixed(1)}%${retMeta}</div></div></div>${sub}</div>`;
+    }).join("");
+  } else {
+    lt.textContent = portMode==="tick"?"종목별 비중 (계좌 합산)":"유형별 비중";
+    tb.innerHTML=data.map((x,i)=>
+      `<div class="prow" data-name="${x.t}"><span><span class="dot2" style="background:${colFull[i]}"></span>${x.t}`+
+      `${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
+      `<span>${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>`).join("");
+  }
+}
+function drawHero(){
+  if(!PORT) return;
+  const cur=PORT.cur, m=(PORT.summ&&PORT.summ.metrics)||{};
+  const M=v=>{ const n=pnum(v); return isNaN(n)?(v||"-"):cur+n.toLocaleString("en-US",{maximumFractionDigits:0}); };
+  const rate=m["총수익률"], rn=pnum(rate);
+  const badges=document.getElementById("hbadges");
+  badges.innerHTML = rate? `<span class="badge2" style="background:${rn<0?'#fdeaea':'#e7f7ee'};color:${rn<0?'#c0343a':'#0f7a43'}">총 수익률 ${rate}</span>`:"";
+  const chip=(k,v)=>`<div class="chip"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+  document.getElementById("chips").innerHTML=[
+    chip("총 평가손익", M(m["총평가손익"])),
+    chip("26년 총수익", M(m["총수익"])),
+    chip("26년 주식수익", M(m["주식수익"])),
+    chip("무한매수 수익", M(m["무매수익"]))
+  ].join("");
+}
+function drawAsset(){
+  const el=document.getElementById("asset"); if(!el||!PORT) return;
+  const cur=PORT.cur;
+  const short=v=>{ const a=Math.abs(v); if(cur==="₩"){ if(a>=1e8) return (v/1e8).toFixed(1)+"억"; if(a>=1e4) return Math.round(v/1e4).toLocaleString()+"만"; } return Math.round(v).toLocaleString(); };
+  if(!dlReg && window.ChartDataLabels){ Chart.register(window.ChartDataLabels); dlReg=true; }
+  if(assetChart) assetChart.destroy();
+  const note=document.getElementById("assetNote");
+  const H=PORT.history;
+  if(H && H.length){
+    if(note) note.textContent="";
+    const labels=H.map(p=>p.dstr), asset=H.map(p=>p.asset), inv=H.map(p=>p.invest);
+    assetChart=new Chart(el,{type:"line",data:{labels,datasets:[
+      {label:"자산",data:asset,borderColor:"#e5484d",backgroundColor:"rgba(229,72,77,.10)",fill:true,tension:.25,pointRadius:0,borderWidth:2,datalabels:{display:false}},
+      {label:"원금",data:inv,borderColor:"#c7ccd6",fill:false,tension:.25,pointRadius:0,borderWidth:2,datalabels:{display:false}}
+    ]},
+    options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+      plugins:{legend:{display:true,labels:{boxWidth:12,font:{size:11}}},
+        tooltip:{callbacks:{title:it=>it[0].label+"월", label:c=>` ${c.dataset.label}: ${cur}${Number(c.parsed.y).toLocaleString()}`}}},
+      scales:{y:{ticks:{callback:(v)=>short(v)}},x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:10}}}}}});
+  } else if(note){
+    note.textContent="history 탭을 아직 못 읽었습니다 (게시 전파 지연일 수 있어요). 잠시 후 새로고침하세요.";
+  }
+}
+function drawMonthly(){
+  const el=document.getElementById("monthly"); if(!el||!PORT) return;
+  const cur=PORT.cur;
+  const short=v=>{ const a=Math.abs(v); if(cur==="₩"){ if(a>=1e8) return (v/1e8).toFixed(1)+"억"; if(a>=1e4) return Math.round(v/1e4).toLocaleString()+"만"; } return Math.round(v).toLocaleString(); };
+  const months=(PORT.summ&&PORT.summ.months)||[];
+  const labels=months.map(x=>x.m+"월"), vals=months.map(x=>x.v);
+  let run=0; const cum=vals.map(v=>run+=v);
+  const barCols=vals.map(v=>v>=0?"#e5484d":"#2f6bff");
+  if(!dlReg && window.ChartDataLabels){ Chart.register(window.ChartDataLabels); dlReg=true; }
+  if(monthlyChart) monthlyChart.destroy();
+  monthlyChart=new Chart(el,{data:{labels,datasets:[
+    {type:"line",label:"누적",data:cum,borderColor:"#f2a516",backgroundColor:"rgba(242,165,22,.12)",fill:true,tension:.25,pointRadius:2,datalabels:{display:false},order:0},
+    {type:"bar",label:"월 손익",data:vals,backgroundColor:barCols,borderRadius:3,maxBarThickness:18,datalabels:{display:false},order:1}
+  ]},
+  options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{display:true,labels:{boxWidth:12,font:{size:11}}},
+      tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${cur}${Number(c.parsed.y).toLocaleString()}`}}},
+    scales:{y:{ticks:{callback:(v)=>short(v)}},x:{grid:{display:false}}}}});
+}
+function toggleCard(bodyId, chartKey, hEl){
+  const b=document.getElementById(bodyId); if(!b) return;
+  const open=b.style.display==="none";
+  b.style.display=open?"block":"none";
+  if(hEl){ const c=hEl.querySelector(".foldcaret"); if(c) c.textContent=open?"▾":"▸"; }
+  if(open){
+    const ch = chartKey==="asset"?assetChart : chartKey==="monthly"?monthlyChart : null;
+    if(ch) setTimeout(()=>{ try{ ch.resize(); }catch(e){} },60);
+  }
+}
+function drawQuotes(){
+  if(!PORT) return;
+  const el=document.getElementById("quoteTable"); if(!el) return;
+  const num=s=>{ const m=String(s==null?"":s).match(/-?\d+(?:\.\d+)?/); return m?parseFloat(m[0]):NaN; };
+  const rows=PORT.byTicker.filter(x=>x.day||x.price)
+    .map(x=>({t:x.t,code:x.code,price:x.price,day:x.day,d:num(x.day)}))
+    .sort((a,b)=>(isNaN(b.d)?-1e9:b.d)-(isNaN(a.d)?-1e9:a.d));
+  if(!rows.length){ el.innerHTML='<div class="sub" style="text-align:center;padding:8px">시세 데이터 없음</div>'; return; }
+  el.innerHTML=rows.map(x=>{
+    const d=String(x.day||"").trim(); const neg=d.startsWith("-");
+    const col=d?(neg?"var(--blue)":"var(--red)"):"var(--sub)";
+    return `<div class="prow"><span>${x.t}${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
+      `<span><span class="scode">${x.price||""}</span> &nbsp;<b style="color:${col}">${d||"-"}</b></span></div>`;
+  }).join("");
+}
+if(!csvUrl){ /* 첫 방문 시 안내는 탭 열 때 표시 */ }
 </script>
 <script>
 const TICKERS=["TQQQ","QLD","QQQ","SOXL","SPY"];
