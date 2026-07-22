@@ -156,7 +156,7 @@
 
   <div class="top">
     <div class="half"><div class="lbl">역대 최고가</div><div class="big" id="ath">—</div><div class="sub" id="athDate">—</div></div>
-    <div class="half"><div class="lbl">현재 가격</div><div class="big" id="price">—</div><div class="sub" id="priceChg">—</div></div>
+    <div class="half"><div class="lbl">현재 가격</div><div class="big" id="price">—</div><div class="sub" id="priceChg">—</div><div class="sub" id="priceExt" style="font-size:10px;margin-top:2px"></div></div>
     <div class="half"><div class="lbl">최고가 대비</div><div class="big" id="drawdown">—</div><div class="sub">고점 대비 낙폭</div></div>
   </div>
 
@@ -815,6 +815,31 @@ async function loadQuote(){
   document.getElementById("priceChg").innerHTML=`<span class="${chg>=0?'chg-green':'chg-red'}">${chg>=0?'+':''}$${fmt(chg)} (${chg>=0?'+':''}${fmt(pct)}%)</span>`;
   return price;
 }
+async function loadExtended(sym){
+  const el=document.getElementById("priceExt"); if(el) el.textContent="";
+  try{
+    const yu=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=5m&includePrePost=true`;
+    const j=await (await fetch(idxProxy(yu),{cache:"no-store"})).json();
+    const res=j.chart.result[0], meta=res.meta;
+    const ts=res.timestamp||[], closes=(res.indicators.quote[0].close)||[];
+    const cp=meta.currentTradingPeriod||{};
+    const regStart=cp.regular?cp.regular.start:null, regEnd=cp.regular?cp.regular.end:null;
+    let extPrice=null, isPost=false;
+    for(let i=ts.length-1;i>=0;i--){
+      if(closes[i]==null) continue;
+      const t=ts[i];
+      if(regEnd && t>=regEnd){ extPrice=closes[i]; isPost=true; break; }
+      if(regStart && t<regStart){ extPrice=closes[i]; isPost=false; break; }
+      break; // 정규장 중이면 시간외 표시 없음
+    }
+    if(extPrice==null || !el) return;
+    const base=meta.regularMarketPrice||parseFloat(document.getElementById("price").textContent.replace(/[$,]/g,""));
+    const pct=base?((extPrice/base-1)*100):null;
+    const up=pct==null?true:pct>=0;
+    const label=isPost?"🌙 시간외":"☀️ 장전";
+    el.innerHTML=`${label} $${fmt(extPrice)}`+(pct!=null?` <span class="${up?'chg-green':'chg-red'}">(${up?'+':''}${pct.toFixed(2)}%)</span>`:"");
+  }catch(e){ /* 무시 */ }
+}
 function paintHistory(h,price){
   document.getElementById("ath").textContent="$"+fmt(h.ath);
   document.getElementById("athDate").textContent=h.athDate||"—";
@@ -983,6 +1008,7 @@ async function loadAll(){
   setStatus("loading","데이터 불러오는 중…");
   try{
     const price=await loadQuote();
+    loadExtended(current);
     const h=await loadHistory(); paintHistory(h,price);
     await loadVIX();
     await loadBonds();
