@@ -502,15 +502,20 @@ function toggleAcc(i){
   if(car) car.textContent=opening?"▾":"▸";
 }
 async function fetchCsv(u){
-  const tries=[ u ];
+  const tries=[];
   if(typeof wkUrl!=="undefined" && wkUrl) tries.push(wkUrl+(wkUrl.includes("?")?"&":"?")+"url="+encodeURIComponent(u));
-  tries.push("https://corsproxy.io/?url="+encodeURIComponent(u));
+  tries.push(u);
   tries.push("https://api.allorigins.win/raw?url="+encodeURIComponent(u));
   tries.push("https://api.codetabs.com/v1/proxy/?quest="+u);
+  tries.push("https://corsproxy.io/?url="+encodeURIComponent(u));
+  const looksCsv=t=> t && !/^\s*</.test(t) && t.indexOf(",")>=0 && t.indexOf("\n")>=0;
   let err;
   for(const t of tries){
-    try{ const r=await fetch(t,{cache:"no-store"}); if(r.ok){ const txt=await r.text(); if(txt && txt.indexOf(",")>=0) return txt; } err=new Error("HTTP "+r.status); }
-    catch(e){ err=e; }
+    try{
+      const r=await fetch(t,{cache:"no-store"});
+      if(r.ok){ const txt=await r.text(); if(looksCsv(txt)) return txt; err=new Error("잘못된 응답"); }
+      else err=new Error("HTTP "+r.status);
+    }catch(e){ err=e; }
   }
   throw err || new Error("불러오기 실패");
 }
