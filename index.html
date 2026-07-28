@@ -45,7 +45,7 @@
   .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
   .pulse{animation:p 1.4s infinite;}@keyframes p{0%,100%{opacity:.35}50%{opacity:1}}
   .tabbar{display:flex;gap:8px;margin:0 2px 14px;}
-  .tabbar button{flex:1;border:1px solid var(--line);background:#fff;color:var(--sub);padding:10px 0;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;}
+  .tabbar button{flex:1;border:1px solid var(--line);background:#fff;color:var(--sub);padding:10px 2px;border-radius:12px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;}
   .tabbar button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
   .sec{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px 14px;margin-bottom:12px;}
   .sec h2{font-size:15px;margin:0 0 4px;font-weight:800;}
@@ -110,6 +110,18 @@
   .modetog{display:flex;gap:6px;background:#eef1f6;border-radius:10px;padding:4px;margin:6px 0 12px;}
   .modetog button{flex:1;border:none;background:transparent;color:var(--sub);font-weight:800;font-size:13px;padding:8px 0;border-radius:8px;cursor:pointer;}
   .modetog button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.10);}
+  .maphead{display:flex;justify-content:space-between;align-items:flex-end;margin:0 2px 10px;}
+  .maphead .mt{font-size:12px;color:var(--sub);font-weight:700;}
+  .maphead .mv{font-size:22px;font-weight:800;line-height:1.1;}
+  .maphead .mc{font-size:11px;color:var(--sub);font-weight:700;text-align:right;}
+  #mapBox{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#e9edf3;box-shadow:var(--shadow);}
+  .tmtile{position:absolute;overflow:hidden;border:1px solid rgba(255,255,255,.4);color:#fff;padding:2px 3px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;box-sizing:border-box;text-shadow:0 1px 1px rgba(0,0,0,.18);}
+  .tmsym{font-weight:800;line-height:1.02;}
+  .tmpct{font-size:11px;font-weight:700;margin-top:1px;}
+  .tmname{font-size:9px;opacity:.92;margin-top:1px;line-height:1.05;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tmval{font-size:9px;opacity:.85;margin-top:1px;}
+  .maplegend{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--sub);font-weight:700;}
+  .maplegend span{display:inline-block;width:26px;height:12px;border-radius:3px;}
 </style>
 </head>
 <body>
@@ -118,6 +130,7 @@
   <div class="tabbar">
     <button id="tabBtnHome" class="on" onclick="showTab('home')">📊 실시간</button>
     <button id="tabBtnPort" onclick="showTab('port')">💼 포트폴리오</button>
+    <button id="tabBtnMap" onclick="showTab('map')">🗺️ 자산맵</button>
     <button id="tabBtnStrat" onclick="showTab('strat')">📚 전략·링크</button>
   </div>
 
@@ -328,6 +341,30 @@
     </div>
   </div><!-- /tabPort -->
 
+  <div id="tabMap" style="display:none">
+    <div class="maphead">
+      <div>
+        <div class="mt">🗺️ 자산맵 <span style="font-weight:400">· 내 보유종목</span></div>
+        <div class="mv" id="mapTotal">—</div>
+      </div>
+      <div class="mc" id="mapCount"></div>
+    </div>
+    <div id="mapBox"></div>
+    <div class="maplegend">
+      <span style="background:#b21f24"></span>하락
+      <span style="background:#8f9aa8"></span>보합
+      <span style="background:#0f7a43"></span>상승
+    </div>
+    <div class="foot">
+      <div><span id="mapStatus" class="sub">자산맵 탭을 열면 불러옵니다.</span></div>
+      <button onclick="loadMap(true)">🔄 새로고침</button>
+    </div>
+    <div class="warn">
+      구글시트에 담긴 내 보유종목을 평가금액 크기로 타일화하고, 각 종목 일간 등락(FMP 시세)으로 색을 입힙니다.
+      시세를 못 받은 종목은 시트의 전일대비 값으로 대체합니다.
+    </div>
+  </div><!-- /tabMap -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script>
@@ -335,11 +372,14 @@ function showTab(t){
   document.getElementById("tabHome").style.display  = t==="home" ?"block":"none";
   document.getElementById("tabStrat").style.display = t==="strat"?"block":"none";
   document.getElementById("tabPort").style.display  = t==="port" ?"block":"none";
+  document.getElementById("tabMap").style.display   = t==="map"  ?"block":"none";
   document.getElementById("tabBtnHome").classList.toggle("on",t==="home");
   document.getElementById("tabBtnStrat").classList.toggle("on",t==="strat");
   document.getElementById("tabBtnPort").classList.toggle("on",t==="port");
+  document.getElementById("tabBtnMap").classList.toggle("on",t==="map");
   window.scrollTo(0,0);
   if(t==="port") loadPortfolio();
+  if(t==="map") loadMap();
 }
 
 /* ── 포트폴리오 (구글시트 CSV) ── */
@@ -1000,6 +1040,211 @@ async function loadIndices(){
     }catch(e){ if(ce) ce.textContent="지연"; }
   }));
 }
+
+/* ── 자산맵 (트리맵) ── */
+// 나스닥100 구성 비중(%)·이름 — Slickcharts 기준, 분기 갱신
+const NDX100={
+ AAPL:{w:12.67,n:"Apple"},NVDA:{w:12.19,n:"Nvidia"},MSFT:{w:7.41,n:"Microsoft"},AMZN:{w:6.38,n:"Amazon"},
+ GOOGL:{w:5.28,n:"Alphabet A"},GOOG:{w:4.97,n:"Alphabet C"},AVGO:{w:4.66,n:"Broadcom"},META:{w:3.87,n:"Meta"},
+ SPCX:{w:3.79,n:"SpaceX"},TSLA:{w:3.12,n:"Tesla"},MU:{w:2.55,n:"Micron"},WMT:{w:2.28,n:"Walmart"},
+ AMD:{w:2.05,n:"AMD"},ASML:{w:1.62,n:"ASML"},INTC:{w:1.17,n:"Intel"},CSCO:{w:1.16,n:"Cisco"},
+ COST:{w:1.08,n:"Costco"},AMAT:{w:1.04,n:"Applied Mat."},LRCX:{w:0.93,n:"Lam Research"},PLTR:{w:0.80,n:"Palantir"},
+ NFLX:{w:0.75,n:"Netflix"},ARM:{w:0.72,n:"Arm"},KLAC:{w:0.68,n:"KLA"},PANW:{w:0.66,n:"Palo Alto"},
+ TXN:{w:0.65,n:"Texas Instr."},LIN:{w:0.60,n:"Linde"},AMGN:{w:0.52,n:"Amgen"},PEP:{w:0.49,n:"PepsiCo"},
+ TMUS:{w:0.49,n:"T-Mobile"},CRWD:{w:0.47,n:"CrowdStrike"},SNDK:{w:0.47,n:"Sandisk"},STX:{w:0.47,n:"Seagate"},
+ ADI:{w:0.46,n:"Analog Dev."},QCOM:{w:0.46,n:"Qualcomm"},WDC:{w:0.43,n:"Western Digital"},MRVL:{w:0.43,n:"Marvell"},
+ SHOP:{w:0.42,n:"Shopify"},GILD:{w:0.42,n:"Gilead"},BKNG:{w:0.37,n:"Booking"},APP:{w:0.36,n:"AppLovin"},
+ ISRG:{w:0.33,n:"Intuitive Surg."},VRTX:{w:0.31,n:"Vertex"},PDD:{w:0.31,n:"PDD"},SBUX:{w:0.30,n:"Starbucks"},
+ FTNT:{w:0.29,n:"Fortinet"},ADP:{w:0.26,n:"ADP"},MAR:{w:0.26,n:"Marriott"},CDNS:{w:0.25,n:"Cadence"},
+ CSX:{w:0.25,n:"CSX"},CEG:{w:0.25,n:"Constellation E."},ADBE:{w:0.24,n:"Adobe"},MNST:{w:0.24,n:"Monster"},
+ MELI:{w:0.24,n:"MercadoLibre"},DDOG:{w:0.23,n:"Datadog"},ABNB:{w:0.22,n:"Airbnb"},CTAS:{w:0.22,n:"Cintas"},
+ INTU:{w:0.21,n:"Intuit"},CMCSA:{w:0.21,n:"Comcast"},DASH:{w:0.21,n:"DoorDash"},ROST:{w:0.20,n:"Ross"},
+ MDLZ:{w:0.20,n:"Mondelez"},HON:{w:0.20,n:"Honeywell"},SNPS:{w:0.19,n:"Synopsys"},ORLY:{w:0.19,n:"O'Reilly"},
+ AEP:{w:0.19,n:"Amer. Elec."},REGN:{w:0.18,n:"Regeneron"},PCAR:{w:0.18,n:"Paccar"},HONA:{w:0.17,n:"Honeywell Aero"},
+ NXPI:{w:0.17,n:"NXP"},MPWR:{w:0.17,n:"Monolithic P."},WBD:{w:0.16,n:"Warner Bros"},BKR:{w:0.15,n:"Baker Hughes"},
+ LITE:{w:0.14,n:"Lumentum"},FANG:{w:0.14,n:"Diamondback"},FAST:{w:0.14,n:"Fastenal"},EA:{w:0.13,n:"Electronic Arts"},
+ TER:{w:0.13,n:"Teradyne"},XEL:{w:0.13,n:"Xcel Energy"},PYPL:{w:0.13,n:"PayPal"},EXC:{w:0.12,n:"Exelon"},
+ CCEP:{w:0.12,n:"Coca-Cola EP"},ALAB:{w:0.12,n:"Astera Labs"},ADSK:{w:0.12,n:"Autodesk"},NBIS:{w:0.12,n:"Nebius"},
+ ODFL:{w:0.12,n:"Old Dominion"},FER:{w:0.12,n:"Ferrovial"},TTWO:{w:0.12,n:"Take-Two"},IDXX:{w:0.11,n:"Idexx"},
+ AXON:{w:0.11,n:"Axon"},TRI:{w:0.11,n:"Thomson R."},MCHP:{w:0.11,n:"Microchip"},RKLB:{w:0.11,n:"Rocket Lab"},
+ PAYX:{w:0.11,n:"Paychex"},KDP:{w:0.11,n:"Keurig DP"},CRWV:{w:0.10,n:"CoreWeave"},ALNY:{w:0.10,n:"Alnylam"},
+ ROP:{w:0.10,n:"Roper"},WDAY:{w:0.09,n:"Workday"},MSTR:{w:0.09,n:"Strategy"},KHC:{w:0.08,n:"Kraft Heinz"},
+ DXCM:{w:0.07,n:"DexCom"},GEHC:{w:0.07,n:"GE HealthCare"},CPRT:{w:0.07,n:"Copart"}
+};
+const ETF_EXPAND={QLD:1,QQQ:1,TQQQ:1}; // 나스닥100 추종 → 구성종목 펼침
+let MAP_TILES=null;
+
+function mapDay(v){ const n=parseFloat(String(v==null?"":v).replace(/[%\s]/g,"")); return isNaN(n)?null:n; }
+function tkr(s){ s=(s||"").toUpperCase().trim(); return /^[A-Z]{1,6}$/.test(s)?s:null; }
+
+async function fetchDayPcts(syms){
+  const map={};
+  if(!syms.length || typeof fmpKey==="undefined" || !fmpKey) return map;
+  for(let i=0;i<syms.length;i+=45){
+    const chunk=syms.slice(i,i+45);
+    try{
+      const url=`https://financialmodelingprep.com/api/v3/quote/${chunk.join(",")}?apikey=${encodeURIComponent(fmpKey)}`;
+      const arr=await (await fetch(url,{cache:"no-store"})).json();
+      if(Array.isArray(arr)) arr.forEach(q=>{ if(q&&q.symbol&&q.changesPercentage!=null){ const p=parseFloat(q.changesPercentage); if(!isNaN(p)) map[q.symbol]=p; } });
+    }catch(e){}
+  }
+  return map;
+}
+
+async function buildMapData(){
+  // 내가 보유한 종목만 그대로 타일화 (ETF 구성종목 펼침 없음)
+  const src=(PORT.byTicker&&PORT.byTicker.length)
+      ? PORT.byTicker.map(h=>({code:h.code,t:h.t,v:h.v,day:h.day}))
+      : (PORT.accounts||[]).map(a=>({code:"",t:a.t,v:a.v,day:""}));
+  const acc={};
+  src.forEach(h=>{
+    const v=h.v; if(!(v>0)) return;
+    const sym=tkr(h.code)||tkr(h.t);
+    const key=sym||("_"+(h.t||"기타"));
+    const label=sym||(h.t||"기타");
+    const nm=sym?(NDX100[sym]?NDX100[sym].n:(/[가-힣]/.test(h.t||"")?h.t:"")):"";
+    const o=acc[key]||(acc[key]={sym:label,name:nm,value:0,noQuote:!sym});
+    o.value+=v;
+    const d=mapDay(h.day); if(d!=null) o.sheetDay=d;
+  });
+  const tiles=Object.values(acc).filter(t=>t.value>0);
+  const total=tiles.reduce((s,t)=>s+t.value,0);
+  const syms=tiles.filter(t=>!t.noQuote && tkr(t.sym)).map(t=>t.sym);
+  const pct=await fetchDayPcts(syms);
+  tiles.forEach(t=>{
+    let p=pct[t.sym];
+    if(p==null && t.sheetDay!=null) p=t.sheetDay;
+    t.day=(p==null?null:p);
+  });
+  tiles.sort((a,b)=>b.value-a.value);
+  return {tiles,total};
+}
+
+function hx(c){ return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)]; }
+function mix(a,b,t){ const A=hx(a),B=hx(b); const r=Math.round(A[0]+(B[0]-A[0])*t),g=Math.round(A[1]+(B[1]-A[1])*t),bl=Math.round(A[2]+(B[2]-A[2])*t); return `rgb(${r},${g},${bl})`; }
+function heatColor(pct){
+  if(pct==null||isNaN(pct)) return "#8f9aa8";
+  const cap=3, t=Math.min(Math.abs(pct),cap)/cap;
+  if(pct>0.05) return mix("#3fae74","#0f7a43",t);   // 상승 초록
+  if(pct<-0.05) return mix("#df7a7d","#b21f24",t);  // 하락 빨강
+  return "#8f9aa8";                                  // 보합
+}
+
+// 스쿼리파이 트리맵 레이아웃 (외부 라이브러리 없음)
+function squarify(data,X,Y,W,H){
+  const out=[], total=data.reduce((s,d)=>s+d.value,0);
+  if(total<=0) return out;
+  const items=data.map(d=>({ref:d.ref, a:d.value/total*W*H}));
+  const worst=(row,side)=>{ let s=0,mx=0,mn=Infinity; for(const r of row){ s+=r.a; if(r.a>mx)mx=r.a; if(r.a<mn)mn=r.a; } return Math.max((side*side*mx)/(s*s),(s*s)/(side*side*mn)); };
+  let x=X,y=Y,w=W,h=H,i=0;
+  while(i<items.length){
+    const side=Math.min(w,h); let row=[];
+    while(i<items.length){
+      const cand=row.concat(items[i]);
+      if(row.length===0 || worst(cand,side)<=worst(row,side)){ row.push(items[i]); i++; } else break;
+    }
+    const rowArea=row.reduce((s,r)=>s+r.a,0);
+    if(w>=h){
+      const colW=rowArea/h; let yy=y;
+      for(const r of row){ const ih=r.a/colW; out.push({ref:r.ref,x,y:yy,w:colW,h:ih}); yy+=ih; }
+      x+=colW; w-=colW;
+    } else {
+      const rowH=rowArea/w; let xx=x;
+      for(const r of row){ const iw=r.a/rowH; out.push({ref:r.ref,x:xx,y,w:iw,h:rowH}); xx+=iw; }
+      y+=rowH; h-=rowH;
+    }
+  }
+  return out;
+}
+
+// 상자 크기에 맞춰 글자 자동 축소·줄바꿈
+const _mc=document.createElement("canvas").getContext("2d");
+const TMFONT='-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function tmWrap(text,fs,maxW){
+  _mc.font=`800 ${fs}px ${TMFONT}`;
+  const lines=[]; let cur="";
+  for(const tok of String(text).split(" ")){
+    const cand=cur?cur+" "+tok:tok;
+    if(_mc.measureText(cand).width<=maxW){ cur=cand; continue; }
+    if(cur){ lines.push(cur); cur=""; }
+    let piece="";
+    for(const ch of tok){
+      const c2=piece+ch;
+      if(_mc.measureText(c2).width<=maxW){ piece=c2; }
+      else { if(piece) lines.push(piece); piece=ch; }
+    }
+    cur=piece;
+  }
+  if(cur) lines.push(cur);
+  return lines.length?lines:[""];
+}
+function tmFit(text,maxW,maxH,maxFs,minFs){
+  for(let fs=maxFs;fs>=minFs;fs--){
+    const lines=tmWrap(text,fs,maxW);
+    if(lines.length*fs*1.05<=maxH) return {fs,lines};
+  }
+  return {fs:minFs,lines:tmWrap(text,minFs,maxW)};
+}
+function renderTreemap(tiles){
+  const box=document.getElementById("mapBox"); if(!box) return;
+  box.innerHTML="";
+  const W=Math.round(box.clientWidth||box.getBoundingClientRect().width||360);
+  const H=Math.max(380,Math.round(W*0.95));
+  box.style.height=H+"px";
+  const rects=squarify(tiles.map(t=>({value:t.value,ref:t})),0,0,W,H);
+  rects.forEach(r=>{
+    const t=r.ref, el=document.createElement("div");
+    el.className="tmtile";
+    el.style.left=r.x+"px"; el.style.top=r.y+"px";
+    el.style.width=Math.max(0,r.w-1)+"px"; el.style.height=Math.max(0,r.h-1)+"px";
+    el.style.background=heatColor(t.day);
+    const padX=3, padY=2;
+    const iw=Math.max(2, r.w-2-padX*2), ih=Math.max(2, r.h-2-padY*2);
+    let html="";
+    if(iw>16 && ih>13){
+      const isUS=!t.noQuote && /^[A-Z]{1,6}$/.test(t.sym);
+      const showPct = ih>28;
+      const showName = isUS && t.name && ih>54 && iw>46;
+      const showVal = ih>72 && iw>44;
+      const other=(showPct?13:0)+(showName?12:0)+(showVal?12:0)+(showPct||showName||showVal?2:0);
+      const labelMaxH=Math.max(8, ih-other);
+      const maxFs=isUS?Math.min(22,Math.max(10,Math.round(Math.min(r.w,r.h)/3.2))):20;
+      const {fs,lines}=tmFit(t.sym, iw, labelMaxH, maxFs, 7);
+      html+=`<div class="tmsym" style="font-size:${fs}px">${lines.map(esc).join("<br>")}</div>`;
+      if(showPct) html+=`<div class="tmpct">${t.day==null?"—":(t.day>0?"+":"")+t.day.toFixed(2)+"%"}</div>`;
+      if(showName) html+=`<div class="tmname">${esc(t.name)}</div>`;
+      if(showVal) html+=`<div class="tmval">${Math.round(t.value).toLocaleString("en-US")}</div>`;
+    }
+    el.style.padding=padY+"px "+padX+"px";
+    el.innerHTML=html;
+    el.title=`${t.sym}${t.name?" · "+t.name:""}  ${t.day==null?"":(t.day>0?"+":"")+t.day.toFixed(2)+"%"}  ·  ${Math.round(t.value).toLocaleString("en-US")}`;
+    box.appendChild(el);
+  });
+}
+
+let mapLoading=false;
+async function loadMap(force){
+  const st=document.getElementById("mapStatus");
+  if(mapLoading) return; mapLoading=true;
+  try{
+    if(!PORT){ st.textContent="포트폴리오를 먼저 불러오는 중…"; await loadPortfolio(); }
+    if(!PORT || !((PORT.byTicker&&PORT.byTicker.length)||(PORT.accounts&&PORT.accounts.length))){
+      st.textContent="보유종목을 찾지 못했습니다. 포트폴리오 탭에서 구글시트를 먼저 연결하세요.";
+      document.getElementById("mapBox").innerHTML=""; return;
+    }
+    st.textContent="구성종목 반영 중…";
+    const {tiles,total}=await buildMapData();
+    MAP_TILES=tiles;
+    document.getElementById("mapTotal").textContent=(PORT.cur||"$")+Math.round(total).toLocaleString("en-US");
+    document.getElementById("mapCount").textContent=tiles.length+"개 종목";
+    renderTreemap(tiles);
+    st.textContent="업데이트 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
+  }catch(e){ st.textContent="오류: "+e.message; }
+  finally{ mapLoading=false; }
+}
+let mapRz;
+window.addEventListener("resize",()=>{ if(MAP_TILES && document.getElementById("tabMap").style.display!=="none"){ clearTimeout(mapRz); mapRz=setTimeout(()=>renderTreemap(MAP_TILES),200); } });
 
 let loading=false;
 async function loadAll(){
