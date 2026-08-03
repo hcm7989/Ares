@@ -80,6 +80,8 @@
   .chip{background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:left;}
   .chip .k{font-size:11px;color:var(--sub);}
   .chip .v{font-size:14px;font-weight:800;margin-top:2px;}
+  .cmini{font-size:10.5px;color:var(--sub);margin-top:4px;line-height:1.45;display:flex;justify-content:space-between;gap:6px;}
+  .cmini b{font-weight:800;color:var(--ink);}
   .sname{font-size:12.5px;font-weight:600;color:#1f2937;}
   .schips{margin-top:4px;}
   .mchip{display:inline-block;background:#eef2f7;border-radius:6px;padding:1px 7px;font-size:10px;margin-right:4px;color:var(--sub);white-space:nowrap;}
@@ -302,6 +304,10 @@
       <div id="assetBody" style="display:none">
         <div class="chartbox" style="height:230px;"><canvas id="asset"></canvas></div>
         <div id="assetNote" class="sub" style="text-align:center;margin-top:6px"></div>
+        <div class="top" id="assetStats" style="margin-top:10px;display:none">
+          <div class="half"><div class="lbl">최고점</div><div class="big" id="asPeak">—</div><div class="sub" id="asPeakDate">—</div></div>
+          <div class="half"><div class="lbl">현재 대비 고점</div><div class="big" id="asVsPeak">—</div><div class="sub" id="asDiff">—</div></div>
+        </div>
       </div>
     </div>
 
@@ -315,8 +321,8 @@
     <div class="sec">
       <h2>비중</h2>
       <div class="modetog">
-        <button id="mAcct" class="on" onclick="setMode('acct')">계좌별</button>
-        <button id="mTick" onclick="setMode('tick')">종목별</button>
+        <button id="mTick" class="on" onclick="setMode('tick')">종목별</button>
+        <button id="mAcct" onclick="setMode('acct')">계좌별</button>
         <button id="mTheme" onclick="setMode('theme')">유형별</button>
       </div>
       <div class="chartbox" style="height:250px;"><canvas id="donut"></canvas></div>
@@ -385,7 +391,7 @@ function showTab(t){
 /* ── 포트폴리오 (구글시트 CSV) ── */
 let csvUrl = localStorage.getItem("dip_csv")||"";
 let donutChart=null, barChart=null, dlReg=false;
-let portMode="acct", PORT=null, assetChart=null, monthlyChart=null;
+let portMode="tick", PORT=null, assetChart=null, monthlyChart=null;
 const PAL=["#2f6bff","#1a9c5b","#f2a516","#e5484d","#8b5cf6","#06b6d4","#ec4899","#84cc16","#f97316","#0ea5e9","#d946ef","#14b8a6","#eab308","#64748b"];
 function saveCsv(){
   const v=document.getElementById("csvUrl").value.trim();
@@ -467,13 +473,15 @@ function extractStocks(rows){
     }
   }
   const valCol=evals.length?evals[evals.length-1]:-1;
-  const flat=[], byAcc={};
+  const flat=[], byAcc={}; let cashTotal=0;
   const g=(row,c)=>c>=0?(row[c]||"").toString().trim():"";
+  const isCashRow=(acc,name)=> acc==="현금" || /현금|예수금|예수/.test(name);
   if(hRow>=0){
     for(let r=hRow+1;r<rows.length;r++){
       const row=rows[r];
       const acc=g(row,accCol), name=g(row,nameCol), v=pnum(row[valCol]);
-      if(!name || acc==="현금" || !(v>0)) continue;
+      if(!name || !(v>0)) continue;
+      if(isCashRow(acc,name)){ cashTotal+=v; continue; }
       const o={acc,name,code:g(row,codeCol),theme:g(row,themeCol)||"기타",
         price:g(row,priceCol),day:g(row,dayCol),week:g(row,weekCol),month:g(row,monthCol),ret:g(row,retCol),v};
       flat.push(o);
@@ -481,7 +489,7 @@ function extractStocks(rows){
       (byAcc[key]=byAcc[key]||{acc,items:[]}).items.push({name,code:o.code,v,day:o.day,week:o.week,month:o.month,ret:o.ret});
     }
   }
-  return {flat, byAcc};
+  return {flat, byAcc, cash:cashTotal};
 }
 function extractSummary(rows){
   const findRight=(label)=>{
@@ -506,6 +514,16 @@ function extractSummary(rows){
   }
   const months=[]; for(let i=1;i<=12;i++) months.push({m:i, v:mm[i]||0});
   return {metrics, months};
+}
+function extractCash(rows){
+  // Portfolio 시트의 "현금 비중" 오른쪽 금액을 총 현금으로 사용
+  for(let r=0;r<rows.length;r++) for(let c=0;c<rows[r].length;c++){
+    const cell=(rows[r][c]||"").toString().replace(/\s/g,"");
+    if(cell.includes("현금비중")){
+      for(let k=c+1;k<rows[r].length;k++){ const v=pnum(rows[r][k]); if(v>0) return v; }
+    }
+  }
+  return 0;
 }
 function extractHistory(rows){
   let hRow=-1,dCol=-1,invCol=-1,proCol=-1;
@@ -589,7 +607,7 @@ async function loadPortfolio(){
     sres.flat.forEach(s=>{ const k=s.code||s.name; const o=tick[k]||(tick[k]={t:s.name,code:s.code,v:0,price:s.price,day:s.day,week:s.week,month:s.month}); o.v+=s.v; });
     const th={};
     sres.flat.forEach(s=>{ const k=s.theme||"기타"; (th[k]||(th[k]={t:k,v:0})).v+=s.v; });
-    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th)};
+    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:(extractCash(rows0)||sres.cash||0)};
     drawHero(); drawAsset(); drawMonthly(); drawPort(); drawQuotes();
     st.textContent="업데이트 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
     document.getElementById("csvbar").style.display="none";
@@ -679,9 +697,9 @@ function drawHero(){
   const chip=(k,v)=>`<div class="chip"><div class="k">${k}</div><div class="v">${v}</div></div>`;
   document.getElementById("chips").innerHTML=[
     chip("총 평가손익", M(m["총평가손익"])),
-    chip("26년 총수익", M(m["총수익"])),
-    chip("26년 주식수익", M(m["주식수익"])),
-    chip("무한매수 수익", M(m["무매수익"]))
+    `<div class="chip"><div class="k">26년 총수익</div><div class="v">${M(m["총수익"])}</div>`+
+      `<div class="cmini"><span>26년 주식수익</span><b>${M(m["주식수익"])}</b></div>`+
+      `<div class="cmini"><span>무한매수 수익</span><b>${M(m["무매수익"])}</b></div></div>`
   ].join("");
 }
 function drawAsset(){
@@ -703,8 +721,24 @@ function drawAsset(){
       plugins:{legend:{display:true,labels:{boxWidth:12,font:{size:11}}},
         tooltip:{callbacks:{title:it=>it[0].label+"월", label:c=>` ${c.dataset.label}: ${cur}${Number(c.parsed.y).toLocaleString()}`}}},
       scales:{y:{ticks:{callback:(v)=>short(v)}},x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:10}}}}}});
+    // 최고점 / 현재 대비 고점 / MDD
+    const stats=document.getElementById("assetStats");
+    const short2=v=>{ const a=Math.abs(v); if(cur==="₩"){ if(a>=1e8) return (v/1e8).toFixed(2)+"억"; if(a>=1e4) return (v/1e4).toFixed(2)+"만"; } return Number(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); };
+    let peak=-Infinity, peakKey=null;
+    H.forEach(p=>{ if(p.asset>peak){ peak=p.asset; peakKey=p.key; } });
+    const curAsset=H[H.length-1].asset;
+    const vsPeak=peak>0?(curAsset/peak-1)*100:0;
+    const diff=curAsset-peak;
+    const colOf=v=> v<-0.05?"var(--blue)":v>0.05?"var(--red)":"var(--sub)";
+    const pk=v=>{ if(v==null) return "—"; const y=Math.floor(v/10000),mo=Math.floor(v/100)%100,d=v%100; return `${y}.${mo}.${d}`; };
+    document.getElementById("asPeak").textContent=cur+short2(peak);
+    document.getElementById("asPeakDate").textContent=pk(peakKey);
+    const vp=document.getElementById("asVsPeak"); vp.textContent=(vsPeak>0?"+":"")+vsPeak.toFixed(1)+"%"; vp.style.color=colOf(vsPeak);
+    const df=document.getElementById("asDiff"); df.textContent=(diff>0?"+":diff<0?"-":"")+cur+short2(Math.abs(diff)); df.style.color=colOf(diff);
+    if(stats) stats.style.display="flex";
   } else if(note){
     note.textContent="history 탭을 아직 못 읽었습니다 (게시 전파 지연일 수 있어요). 잠시 후 새로고침하세요.";
+    const stats=document.getElementById("assetStats"); if(stats) stats.style.display="none";
   }
 }
 function drawMonthly(){
@@ -1108,10 +1142,12 @@ async function buildMapData(){
     const d=mapDay(h.day); if(d!=null) o.sheetDay=d;
   });
   const tiles=Object.values(acc).filter(t=>t.value>0);
+  if(PORT.cash>0) tiles.push({sym:"💵 현금",name:"",value:PORT.cash,noQuote:true,isCash:true,day:0});
   const total=tiles.reduce((s,t)=>s+t.value,0);
   const syms=tiles.filter(t=>!t.noQuote && tkr(t.sym)).map(t=>t.sym);
   const pct=await fetchDayPcts(syms);
   tiles.forEach(t=>{
+    if(t.isCash){ t.day=0; return; }
     let p=pct[t.sym];
     if(p==null && t.sheetDay!=null) p=t.sheetDay;
     t.day=(p==null?null:p);
@@ -1189,8 +1225,12 @@ function tmFit(text,maxW,maxH,maxFs,minFs){
 function renderTreemap(tiles){
   const box=document.getElementById("mapBox"); if(!box) return;
   box.innerHTML="";
-  const W=Math.round(box.clientWidth||box.getBoundingClientRect().width||360);
-  const H=Math.max(380,Math.round(W*0.95));
+  const grandTotal=tiles.reduce((s,t)=>s+t.value,0);
+  const rect=box.getBoundingClientRect();
+  const W=Math.round(box.clientWidth||rect.width||360);
+  const reserve=140; // 아래 범례·새로고침 여백
+  const avail=window.innerHeight-rect.top-reserve;
+  const H=Math.max(420,Math.min(avail||0,Math.round(W*2.2)));
   box.style.height=H+"px";
   const rects=squarify(tiles.map(t=>({value:t.value,ref:t})),0,0,W,H);
   rects.forEach(r=>{
@@ -1212,9 +1252,14 @@ function renderTreemap(tiles){
       const maxFs=isUS?Math.min(22,Math.max(10,Math.round(Math.min(r.w,r.h)/3.2))):20;
       const {fs,lines}=tmFit(t.sym, iw, labelMaxH, maxFs, 7);
       html+=`<div class="tmsym" style="font-size:${fs}px">${lines.map(esc).join("<br>")}</div>`;
-      if(showPct) html+=`<div class="tmpct">${t.day==null?"—":(t.day>0?"+":"")+t.day.toFixed(2)+"%"}</div>`;
-      if(showName) html+=`<div class="tmname">${esc(t.name)}</div>`;
-      if(showVal) html+=`<div class="tmval">${Math.round(t.value).toLocaleString("en-US")}</div>`;
+      if(t.isCash){
+        if(ih>28) html+=`<div class="tmpct">비중 ${grandTotal?(t.value/grandTotal*100).toFixed(1):"0"}%</div>`;
+        if(ih>52) html+=`<div class="tmval">${Math.round(t.value).toLocaleString("en-US")}</div>`;
+      } else {
+        if(showPct) html+=`<div class="tmpct">${t.day==null?"—":(t.day>0?"+":"")+t.day.toFixed(2)+"%"}</div>`;
+        if(showName) html+=`<div class="tmname">${esc(t.name)}</div>`;
+        if(showVal) html+=`<div class="tmval">${Math.round(t.value).toLocaleString("en-US")}</div>`;
+      }
     }
     el.style.padding=padY+"px "+padX+"px";
     el.innerHTML=html;
