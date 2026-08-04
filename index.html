@@ -68,6 +68,9 @@
   a.card{text-decoration:none;color:inherit;}
   .foot{margin-top:18px;text-align:center;font-size:12px;color:var(--sub);}
   .foot button{margin-top:8px;border:1px solid var(--line);background:var(--card);color:var(--accent);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;}
+  .footrow{display:flex;gap:6px;justify-content:center;margin-top:10px;}
+  .fbtn{flex:1;min-width:0;border:1px solid var(--line);background:var(--card);color:var(--accent);border-radius:14px;padding:9px 3px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .fbtn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(108,76,241,.26);}
   .warn{font-size:11px;color:var(--sub);margin-top:14px;line-height:1.5;text-align:center;}
   .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
   .pulse{animation:p 1.4s infinite;}@keyframes p{0%,100%{opacity:.35}50%{opacity:1}}
@@ -240,11 +243,13 @@
 
   <div class="foot">
     <div><span id="statusDot" class="dot" style="background:var(--sub)"></span><span id="status">API 키를 입력하면 시작됩니다.</span></div>
-    <button onclick="loadAll(true)">🔄 새로고침</button>
-    <button class="miniedit" id="notifBtn" onclick="enableNotif()">🔔 알림 켜기</button>
-    <button class="miniedit" onclick="showKeybar()">키 변경</button>
-    <button class="miniedit" onclick="backupSettings()">설정 백업</button>
-    <button class="miniedit" onclick="restoreSettings()">복원</button>
+    <div class="footrow">
+      <button class="fbtn primary" onclick="loadAll(true)">🔄 새로고침</button>
+      <button class="fbtn" id="notifBtn" onclick="enableNotif()">🔔 알림</button>
+      <button class="fbtn" onclick="showKeybar()">키 변경</button>
+      <button class="fbtn" onclick="backupSettings()">백업</button>
+      <button class="fbtn" onclick="restoreSettings()">복원</button>
+    </div>
   </div>
 
   <div class="warn">
