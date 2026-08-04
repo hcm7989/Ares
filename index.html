@@ -5,13 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>DIP ALERT</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6c4cf1">
+<meta name="apple-mobile-web-app-title" content="DIP ALERT">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
-  :root{--bg:#eef2f7;--card:#fff;--ink:#1f2937;--sub:#8b95a3;--line:#e5e9f0;
-    --blue:#2f6bff;--red:#e5484d;--green:#1a9c5b;--amber:#f2a516;--shadow:0 2px 10px rgba(30,50,90,.06);}
+  :root{--bg:#edf0fb;--card:#fff;--ink:#1e2233;--sub:#8b93a7;--line:#e9ecf6;
+    --blue:#3563e9;--red:#e5484d;--green:#16a34a;--amber:#f2a516;
+    --accent:#6c4cf1;--accent2:#8b6cf6;--accent-soft:#efeafe;
+    --shadow:0 6px 20px rgba(60,50,120,.08);}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-    padding:14px 12px 40px;max-width:520px;margin:0 auto;}
+  html{min-height:100%;background:linear-gradient(160deg,#e7eafb 0%,#efeafb 48%,#f6eef8 100%) fixed;}
+  body{margin:0 auto;background:transparent;color:var(--ink);
+    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;letter-spacing:-.1px;
+    padding:14px 12px 40px;max-width:520px;}
   header{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 12px;}
   header h1{font-size:19px;font-weight:800;margin:0;letter-spacing:.5px;}
   .keybar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:var(--shadow);}
@@ -20,36 +30,36 @@
   .keybar small{color:var(--sub);font-weight:400;}
   .keyrow{display:flex;gap:8px;margin-bottom:8px;}
   .keyrow input{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:13px;}
-  .keybar button.save{border:none;background:var(--blue);color:#fff;border-radius:10px;padding:0 16px;font-weight:700;font-size:13px;cursor:pointer;}
+  .keybar button.save{border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:12px;padding:0 18px;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(108,76,241,.28);}
   .keylink{display:block;font-size:12px;color:var(--blue);margin-top:2px;text-decoration:none;}
   .miniedit{font-size:12px;color:var(--sub);background:none;border:none;cursor:pointer;text-decoration:underline;}
   .tickerSel{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 12px;}
   .tickerSel button{border:1px solid var(--line);background:#fff;color:var(--sub);padding:6px 13px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;}
-  .tickerSel button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
-  .top{background:var(--card);border-radius:18px;box-shadow:var(--shadow);display:flex;overflow:hidden;margin-bottom:12px;}
+  .tickerSel button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(108,76,241,.28);}
+  .top{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;overflow:hidden;margin-bottom:12px;}
   .top .half{flex:1;padding:15px 5px;text-align:center;min-width:0;}
   .top .half:not(:last-child){border-right:1px solid var(--line);}
-  .lbl{font-size:12.5px;color:var(--sub);font-weight:700;margin-bottom:6px;}
-  .big{font-size:22px;font-weight:800;line-height:1.15;white-space:nowrap;}
-  .sub{font-size:12px;color:var(--sub);margin-top:6px;}
+  .lbl{font-size:11.5px;color:var(--sub);font-weight:700;margin-bottom:6px;letter-spacing:.2px;}
+  .big{font-size:22px;font-weight:800;line-height:1.12;white-space:nowrap;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+  .sub{font-size:12px;color:var(--sub);margin-top:6px;font-variant-numeric:tabular-nums;}
   .chg-red{color:var(--red);font-weight:700;}.chg-green{color:var(--green);font-weight:700;}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px 10px;text-align:center;min-height:104px;display:flex;flex-direction:column;justify-content:center;}
+  .card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);border:1px solid var(--line);padding:16px 10px;text-align:center;min-height:104px;display:flex;flex-direction:column;justify-content:center;}
   .card .t{font-size:13.5px;font-weight:700;margin-bottom:9px;}
   .card .v{font-size:25px;font-weight:800;line-height:1;}
   .card .s{font-size:11px;color:var(--sub);margin-top:8px;}
   a.card{text-decoration:none;color:inherit;}
   .foot{margin-top:18px;text-align:center;font-size:12px;color:var(--sub);}
-  .foot button{margin-top:8px;border:1px solid var(--line);background:#fff;color:var(--blue);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;}
+  .foot button{margin-top:8px;border:1px solid var(--line);background:#fff;color:var(--accent);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;}
   .warn{font-size:11px;color:var(--sub);margin-top:14px;line-height:1.5;text-align:center;}
   .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
   .pulse{animation:p 1.4s infinite;}@keyframes p{0%,100%{opacity:.35}50%{opacity:1}}
   .tabbar{display:flex;gap:8px;margin:0 2px 14px;}
-  .tabbar button{flex:1;border:1px solid var(--line);background:#fff;color:var(--sub);padding:10px 2px;border-radius:12px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;}
-  .tabbar button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
-  .sec{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px 14px;margin-bottom:12px;}
+  .tabbar button{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.7);color:var(--sub);padding:11px 2px;border-radius:14px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;transition:.15s;}
+  .tabbar button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(108,76,241,.32);}
+  .sec{background:#fff;border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);padding:18px 15px;margin-bottom:12px;}
   .sec h2{font-size:15px;margin:0 0 4px;font-weight:800;}
-  .sec h3{font-size:13px;margin:14px 0 4px;font-weight:800;color:var(--blue);}
+  .sec h3{font-size:13px;margin:14px 0 4px;font-weight:800;color:var(--accent);}
   .sec p,.sec li{font-size:12.5px;line-height:1.6;color:var(--ink);margin:4px 0;}
   .sec ul{margin:4px 0;padding-left:18px;}
   .sec table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;}
@@ -59,10 +69,10 @@
   .linkrow:last-child{border-bottom:none;}
   .linkrow .nm{font-size:13px;font-weight:700;}
   .linkrow .ds{font-size:11px;color:var(--sub);margin-top:2px;line-height:1.4;}
-  .linkrow .go{color:var(--blue);font-weight:800;font-size:18px;flex:0 0 auto;}
+  .linkrow .go{color:var(--accent);font-weight:800;font-size:18px;flex:0 0 auto;}
   .tip{background:#fff7e6;border:1px solid #ffe2ad;border-radius:10px;padding:8px 10px;font-size:11.5px;color:#8a6d3b;margin-top:8px;}
   .idxbar{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:0 0 12px;}
-  .idx{min-width:0;background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:9px 6px;text-align:center;}
+  .idx{min-width:0;background:var(--card);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--line);padding:9px 6px;text-align:center;}
   .idx .n{font-size:10.5px;color:var(--sub);font-weight:700;white-space:nowrap;}
   .idx .p{font-size:14px;font-weight:800;margin-top:3px;white-space:nowrap;}
   .idx .c{font-size:10.5px;font-weight:700;margin-top:1px;white-space:nowrap;}
@@ -72,19 +82,30 @@
   .signal.sell{background:#fdeaea;color:#c0343a;border:1px solid #f5c2c4;}
   .signal.neutral{background:#f2f4f8;color:#8b95a3;border:1px solid #e5e9f0;font-weight:700;}
   .hero{text-align:center;}
-  .hlab{font-size:12px;color:var(--sub);font-weight:700;}
-  .hval{font-size:27px;font-weight:800;margin:4px 0 8px;}
-  .hbadges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
-  .badge2{font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:20px;}
-  .chips{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .chip{background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:left;}
-  .chip .k{font-size:11px;color:var(--sub);}
-  .chip .v{font-size:14px;font-weight:800;margin-top:2px;}
-  .cmini{font-size:10.5px;color:var(--sub);margin-top:4px;line-height:1.45;display:flex;justify-content:space-between;gap:6px;}
-  .cmini b{font-weight:800;color:var(--ink);}
+  .sec.hero{background:linear-gradient(160deg,#ffffff 0%,#f6f2ff 100%);border:1px solid #ece7fb;box-shadow:0 12px 30px rgba(108,76,241,.10);position:relative;overflow:hidden;}
+  .sec.hero::before{content:"";position:absolute;top:-55%;right:-25%;width:70%;height:150%;background:radial-gradient(circle,rgba(139,108,246,.14),transparent 62%);pointer-events:none;}
+  .sec.hero>*{position:relative;z-index:1;}
+  .hero .hlab{color:var(--sub);}
+  .hero .hval{color:var(--ink);}
+  .hlab{font-size:11px;color:var(--sub);font-weight:700;letter-spacing:.4px;}
+  .hval{font-size:31px;font-weight:800;margin:5px 0 11px;letter-spacing:-.9px;line-height:1.02;font-variant-numeric:tabular-nums;}
+  .hbadges{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:0 0 14px;padding-bottom:15px;border-bottom:1px solid var(--line);}
+  .badge2{font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;letter-spacing:-.2px;font-variant-numeric:tabular-nums;border:1px solid rgba(0,0,0,.04);}
+  .chips{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 13px;text-align:left;box-shadow:var(--shadow);display:flex;flex-direction:column;}
+  .chip .k{font-size:11.5px;color:var(--sub);font-weight:700;}
+  .chip .v{font-size:20px;font-weight:800;margin-top:6px;line-height:1.1;letter-spacing:-.4px;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .cbreak{margin-top:auto;padding-top:6px;}
+  .cmini{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--sub);padding:7px 0;border-top:1px dashed var(--line);}
+  .cmini b{font-weight:800;color:var(--ink);font-size:12.5px;font-variant-numeric:tabular-nums;}
   .sname{font-size:12.5px;font-weight:600;color:#1f2937;}
   .schips{margin-top:4px;}
   .mchip{display:inline-block;background:#eef2f7;border-radius:6px;padding:1px 7px;font-size:10px;margin-right:4px;color:var(--sub);white-space:nowrap;}
+  .qgroup{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;background:#fbfcff;box-shadow:0 1px 3px rgba(30,50,90,.05);overflow:hidden;}
+  .qgroup:last-child{margin-bottom:0;}
+  .qgroup .prow{padding-left:12px;padding-right:12px;}
+  .qsec{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--ink);padding:10px 12px;background:#eef2f8;border-bottom:1px solid var(--line);}
+  .qsec .qn{font-size:10.5px;font-weight:800;color:#fff;background:var(--blue);border-radius:10px;padding:1px 8px;margin-left:auto;}
   .prow.flash{animation:flashbg 1.3s ease;}
   @keyframes flashbg{0%{background:#fff3bf}100%{background:transparent}}
   .prow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line);font-size:13px;}
@@ -111,17 +132,17 @@
   .foldcaret{color:var(--sub);font-size:13px;font-weight:400;}
   .modetog{display:flex;gap:6px;background:#eef1f6;border-radius:10px;padding:4px;margin:6px 0 12px;}
   .modetog button{flex:1;border:none;background:transparent;color:var(--sub);font-weight:800;font-size:13px;padding:8px 0;border-radius:8px;cursor:pointer;}
-  .modetog button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.10);}
+  .modetog button.on{background:#fff;color:var(--accent);box-shadow:0 2px 6px rgba(60,50,120,.14);}
   .maphead{display:flex;justify-content:space-between;align-items:flex-end;margin:0 2px 10px;}
   .maphead .mt{font-size:12px;color:var(--sub);font-weight:700;}
   .maphead .mv{font-size:22px;font-weight:800;line-height:1.1;}
   .maphead .mc{font-size:11px;color:var(--sub);font-weight:700;text-align:right;}
-  #mapBox{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#e9edf3;box-shadow:var(--shadow);}
-  .tmtile{position:absolute;overflow:hidden;border:1px solid rgba(255,255,255,.4);color:#fff;padding:2px 3px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;box-sizing:border-box;text-shadow:0 1px 1px rgba(0,0,0,.18);}
-  .tmsym{font-weight:800;line-height:1.02;}
-  .tmpct{font-size:11px;font-weight:700;margin-top:1px;}
-  .tmname{font-size:9px;opacity:.92;margin-top:1px;line-height:1.05;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .tmval{font-size:9px;opacity:.85;margin-top:1px;}
+  #mapBox{position:relative;width:100%;border-radius:18px;overflow:hidden;background:#fff;box-shadow:var(--shadow);}
+  .tmtile{position:absolute;overflow:hidden;border-radius:10px;color:var(--ink);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;box-sizing:border-box;}
+  .tmsym{font-weight:800;line-height:1.05;color:#28303f;}
+  .tmpct{font-size:11px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .tmname{font-size:9px;color:#5b6473;margin-top:1px;line-height:1.05;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tmval{font-size:9px;color:#7a8290;margin-top:1px;font-variant-numeric:tabular-nums;}
   .maplegend{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--sub);font-weight:700;}
   .maplegend span{display:inline-block;width:26px;height:12px;border-radius:3px;}
 </style>
@@ -196,6 +217,8 @@
     <button onclick="loadAll(true)">🔄 새로고침</button>
     <button class="miniedit" id="notifBtn" onclick="enableNotif()">🔔 알림 켜기</button>
     <button class="miniedit" onclick="showKeybar()">키 변경</button>
+    <button class="miniedit" onclick="backupSettings()">설정 백업</button>
+    <button class="miniedit" onclick="restoreSettings()">복원</button>
   </div>
 
   <div class="warn">
@@ -303,6 +326,10 @@
       <h2 class="fold" onclick="toggleCard('assetBody','asset',this)"><span>자산 변화 <span style="font-size:11px;font-weight:400;color:var(--sub)">(자산 vs 원금)</span></span><span class="foldcaret">▸</span></h2>
       <div id="assetBody" style="display:none">
         <div class="chartbox" style="height:230px;"><canvas id="asset"></canvas></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+          <span class="sub" style="font-size:10px">🔍 두 손가락으로 확대·이동</span>
+          <button class="miniedit" onclick="if(assetChart)assetChart.resetZoom()">↺ 확대 초기화</button>
+        </div>
         <div id="assetNote" class="sub" style="text-align:center;margin-top:6px"></div>
         <div class="top" id="assetStats" style="margin-top:10px;display:none">
           <div class="half"><div class="lbl">최고점</div><div class="big" id="asPeak">—</div><div class="sub" id="asPeakDate">—</div></div>
@@ -357,9 +384,9 @@
     </div>
     <div id="mapBox"></div>
     <div class="maplegend">
-      <span style="background:#b21f24"></span>하락
-      <span style="background:#8f9aa8"></span>보합
-      <span style="background:#0f7a43"></span>상승
+      <span style="background:#f3b6b7"></span>하락
+      <span style="background:#e7ebf1"></span>보합
+      <span style="background:#b6e3c6"></span>상승
     </div>
     <div class="foot">
       <div><span id="mapStatus" class="sub">자산맵 탭을 열면 불러옵니다.</span></div>
@@ -373,6 +400,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
 <script>
 function showTab(t){
   document.getElementById("tabHome").style.display  = t==="home" ?"block":"none";
@@ -390,9 +419,9 @@ function showTab(t){
 
 /* ── 포트폴리오 (구글시트 CSV) ── */
 let csvUrl = localStorage.getItem("dip_csv")||"";
-let donutChart=null, barChart=null, dlReg=false;
+let donutChart=null, barChart=null, dlReg=false, zoomReg=false;
 let portMode="tick", PORT=null, assetChart=null, monthlyChart=null;
-const PAL=["#2f6bff","#1a9c5b","#f2a516","#e5484d","#8b5cf6","#06b6d4","#ec4899","#84cc16","#f97316","#0ea5e9","#d946ef","#14b8a6","#eab308","#64748b"];
+const PAL=["#6c4cf1","#8b6cf6","#22c55e","#f59e0b","#ef4444","#06b6d4","#ec4899","#a78bfa","#84cc16","#0ea5e9","#f97316","#14b8a6","#eab308","#64748b"];
 function saveCsv(){
   const v=document.getElementById("csvUrl").value.trim();
   if(!v){ alert("CSV 주소를 입력해 주세요."); return; }
@@ -525,6 +554,28 @@ function extractCash(rows){
   }
   return 0;
 }
+function extractXirrSheet(rows){
+  // 시트가 직접 계산한 "연환산 수익률 XIRR" 값(%)을 그대로 사용
+  for(let r=0;r<rows.length;r++) for(let c=0;c<rows[r].length;c++){
+    if((rows[r][c]||"").toString().toUpperCase().includes("XIRR")){
+      for(let rr=r+1;rr<Math.min(rows.length,r+4);rr++){
+        const v=(rows[rr]&&rows[rr][c])||""; if(/%/.test(v)){ const n=parseFloat(String(v).replace(/[%\s,]/g,"")); if(!isNaN(n)) return n; }
+      }
+      for(let k=c+1;k<rows[r].length;k++){ const v=rows[r][k]||""; if(/%/.test(v)){ const n=parseFloat(String(v).replace(/[%\s,]/g,"")); if(!isNaN(n)) return n; } }
+    }
+  }
+  return null;
+}
+// History 탭 요약행: '자산 역대 최고값'·'MDD'·'최고값 대비 하락값' 헤더 바로 아래 값 읽기
+function extractHistoryStats(rows){
+  const find=pred=>{ for(let r=0;r<rows.length;r++) for(let c=0;c<rows[r].length;c++){ if(pred((rows[r][c]||"").toString())) return {r,c}; } return null; };
+  const belowNum=pos=>{ if(!pos) return null; for(let r=pos.r+1;r<Math.min(rows.length,pos.r+8);r++){ const v=pnum(rows[r]&&rows[r][pos.c]); if(isFinite(v)&&v!==0) return v; } return null; };
+  const belowPct=pos=>{ if(!pos) return null; for(let r=pos.r+1;r<Math.min(rows.length,pos.r+8);r++){ const raw=((rows[r]&&rows[r][pos.c])||"").toString(); if(/%/.test(raw)){ const n=parseFloat(raw.replace(/[%\s,]/g,"")); if(!isNaN(n)) return n; } } return null; };
+  const peak=belowNum(find(s=>s.replace(/\s/g,"").includes("역대최고")));
+  const mdd =belowPct(find(s=>s.toUpperCase().includes("MDD")));
+  const drop=belowNum(find(s=>s.replace(/\s/g,"").includes("하락값")));
+  return {peak,mdd,drop};
+}
 function extractHistory(rows){
   let hRow=-1,dCol=-1,invCol=-1,proCol=-1;
   for(let r=0;r<rows.length;r++){
@@ -549,7 +600,10 @@ function extractHistory(rows){
     }
   }
   const map={}; pts.forEach(p=>map[p.key]=p);
-  return Object.values(map).sort((a,b)=>a.key-b.key);
+  const out=Object.values(map).sort((a,b)=>a.key-b.key);
+  const st=extractHistoryStats(rows);
+  out.peakSheet=st.peak; out.mddSheet=st.mdd; out.dropSheet=st.drop;
+  return out;
 }
 function toggleAcc(i){
   const box=document.querySelector('.pacc[data-i="'+i+'"] .substocks');
@@ -607,7 +661,9 @@ async function loadPortfolio(){
     sres.flat.forEach(s=>{ const k=s.code||s.name; const o=tick[k]||(tick[k]={t:s.name,code:s.code,v:0,price:s.price,day:s.day,week:s.week,month:s.month}); o.v+=s.v; });
     const th={};
     sres.flat.forEach(s=>{ const k=s.theme||"기타"; (th[k]||(th[k]={t:k,v:0})).v+=s.v; });
-    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:(extractCash(rows0)||sres.cash||0)};
+    const cashAmt=extractCash(rows0)||sres.cash||0;
+    if(cashAmt>0) (th["현금"]=th["현금"]||{t:"현금",v:0}).v+=cashAmt;
+    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:cashAmt, xirrSheet:extractXirrSheet(rows0)};
     drawHero(); drawAsset(); drawMonthly(); drawPort(); drawQuotes();
     st.textContent="업데이트 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
     document.getElementById("csvbar").style.display="none";
@@ -656,14 +712,22 @@ function drawPort(){
   const cols=dd.map((x,i)=> x.t==="기타"?"#cbd5e1":colFull[i]);
   if(!dlReg && window.ChartDataLabels){ Chart.register(window.ChartDataLabels); dlReg=true; }
   if(donutChart) donutChart.destroy();
+  const shortC=v=>{ const a=Math.abs(v); if(cur==="₩"){ if(a>=1e8) return (v/1e8).toFixed(2)+"억"; if(a>=1e4) return Math.round(v/1e4).toLocaleString()+"만"; } return cur+Math.round(v).toLocaleString(); };
+  const centerTop=(portMode==="acct"?"계좌":portMode==="tick"?"종목":"유형")+" "+data.length+"개";
+  const centerBig=shortC(mt);
   donutChart=new Chart(document.getElementById("donut"),{type:"doughnut",
-    data:{labels,datasets:[{data:vals,backgroundColor:cols,borderColor:"#fff",borderWidth:2}]},
-    options:{maintainAspectRatio:false,cutout:"56%",layout:{padding:8},
+    data:{labels,datasets:[{data:vals,backgroundColor:cols,borderColor:"#fff",borderWidth:3,borderRadius:6,spacing:2,hoverOffset:9,hoverBorderColor:"#fff"}]},
+    options:{maintainAspectRatio:false,cutout:"66%",layout:{padding:10},
       onClick:(e,els)=>{ if(els&&els.length) highlightRow(donutChart.data.labels[els[0].index]); },
       plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:c=>` ${c.label}: ${M(c.parsed)} (${(c.parsed/mt*100).toFixed(1)}%)`}},
-        datalabels:{color:"#fff",font:{weight:"bold",size:12},textStrokeColor:"rgba(0,0,0,.45)",textStrokeWidth:3,
-          formatter:(v)=>{ const p=v/mt*100; return p>=5? Math.round(p)+"%":""; }}}}});
+        tooltip:{padding:10,cornerRadius:8,backgroundColor:"rgba(31,41,55,.92)",titleFont:{size:12},bodyFont:{size:12},
+          callbacks:{label:c=>` ${c.label}: ${M(c.parsed)} (${(c.parsed/mt*100).toFixed(1)}%)`}},
+        datalabels:{color:"#fff",font:{weight:"800",size:12},textStrokeColor:"rgba(0,0,0,.35)",textStrokeWidth:3,
+          formatter:(v)=>{ const p=v/mt*100; return p>=6? Math.round(p)+"%":""; }}}},
+    plugins:[{id:"centerText",afterDraw(ch){ const a=ch.getDatasetMeta(0).data[0]; if(!a) return; const x=a.x,y=a.y,c2=ch.ctx; c2.save(); c2.textAlign="center"; c2.textBaseline="middle";
+      c2.fillStyle="#8b95a3"; c2.font='700 10.5px "Pretendard Variable",Pretendard,-apple-system,sans-serif'; c2.fillText(centerTop,x,y-11);
+      c2.fillStyle="#1f2937"; c2.font='800 16px "Pretendard Variable",Pretendard,-apple-system,sans-serif'; c2.fillText(centerBig,x,y+8);
+      c2.restore(); }}]});
   const lt=document.getElementById("listTitle"), tb=document.getElementById("portTable");
   if(portMode==="acct"){
     lt.innerHTML='계좌별 보유 종목 <span style="font-size:11px;font-weight:400;color:var(--sub)">(클릭해 펼치기)</span>';
@@ -687,19 +751,62 @@ function drawPort(){
       `<span>${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>`).join("");
   }
 }
+// 전일대비 수익금: history 탭의 일별 총수익금(총자산-총투자금) 변화로 계산
+function dailyGain(){
+  const H=PORT&&PORT.history;
+  if(H && H.length>=2){
+    const hasPro=H.some(p=>Math.abs(p.asset-p.invest)>1);
+    if(hasPro){
+      const a=H[H.length-1], b=H[H.length-2];
+      return (a.asset-a.invest)-(b.asset-b.invest);
+    }
+  }
+  // 폴백: 종목별 전일대비%로 역산 합산
+  let g=0, any=false;
+  (PORT.byTicker||[]).forEach(x=>{
+    const d=parseFloat(String(x.day==null?"":x.day).replace(/[%\s]/g,""));
+    if(!isNaN(d) && x.v){ const f=d/100; g+=x.v*(f/(1+f)); any=true; }
+  });
+  return any?g:null;
+}
+// 연환산 XIRR: history의 투자금(기여금)·현재자산 현금흐름 기반
+function xirr(){
+  const H=PORT.history; if(!H||H.length<2) return null;
+  const dms=k=>{ const y=Math.floor(k/10000),mo=Math.floor(k/100)%100,d=k%100; return Date.UTC(y,mo-1,d); };
+  const flows=[{t:dms(H[0].key),a:-H[0].invest}];
+  for(let i=1;i<H.length;i++){ const di=H[i].invest-H[i-1].invest; if(Math.abs(di)>1) flows.push({t:dms(H[i].key),a:-di}); }
+  flows.push({t:dms(H[H.length-1].key),a:H[H.length-1].asset});
+  const t0=flows[0].t, yr=f=>(f.t-t0)/(365*864e5);
+  const npv=r=>flows.reduce((s,f)=>s+f.a/Math.pow(1+r,yr(f)),0);
+  let lo=-0.9999, hi=100, flo=npv(lo);
+  if(!isFinite(flo)||(flo<0)===(npv(hi)<0)) return null;
+  let r=0;
+  for(let i=0;i<200;i++){ const mid=(lo+hi)/2, fm=npv(mid); r=mid; if(Math.abs(fm)<1) break; if((flo<0)===(fm<0)){lo=mid;flo=fm;}else hi=mid; }
+  return isFinite(r)?r*100:null;
+}
 function drawHero(){
   if(!PORT) return;
   const cur=PORT.cur, m=(PORT.summ&&PORT.summ.metrics)||{};
   const M=v=>{ const n=pnum(v); return isNaN(n)?(v||"-"):cur+n.toLocaleString("en-US",{maximumFractionDigits:0}); };
   const rate=m["총수익률"], rn=pnum(rate);
   const badges=document.getElementById("hbadges");
-  badges.innerHTML = rate? `<span class="badge2" style="background:${rn<0?'#fdeaea':'#e7f7ee'};color:${rn<0?'#c0343a':'#0f7a43'}">총 수익률 ${rate}</span>`:"";
-  const chip=(k,v)=>`<div class="chip"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+  const xSheet=(PORT.xirrSheet!=null)?PORT.xirrSheet:null;
+  const xr = xSheet!=null ? xSheet : xirr();
+  const xLab = xSheet!=null ? "연환산 XIRR" : "연환산 XIRR·추정";
+  const xBadge = xr!=null ? `<span class="badge2" style="background:${xr<0?'#eef2f7':'#efeafe'};color:${xr<0?'#5b6472':'#6c4cf1'}">${xLab} ${(xr>0?'+':'')+xr.toFixed(2)}%</span>` : "";
+  badges.innerHTML = (rate? `<span class="badge2" style="background:${rn<0?'#fdeaea':'#e7f7ee'};color:${rn<0?'#c0343a':'#0f7a43'}">총 수익률 ${rate}</span>`:"") + xBadge;
+  const dg=dailyGain();
+  const sc=v=>{ const n=pnum(v); return isNaN(n)?'var(--ink)':n<0?'var(--blue)':n>0?'var(--red)':'var(--ink)'; };
+  const dgCol = dg==null?'var(--sub)':dg<0?'var(--blue)':dg>0?'var(--red)':'var(--sub)';
+  const dgTxt = dg==null?'-':`${dg>0?'+':dg<0?'-':''}${cur}${Math.abs(Math.round(dg)).toLocaleString("en-US")}`;
   document.getElementById("chips").innerHTML=[
-    chip("총 평가손익", M(m["총평가손익"])),
-    `<div class="chip"><div class="k">26년 총수익</div><div class="v">${M(m["총수익"])}</div>`+
-      `<div class="cmini"><span>26년 주식수익</span><b>${M(m["주식수익"])}</b></div>`+
-      `<div class="cmini"><span>무한매수 수익</span><b>${M(m["무매수익"])}</b></div></div>`
+    `<div class="chip"><div class="k">총 평가손익</div><div class="v" style="color:${sc(m["총평가손익"])}">${M(m["총평가손익"])}</div>`+
+      `<div class="cbreak"><div class="cmini"><span>전일대비 수익금</span><b style="color:${dgCol}">${dgTxt}</b></div></div></div>`,
+    `<div class="chip"><div class="k">26년 총수익</div><div class="v" style="color:${sc(m["총수익"])}">${M(m["총수익"])}</div>`+
+      `<div class="cbreak">`+
+        `<div class="cmini"><span>26년 주식수익</span><b style="color:${sc(m["주식수익"])}">${M(m["주식수익"])}</b></div>`+
+        `<div class="cmini"><span>무한매수 수익</span><b style="color:${sc(m["무매수익"])}">${M(m["무매수익"])}</b></div>`+
+      `</div></div>`
   ].join("");
 }
 function drawAsset(){
@@ -707,6 +814,7 @@ function drawAsset(){
   const cur=PORT.cur;
   const short=v=>{ const a=Math.abs(v); if(cur==="₩"){ if(a>=1e8) return (v/1e8).toFixed(1)+"억"; if(a>=1e4) return Math.round(v/1e4).toLocaleString()+"만"; } return Math.round(v).toLocaleString(); };
   if(!dlReg && window.ChartDataLabels){ Chart.register(window.ChartDataLabels); dlReg=true; }
+  if(!zoomReg){ try{ const zp=window.ChartZoom||(window["chartjs-plugin-zoom"]); if(zp) Chart.register(zp); }catch(e){} zoomReg=true; }
   if(assetChart) assetChart.destroy();
   const note=document.getElementById("assetNote");
   const H=PORT.history;
@@ -714,26 +822,34 @@ function drawAsset(){
     if(note) note.textContent="";
     const labels=H.map(p=>p.dstr), asset=H.map(p=>p.asset), inv=H.map(p=>p.invest);
     assetChart=new Chart(el,{type:"line",data:{labels,datasets:[
-      {label:"자산",data:asset,borderColor:"#e5484d",backgroundColor:"rgba(229,72,77,.10)",fill:true,tension:.25,pointRadius:0,borderWidth:2,datalabels:{display:false}},
-      {label:"원금",data:inv,borderColor:"#c7ccd6",fill:false,tension:.25,pointRadius:0,borderWidth:2,datalabels:{display:false}}
+      {label:"자산",data:asset,borderColor:"#7c5cfc",backgroundColor:(ctx)=>{const c=ctx.chart.ctx,gr=c.createLinearGradient(0,0,0,230);gr.addColorStop(0,"rgba(124,92,252,.28)");gr.addColorStop(1,"rgba(124,92,252,.02)");return gr;},fill:true,tension:.35,pointRadius:0,borderWidth:2.5,datalabels:{display:false}},
+      {label:"원금",data:inv,borderColor:"#cbd0dc",borderDash:[4,4],fill:false,tension:.35,pointRadius:0,borderWidth:2,datalabels:{display:false}}
     ]},
     options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
       plugins:{legend:{display:true,labels:{boxWidth:12,font:{size:11}}},
-        tooltip:{callbacks:{title:it=>it[0].label+"월", label:c=>` ${c.dataset.label}: ${cur}${Number(c.parsed.y).toLocaleString()}`}}},
+        tooltip:{callbacks:{title:it=>it[0].label+"월", label:c=>` ${c.dataset.label}: ${cur}${Number(c.parsed.y).toLocaleString()}`}},
+        zoom:{pan:{enabled:true,mode:"x"},zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:"x"},limits:{x:{minRange:2}}}},
       scales:{y:{ticks:{callback:(v)=>short(v)}},x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:10}}}}}});
     // 최고점 / 현재 대비 고점 / MDD
     const stats=document.getElementById("assetStats");
     const short2=v=>{ const a=Math.abs(v); if(cur==="₩"){ if(a>=1e8) return (v/1e8).toFixed(2)+"억"; if(a>=1e4) return (v/1e4).toFixed(2)+"만"; } return Number(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); };
-    let peak=-Infinity, peakKey=null;
-    H.forEach(p=>{ if(p.asset>peak){ peak=p.asset; peakKey=p.key; } });
-    const curAsset=H[H.length-1].asset;
-    const vsPeak=peak>0?(curAsset/peak-1)*100:0;
-    const diff=curAsset-peak;
     const colOf=v=> v<-0.05?"var(--blue)":v>0.05?"var(--red)":"var(--sub)";
     const pk=v=>{ if(v==null) return "—"; const y=Math.floor(v/10000),mo=Math.floor(v/100)%100,d=v%100; return `${y}.${mo}.${d}`; };
+    // 최고점 값: 시트의 '자산 역대 최고값' 우선 / 날짜: 자산 시계열의 최고 자산 시점
+    let peakCalc=-Infinity, peakKey=null;
+    H.forEach(p=>{ if(p.asset>peakCalc){ peakCalc=p.asset; peakKey=p.key; } });
+    const peak=(typeof H.peakSheet==="number"&&isFinite(H.peakSheet)&&H.peakSheet>0)?H.peakSheet:peakCalc;
+    // 현재 대비 고점: 시트의 '최고값 대비 하락값' 우선, 없으면 history로 계산
+    let vsPeak, diff;
+    if(typeof H.dropSheet==="number"&&isFinite(H.dropSheet)&&peak>0){
+      diff=-Math.abs(H.dropSheet); vsPeak=-(Math.abs(H.dropSheet)/peak*100);
+    } else {
+      const curAsset=H[H.length-1].asset;
+      vsPeak=peak>0?(curAsset/peak-1)*100:0; diff=curAsset-peak;
+    }
     document.getElementById("asPeak").textContent=cur+short2(peak);
-    document.getElementById("asPeakDate").textContent=pk(peakKey);
-    const vp=document.getElementById("asVsPeak"); vp.textContent=(vsPeak>0?"+":"")+vsPeak.toFixed(1)+"%"; vp.style.color=colOf(vsPeak);
+    document.getElementById("asPeakDate").textContent=peakKey?pk(peakKey):"—";
+    const vp=document.getElementById("asVsPeak"); vp.textContent=(vsPeak>0?"+":"")+vsPeak.toFixed(2)+"%"; vp.style.color=colOf(vsPeak);
     const df=document.getElementById("asDiff"); df.textContent=(diff>0?"+":diff<0?"-":"")+cur+short2(Math.abs(diff)); df.style.color=colOf(diff);
     if(stats) stats.style.display="flex";
   } else if(note){
@@ -752,7 +868,7 @@ function drawMonthly(){
   if(!dlReg && window.ChartDataLabels){ Chart.register(window.ChartDataLabels); dlReg=true; }
   if(monthlyChart) monthlyChart.destroy();
   monthlyChart=new Chart(el,{data:{labels,datasets:[
-    {type:"line",label:"누적",data:cum,borderColor:"#f2a516",backgroundColor:"rgba(242,165,22,.12)",fill:true,tension:.25,pointRadius:2,datalabels:{display:false},order:0},
+    {type:"line",label:"누적",data:cum,borderColor:"#7c5cfc",backgroundColor:"rgba(124,92,252,.12)",fill:true,tension:.3,pointRadius:2,datalabels:{display:false},order:0},
     {type:"bar",label:"월 손익",data:vals,backgroundColor:barCols,borderRadius:3,maxBarThickness:18,datalabels:{display:false},order:1}
   ]},
   options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
@@ -774,16 +890,40 @@ function drawQuotes(){
   if(!PORT) return;
   const el=document.getElementById("quoteTable"); if(!el) return;
   const num=s=>{ const m=String(s==null?"":s).match(/-?\d+(?:\.\d+)?/); return m?parseFloat(m[0]):NaN; };
-  const rows=PORT.byTicker.filter(x=>x.day||x.price)
-    .map(x=>({t:x.t,code:x.code,price:x.price,day:x.day,d:num(x.day)}))
-    .sort((a,b)=>(isNaN(b.d)?-1e9:b.d)-(isNaN(a.d)?-1e9:a.d));
-  if(!rows.length){ el.innerHTML='<div class="sub" style="text-align:center;padding:8px">시세 데이터 없음</div>'; return; }
-  el.innerHTML=rows.map(x=>{
-    const d=String(x.day||"").trim(); const neg=d.startsWith("-");
+  const all=PORT.byTicker.filter(x=>x.day||x.price)
+    .map(x=>({t:x.t,code:x.code,price:x.price,day:x.day,d:num(x.day)}));
+  if(!all.length){ el.innerHTML='<div class="sub" style="text-align:center;padding:8px">시세 데이터 없음</div>'; return; }
+  const byd=(a,b)=>(isNaN(b.d)?-1e9:b.d)-(isNaN(a.d)?-1e9:a.d);
+  const isDom=x=>/^\d{3,6}$/.test(String(x.code||"").trim());
+  const dom=all.filter(isDom).sort(byd), foreign=all.filter(x=>!isDom(x)).sort(byd);
+  const rowHtml=x=>{ const d=String(x.day||"").trim(); const neg=d.startsWith("-");
     const col=d?(neg?"var(--blue)":"var(--red)"):"var(--sub)";
     return `<div class="prow"><span>${x.t}${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
-      `<span><span class="scode">${x.price||""}</span> &nbsp;<b style="color:${col}">${d||"-"}</b></span></div>`;
-  }).join("");
+      `<span><span class="scode">${x.price||""}</span> &nbsp;<b style="color:${col}">${d||"-"}</b></span></div>`; };
+  const sec=(title,arr)=> arr.length? `<div class="qgroup"><div class="qsec">${title}<span class="qn">${arr.length}</span></div>`+arr.map(rowHtml).join("")+`</div>` : "";
+  el.innerHTML = (sec("🇺🇸 국외주식",foreign)+sec("🇰🇷 국내주식",dom)) || '<div class="sub" style="text-align:center;padding:8px">시세 데이터 없음</div>';
+}
+/* ── 설정 백업/복원 (API 키·링크를 코드 하나로 이동) ── */
+function backupSettings(){
+  const keys=["dip_tdkey","dip_fmpkey","dip_wkurl","dip_csv","dip_ticker"];
+  const o={}; keys.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) o[k]=v; });
+  const code=btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+  try{ if(navigator.clipboard) navigator.clipboard.writeText(code); }catch(e){}
+  prompt("백업 코드입니다. 복사해 보관하세요 (클립보드에도 복사됨).\n새 기기/복원 시 '복원'에 붙여넣으면 키·링크가 그대로 들어갑니다.", code);
+}
+function restoreSettings(){
+  const code=prompt("백업 코드를 붙여넣으세요:");
+  if(!code) return;
+  try{
+    const o=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+    Object.keys(o).forEach(k=>localStorage.setItem(k,o[k]));
+    alert("복원했습니다. 새로고침합니다.");
+    location.reload();
+  }catch(e){ alert("코드가 올바르지 않습니다. 다시 확인해 주세요."); }
+}
+/* ── PWA: 항상 최신 버전 자동 로드 (재설치 불필요) ── */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
 }
 if(!csvUrl){ /* 첫 방문 시 안내는 탭 열 때 표시 */ }
 </script>
@@ -1159,11 +1299,17 @@ async function buildMapData(){
 function hx(c){ return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)]; }
 function mix(a,b,t){ const A=hx(a),B=hx(b); const r=Math.round(A[0]+(B[0]-A[0])*t),g=Math.round(A[1]+(B[1]-A[1])*t),bl=Math.round(A[2]+(B[2]-A[2])*t); return `rgb(${r},${g},${bl})`; }
 function heatColor(pct){
-  if(pct==null||isNaN(pct)) return "#8f9aa8";
+  if(pct==null||isNaN(pct)) return "#eef1f5";
   const cap=3, t=Math.min(Math.abs(pct),cap)/cap;
-  if(pct>0.05) return mix("#3fae74","#0f7a43",t);   // 상승 초록
-  if(pct<-0.05) return mix("#df7a7d","#b21f24",t);  // 하락 빨강
-  return "#8f9aa8";                                  // 보합
+  if(pct>0.05) return mix("#e9f7ef","#c4ebd3",t);   // 상승 파스텔 초록
+  if(pct<-0.05) return mix("#fdeeee","#f5cccd",t);  // 하락 파스텔 빨강
+  return "#eef1f5";                                  // 보합
+}
+function pctColor(pct){
+  if(pct==null||isNaN(pct)) return "#8b93a7";
+  if(pct>0.05) return "#1a9c5b";
+  if(pct<-0.05) return "#e5484d";
+  return "#8b93a7";
 }
 
 // 스쿼리파이 트리맵 레이아웃 (외부 라이브러리 없음)
@@ -1195,7 +1341,7 @@ function squarify(data,X,Y,W,H){
 
 // 상자 크기에 맞춰 글자 자동 축소·줄바꿈
 const _mc=document.createElement("canvas").getContext("2d");
-const TMFONT='-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+const TMFONT='"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function tmWrap(text,fs,maxW){
   _mc.font=`800 ${fs}px ${TMFONT}`;
@@ -1236,11 +1382,14 @@ function renderTreemap(tiles){
   rects.forEach(r=>{
     const t=r.ref, el=document.createElement("div");
     el.className="tmtile";
-    el.style.left=r.x+"px"; el.style.top=r.y+"px";
-    el.style.width=Math.max(0,r.w-1)+"px"; el.style.height=Math.max(0,r.h-1)+"px";
+    const g=2;
+    const tw=Math.max(0,r.w-2*g), th=Math.max(0,r.h-2*g);
+    el.style.left=(r.x+g)+"px"; el.style.top=(r.y+g)+"px";
+    el.style.width=tw+"px"; el.style.height=th+"px";
     el.style.background=heatColor(t.day);
-    const padX=3, padY=2;
-    const iw=Math.max(2, r.w-2-padX*2), ih=Math.max(2, r.h-2-padY*2);
+    el.style.borderRadius=Math.min(12,Math.max(5,Math.round(Math.min(tw,th)/7)))+"px";
+    const padX=4, padY=3;
+    const iw=Math.max(2, tw-padX*2), ih=Math.max(2, th-padY*2);
     let html="";
     if(iw>16 && ih>13){
       const isUS=!t.noQuote && /^[A-Z]{1,6}$/.test(t.sym);
@@ -1249,14 +1398,14 @@ function renderTreemap(tiles){
       const showVal = ih>72 && iw>44;
       const other=(showPct?13:0)+(showName?12:0)+(showVal?12:0)+(showPct||showName||showVal?2:0);
       const labelMaxH=Math.max(8, ih-other);
-      const maxFs=isUS?Math.min(22,Math.max(10,Math.round(Math.min(r.w,r.h)/3.2))):20;
+      const maxFs=isUS?Math.min(22,Math.max(10,Math.round(Math.min(tw,th)/3.2))):20;
       const {fs,lines}=tmFit(t.sym, iw, labelMaxH, maxFs, 7);
       html+=`<div class="tmsym" style="font-size:${fs}px">${lines.map(esc).join("<br>")}</div>`;
       if(t.isCash){
-        if(ih>28) html+=`<div class="tmpct">비중 ${grandTotal?(t.value/grandTotal*100).toFixed(1):"0"}%</div>`;
+        if(ih>28) html+=`<div class="tmpct" style="color:#8b93a7">비중 ${grandTotal?(t.value/grandTotal*100).toFixed(1):"0"}%</div>`;
         if(ih>52) html+=`<div class="tmval">${Math.round(t.value).toLocaleString("en-US")}</div>`;
       } else {
-        if(showPct) html+=`<div class="tmpct">${t.day==null?"—":(t.day>0?"+":"")+t.day.toFixed(2)+"%"}</div>`;
+        if(showPct) html+=`<div class="tmpct" style="color:${pctColor(t.day)}">${t.day==null?"—":(t.day>0?"+":"")+t.day.toFixed(2)+"%"}</div>`;
         if(showName) html+=`<div class="tmname">${esc(t.name)}</div>`;
         if(showVal) html+=`<div class="tmval">${Math.round(t.value).toLocaleString("en-US")}</div>`;
       }
