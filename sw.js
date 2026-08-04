@@ -3,7 +3,7 @@
      → GitHub에 새로 올리면 앱을 다시 열 때 자동으로 최신 버전이 뜹니다. 재설치 불필요.
    - 오프라인이면 마지막으로 받아둔 버전을 보여줍니다.
    - API 키/링크는 localStorage에 저장되므로 캐시와 무관하게 유지됩니다. */
-const CACHE = "dipalert-cache-v1";
+const CACHE = "dipalert-cache-v2";
 
 self.addEventListener("install", (e) => { self.skipWaiting(); });
 
