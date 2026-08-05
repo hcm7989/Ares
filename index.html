@@ -263,7 +263,7 @@
   <div class="warn">
     데이터: Twelve Data(가격·RSI) · FMP(VIX·국채) · CNN(공포탐욕). 무료 키 한도(FMP 250회/일 등) 때문에
     자동 새로고침은 5분 간격이며 국채·공포탐욕은 하루치를 캐시합니다. 수 분 지연·오차 가능, 매매 전 원본 재확인 필수.
-    <br><span style="opacity:.75">빌드 2026-08-05 · 30 (7/21 VR100$ 백필 제외)</span>
+    <br><span style="opacity:.75">빌드 2026-08-05 · 31 (올해 투자액 소수점 제거)</span>
   </div>
   </div><!-- /tabHome -->
 
@@ -1042,7 +1042,8 @@ function drawAsset(){
     const df=document.getElementById("asDiff"); df.textContent=(diff>0?"+":diff<0?"-":"")+cur+short2(Math.abs(diff)); df.style.color=colOf(diff);
     let dep=(typeof PORT.deposits2026==="number"&&isFinite(PORT.deposits2026))?PORT.deposits2026:null;
     if(dep==null){ dep=H.length?(H[H.length-1].invest-H[0].invest):0; if(!(dep>0)) dep=H.length?H[H.length-1].invest:0; }
-    const de=document.getElementById("asDep"); if(de) de.textContent=cur+short2(dep);
+    const depTxt = (cur==="₩") ? (Math.abs(dep)>=1e8 ? (dep/1e8).toFixed(1)+"억" : Math.round(dep/1e4).toLocaleString("en-US")+"만") : short2(dep);
+    const de=document.getElementById("asDep"); if(de) de.textContent=cur+depTxt;
     if(stats) stats.style.display="flex";
   } else if(note){
     note.textContent="history 탭을 아직 못 읽었습니다 (게시 전파 지연일 수 있어요). 잠시 후 새로고침하세요.";
