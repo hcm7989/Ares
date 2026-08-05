@@ -263,7 +263,7 @@
   <div class="warn">
     데이터: Twelve Data(가격·RSI) · FMP(VIX·국채) · CNN(공포탐욕). 무료 키 한도(FMP 250회/일 등) 때문에
     자동 새로고침은 5분 간격이며 국채·공포탐욕은 하루치를 캐시합니다. 수 분 지연·오차 가능, 매매 전 원본 재확인 필수.
-    <br><span style="opacity:.75">빌드 2026-08-05 · 29 (FIRE 차트 확대)</span>
+    <br><span style="opacity:.75">빌드 2026-08-05 · 30 (7/21 VR100$ 백필 제외)</span>
   </div>
   </div><!-- /tabHome -->
 
@@ -705,12 +705,22 @@ function extractDeposits2026(rows){
     if(nb.includes("입출금금액")){ pos={r,c}; break; }
   }
   if(!pos) return null;
+  // 날짜 열(금액 열 바로 왼쪽, 헤더 '입출금 날짜')
+  let dateCol=pos.c-1;
+  for(let c=0;c<rows[pos.r].length;c++){ if((rows[pos.r][c]||"").toString().replace(/\s/g,"").includes("입출금날짜")){ dateCol=c; break; } }
+  // 제외할 항목: 누락분 백필(2026-07-21 VR100$ '기록 시작')
+  const EXCLUDE=[[2026,7,21]];
   let sum=0, found=false, blanks=0;
   for(let r=pos.r+1;r<rows.length;r++){
     const raw=(rows[r] && rows[r][pos.c]); const s=(raw==null?"":String(raw)).trim();
     const v=pnum(s);
-    if(s!=="" && isFinite(v)){ sum+=v; found=true; blanks=0; }
-    else { blanks++; if(found && blanks>=4) break; }
+    if(s!=="" && isFinite(v)){
+      found=true; blanks=0;
+      const dt=(rows[r][dateCol]||"").toString();
+      const dm=dt.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+      if(dm && EXCLUDE.some(e=>e[0]==+dm[1]&&e[1]==+dm[2]&&e[2]==+dm[3])) continue; // 제외
+      sum+=v;
+    } else { blanks++; if(found && blanks>=4) break; }
   }
   return found? -sum : null;
 }
