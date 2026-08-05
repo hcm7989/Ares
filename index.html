@@ -256,12 +256,13 @@
       <button class="fbtn" onclick="backupSettings()">백업</button>
       <button class="fbtn" onclick="restoreSettings()">복원</button>
     </div>
+    <div style="margin-top:8px"><button class="miniedit" onclick="hardReset()">⟳ 캐시 비우고 강제 새로고침 (데이터가 안 맞을 때)</button></div>
   </div>
 
   <div class="warn">
     데이터: Twelve Data(가격·RSI) · FMP(VIX·국채) · CNN(공포탐욕). 무료 키 한도(FMP 250회/일 등) 때문에
     자동 새로고침은 5분 간격이며 국채·공포탐욕은 하루치를 캐시합니다. 수 분 지연·오차 가능, 매매 전 원본 재확인 필수.
-    <br><span style="opacity:.75">빌드 2026-08-04 · 25 (XIRR 설명 도움말)</span>
+    <br><span style="opacity:.75">빌드 2026-08-04 · 26 (PWA 캐시 자동갱신·초기화)</span>
   </div>
   </div><!-- /tabHome -->
 
@@ -1030,9 +1031,23 @@ function restoreSettings(){
     location.reload();
   }catch(e){ alert("코드가 올바르지 않습니다. 다시 확인해 주세요."); }
 }
-/* ── PWA: 항상 최신 버전 자동 로드 (재설치 불필요) ── */
+/* ── PWA: 항상 최신 버전 자동 로드 + 새 워커 적용 시 자동 새로고침 ── */
 if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").then(reg=>{ try{ reg.update(); }catch(e){} }).catch(()=>{});
+  });
+  let _swRefreshed=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{
+    if(_swRefreshed) return; _swRefreshed=true; location.reload();
+  });
+}
+/* ── 캐시 강제 비우기(오래된 데이터가 남을 때) — 키·설정은 유지 ── */
+async function hardReset(){
+  try{
+    if("serviceWorker" in navigator){ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>r.unregister())); }
+    if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }
+  }catch(e){}
+  location.reload();
 }
 /* ── 저장된 테마 적용 (기본: 브라이트) ── */
 setTheme(localStorage.getItem("dip_theme")||"bright");
