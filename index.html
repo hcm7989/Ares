@@ -189,6 +189,7 @@
     <button id="tabBtnPort" onclick="showTab('port')">💼 포트폴리오</button>
     <button id="tabBtnMap" onclick="showTab('map')">🗺️ 자산맵</button>
     <button id="tabBtnStrat" onclick="showTab('strat')">📚 전략·링크</button>
+    <button id="tabBtnFire" onclick="showTab('fire')">🔥 FIRE</button>
   </div>
 
   <div id="tabHome">
@@ -262,7 +263,7 @@
   <div class="warn">
     데이터: Twelve Data(가격·RSI) · FMP(VIX·국채) · CNN(공포탐욕). 무료 키 한도(FMP 250회/일 등) 때문에
     자동 새로고침은 5분 간격이며 국채·공포탐욕은 하루치를 캐시합니다. 수 분 지연·오차 가능, 매매 전 원본 재확인 필수.
-    <br><span style="opacity:.75">빌드 2026-08-04 · 26 (PWA 캐시 자동갱신·초기화)</span>
+    <br><span style="opacity:.75">빌드 2026-08-05 · 29 (FIRE 차트 확대)</span>
   </div>
   </div><!-- /tabHome -->
 
@@ -441,6 +442,74 @@
     </div>
   </div><!-- /tabMap -->
 
+  <div id="tabFire" style="display:none">
+
+    <div class="sec">
+      <h2>🔥 FIRE 목표</h2>
+      <p style="margin-top:2px">2035년 은퇴 · 목표 자산 <b>30억</b> · 매년 <b>5,000만원</b> 저축 · 목표 수익률 <b>25%</b></p>
+      <p class="sub" style="margin-top:2px">은퇴 시점 나이 — 만 48세 / 진 45세 / 연우 14세</p>
+      <div class="chips" style="margin-top:12px">
+        <div class="chip"><div class="k">목표 자산</div><div class="v">₩30.0억</div><div class="cbreak"><div class="cmini"><span>은퇴 목표</span><b>2035년</b></div></div></div>
+        <div class="chip"><div class="k">연 저축액</div><div class="v">₩5,000만</div><div class="cbreak"><div class="cmini"><span>목표 수익률</span><b>연 25%</b></div></div></div>
+      </div>
+      <div style="margin-top:16px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:9px">
+          <div><div class="sub" style="font-size:11px">목표 30억 달성률</div><div style="font-size:28px;font-weight:800;line-height:1;color:var(--accent)" id="fireBigPct">—</div></div>
+          <div style="text-align:right"><div class="sub" style="font-size:11px">현재 자산</div><div style="font-size:15px;font-weight:800" id="fireCur">—</div></div>
+        </div>
+        <div style="position:relative;height:18px;background:var(--fill);border-radius:10px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)">
+          <div id="fireBar" style="height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .9s cubic-bezier(.22,1,.36,1);box-shadow:0 1px 6px rgba(108,76,241,.4)"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px" class="sub"><span id="firePct">—</span><span style="color:var(--sub)">🎯 30억</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>📈 자산 성장 시뮬레이션 <span style="font-size:11px;font-weight:400;color:var(--sub)">(연 25% 수익률)</span></h2>
+      <div class="chartbox" style="height:230px;"><canvas id="fireChart"></canvas></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <span class="sub" style="font-size:10px">🔍 두 손가락으로 확대·이동</span>
+        <button class="miniedit" onclick="if(fireChart)fireChart.resetZoom()">↺ 확대 초기화</button>
+      </div>
+      <div class="sub" style="text-align:center;margin-top:6px">25% 수익률 시 <b style="color:var(--accent)">2035년 약 30억</b> 달성 → 은퇴 &nbsp;·&nbsp; 30% 수익률이면 2034년(1년 빠름)</div>
+    </div>
+
+    <div class="sec">
+      <h2>📊 연도별 예상 자산 <span style="font-size:11px;font-weight:400;color:var(--sub)">(25% 기준)</span></h2>
+      <table>
+        <tr><th>년도</th><th>나이(만)</th><th>투자원금</th><th>예상 자산</th></tr>
+        <tr><td>2025</td><td>38</td><td>1.0억</td><td>1.25억</td></tr>
+        <tr><td>2026</td><td>39</td><td>1.5억</td><td>2.12억</td></tr>
+        <tr><td>2027</td><td>40</td><td>2.0억</td><td>3.20억</td></tr>
+        <tr><td>2028</td><td>41</td><td>2.5억</td><td>4.56억</td></tr>
+        <tr><td>2029</td><td>42</td><td>3.0억</td><td>6.25억</td></tr>
+        <tr><td>2030</td><td>43</td><td>3.5억</td><td>8.37억</td></tr>
+        <tr><td>2031</td><td>44</td><td>4.0억</td><td>11.02억</td></tr>
+        <tr><td>2032</td><td>45</td><td>4.5억</td><td>14.33억</td></tr>
+        <tr><td>2033</td><td>46</td><td>5.0억</td><td>18.46억</td></tr>
+        <tr><td>2034</td><td>47</td><td>5.5억</td><td>23.63억</td></tr>
+        <tr style="background:var(--accent-soft);font-weight:800"><td>2035</td><td>48</td><td>6.0억</td><td>30.10억 🎯</td></tr>
+      </table>
+      <p class="sub" style="margin-top:6px">투자원금 = 초기 1억 + 매년 5,000만원 누적. 예상 자산은 신규 저축을 매월 급여 적립(FV)으로 보정한 값.</p>
+    </div>
+
+    <div class="sec">
+      <h2>🏦 은퇴 필요비용 <span style="font-size:11px;font-weight:400;color:var(--sub)">(55세 은퇴·90세 기준)</span></h2>
+      <table>
+        <tr><th>항목</th><th>필요비용</th><th>비고</th></tr>
+        <tr><td>생활비</td><td>12.6억</td><td>월 300만 × 35년</td></tr>
+        <tr><td>의료비</td><td>0.7억</td><td>연 200만 × 35년</td></tr>
+        <tr><td>주거비</td><td>10.0억</td><td>아파트 일시금</td></tr>
+        <tr><td>여행</td><td>5.0억</td><td>해외·크루즈</td></tr>
+        <tr><td>취미/운동</td><td>3.0억</td><td>연 1,000만 × 30년</td></tr>
+        <tr><td>자녀교육/결혼</td><td>4.5억</td><td>교육 10년 + 결혼 2억</td></tr>
+        <tr style="background:var(--accent-soft);font-weight:800"><td>합계</td><td>35.8억</td><td>은퇴 필요 총액</td></tr>
+      </table>
+      <p class="sub" style="margin-top:6px">60세 이후 연금저축·국민연금 수령분은 별도 반영. 파란색 가정값(월 생활비·주거비 등)은 원본 엑셀에서 조정.</p>
+    </div>
+
+  </div><!-- /tabFire -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
@@ -451,13 +520,16 @@ function showTab(t){
   document.getElementById("tabStrat").style.display = t==="strat"?"block":"none";
   document.getElementById("tabPort").style.display  = t==="port" ?"block":"none";
   document.getElementById("tabMap").style.display   = t==="map"  ?"block":"none";
+  document.getElementById("tabFire").style.display  = t==="fire" ?"block":"none";
   document.getElementById("tabBtnHome").classList.toggle("on",t==="home");
   document.getElementById("tabBtnStrat").classList.toggle("on",t==="strat");
   document.getElementById("tabBtnPort").classList.toggle("on",t==="port");
   document.getElementById("tabBtnMap").classList.toggle("on",t==="map");
+  document.getElementById("tabBtnFire").classList.toggle("on",t==="fire");
   window.scrollTo(0,0);
   if(t==="port") loadPortfolio();
   if(t==="map") loadMap();
+  if(t==="fire"){ if((typeof PORT==="undefined"||!PORT) && csvUrl){ try{ loadPortfolio().then(()=>drawFire()); }catch(e){} } drawFire(); }
 }
 /* ── 테마 전환: 브라이트 / 다크 / 토스 ── */
 function setTheme(t){
@@ -479,7 +551,7 @@ function setTheme(t){
 
 /* ── 포트폴리오 (구글시트 CSV) ── */
 let csvUrl = localStorage.getItem("dip_csv")||"";
-let donutChart=null, barChart=null, dlReg=false, zoomReg=false;
+let donutChart=null, barChart=null, dlReg=false, zoomReg=false, fireChart=null;
 let portMode="tick", PORT=null, assetChart=null, monthlyChart=null;
 const PAL=["#6c4cf1","#8b6cf6","#22c55e","#f59e0b","#ef4444","#06b6d4","#ec4899","#a78bfa","#84cc16","#0ea5e9","#f97316","#14b8a6","#eab308","#64748b"];
 function saveCsv(){
@@ -1614,6 +1686,45 @@ function buildTickers(){
       loadAll(true);};
     w.appendChild(b);
   });
+}
+// 🔥 FIRE 탭: 진행률 + 성장 시뮬레이션 차트
+function drawFire(){
+  const target=3000000000;
+  const cur=(typeof PORT!=="undefined"&&PORT&&PORT.total)?PORT.total:null;
+  const fc=document.getElementById("fireCur"), fb=document.getElementById("fireBar"), fp=document.getElementById("firePct"), fbp=document.getElementById("fireBigPct");
+  if(fc){
+    if(cur){
+      fc.textContent="₩"+Math.round(cur).toLocaleString("en-US");
+      const p=Math.max(0,Math.min(100,cur/target*100));
+      if(fbp) fbp.textContent=p.toFixed(1)+"%";
+      if(fb) fb.style.width=Math.max(2,p)+"%";
+      if(fp) fp.textContent=`남은 금액 ₩${Math.max(0,Math.round(target-cur)).toLocaleString("en-US")}`;
+    } else { fc.textContent="—"; if(fbp) fbp.textContent="—"; if(fb) fb.style.width="0"; if(fp) fp.textContent="포트폴리오 탭을 한 번 열면 반영됩니다"; }
+  }
+  const el=document.getElementById("fireChart"); if(!el||!window.Chart) return;
+  if(!dlReg && window.ChartDataLabels){ Chart.register(window.ChartDataLabels); dlReg=true; }
+  if(!zoomReg){ try{ const zp=window.ChartZoom||(window["chartjs-plugin-zoom"]); if(zp) Chart.register(zp); }catch(e){} zoomReg=true; }
+  if(fireChart) fireChart.destroy();
+  const yrs=["2025","2026","2027","2028","2029","2030","2031","2032","2033","2034","2035"];
+  const v25=[1.25,2.12,3.20,4.56,6.25,8.37,11.02,14.33,18.46,23.63,30.10];
+  // 실제 자산 라인: 2025(연초자산)·2026(현재) 실적
+  let actual=null;
+  if(typeof PORT!=="undefined" && PORT && PORT.total>0){
+    actual=yrs.map(()=>null);
+    if(PORT.yearStart>0) actual[0]=+(PORT.yearStart/1e8).toFixed(2);
+    actual[1]=+(PORT.total/1e8).toFixed(2);
+  }
+  const ds=[
+    {label:"예상 자산(25%)",data:v25,borderColor:"#7c5cfc",backgroundColor:(ctx)=>{const c=ctx.chart.ctx,gr=c.createLinearGradient(0,0,0,230);gr.addColorStop(0,"rgba(124,92,252,.28)");gr.addColorStop(1,"rgba(124,92,252,.02)");return gr;},fill:true,tension:.35,pointRadius:2,borderWidth:2.5,datalabels:{display:false}},
+    {label:"목표 30억",data:yrs.map(()=>30),borderColor:"#00c471",borderDash:[5,5],fill:false,pointRadius:0,borderWidth:1.5,datalabels:{display:false}}
+  ];
+  if(actual) ds.push({label:"실제 자산",data:actual,borderColor:"#f04452",backgroundColor:"#f04452",fill:false,tension:.2,pointRadius:4,pointHoverRadius:5,borderWidth:3,spanGaps:false,datalabels:{display:false}});
+  fireChart=new Chart(el,{type:"line",data:{labels:yrs,datasets:ds},
+    options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{display:true,labels:{boxWidth:12,font:{size:11}}},
+      tooltip:{callbacks:{label:c=>c.parsed.y==null?null:` ${c.dataset.label}: ${c.parsed.y}억`}},
+      zoom:{pan:{enabled:true,mode:"xy"},zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:"xy"}}},
+    scales:{y:{ticks:{callback:v=>v+"억"}},x:{grid:{display:false}}}}});
 }
 function tick(){document.getElementById("clock").textContent=new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});}
 // 지표 타일 → 상세 출처 링크 (현재가·RSI는 선택 종목 기준)
