@@ -66,6 +66,8 @@
   .card .v{font-size:25px;font-weight:800;line-height:1;}
   .card .s{font-size:11px;color:var(--sub);margin-top:8px;}
   a.card{text-decoration:none;color:inherit;}
+  a.half{text-decoration:none;color:inherit;}
+  .ext{font-size:10px;color:var(--accent);opacity:.85;vertical-align:1px;}
   .foot{margin-top:18px;text-align:center;font-size:12px;color:var(--sub);}
   .foot button{margin-top:8px;border:1px solid var(--line);background:var(--card);color:var(--accent);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;}
   .footrow{display:flex;gap:6px;justify-content:center;margin-top:10px;}
@@ -91,11 +93,13 @@
   .linkrow .ds{font-size:11px;color:var(--sub);margin-top:2px;line-height:1.4;}
   .linkrow .go{color:var(--accent);font-weight:800;font-size:18px;flex:0 0 auto;}
   .tip{background:#fff7e6;border:1px solid #ffe2ad;border-radius:10px;padding:8px 10px;font-size:11.5px;color:#8a6d3b;margin-top:8px;}
-  .idxbar{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:0 0 12px;}
-  .idx{min-width:0;background:var(--card);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--line);padding:9px 6px;text-align:center;}
-  .idx .n{font-size:10.5px;color:var(--sub);font-weight:700;white-space:nowrap;}
-  .idx .p{font-size:14px;font-weight:800;margin-top:3px;white-space:nowrap;}
-  .idx .c{font-size:10.5px;font-weight:700;margin-top:1px;white-space:nowrap;}
+  .idxbar{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:0 0 12px;}
+  a.idx{text-decoration:none;color:inherit;}
+  .idx{min-width:0;background:var(--card);border-radius:13px;box-shadow:var(--shadow);border:1px solid var(--line);padding:8px 3px;text-align:center;overflow:hidden;}
+  .idx .n{font-size:9.5px;color:var(--sub);font-weight:700;white-space:nowrap;}
+  .idx .p{font-size:12.5px;font-weight:800;margin-top:3px;white-space:nowrap;}
+  .idx .c{font-size:9.5px;font-weight:700;margin-top:1px;white-space:nowrap;}
+  .idx .ext{font-size:8px;}
   .signal{border-radius:12px;padding:11px 12px;margin:0 0 12px;font-size:13px;font-weight:800;text-align:center;line-height:1.4;}
   .signal.buy{background:#e7f7ee;color:#0f7a43;border:1px solid #b7e6ca;}
   .signal.watch{background:#fff7e6;color:#8a6d3b;border:1px solid #ffe2ad;}
@@ -111,6 +115,7 @@
   .hval{font-size:31px;font-weight:800;margin:5px 0 11px;letter-spacing:-.9px;line-height:1.02;font-variant-numeric:tabular-nums;}
   .hbadges{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:0 0 14px;padding-bottom:15px;border-bottom:1px solid var(--line);}
   .badge2{font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;letter-spacing:-.2px;font-variant-numeric:tabular-nums;border:1px solid rgba(0,0,0,.04);}
+  .qhelp{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--fill);color:var(--sub);font-size:11px;font-weight:800;cursor:pointer;border:1px solid var(--line);vertical-align:middle;}
   .chips{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .chip{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 13px;text-align:left;box-shadow:var(--shadow);display:flex;flex-direction:column;}
   .chip .k{font-size:11.5px;color:var(--sub);font-weight:700;}
@@ -194,10 +199,11 @@
   </div>
 
   <div class="idxbar" id="idxbar">
-    <div class="idx"><div class="n">코스피</div><div class="p" id="idx_KS11">—</div><div class="c" id="idxc_KS11"></div></div>
-    <div class="idx"><div class="n">나스닥100</div><div class="p" id="idx_NDX">—</div><div class="c" id="idxc_NDX"></div></div>
-    <div class="idx"><div class="n">S&P500</div><div class="p" id="idx_GSPC">—</div><div class="c" id="idxc_GSPC"></div></div>
-    <div class="idx"><div class="n">원/달러</div><div class="p" id="idx_USDKRW">—</div><div class="c" id="idxc_USDKRW"></div></div>
+    <a class="idx" href="https://finance.yahoo.com/quote/%5EKS11" target="_blank" rel="noopener"><div class="n">코스피 <span class="ext">↗</span></div><div class="p" id="idx_KS11">—</div><div class="c" id="idxc_KS11"></div></a>
+    <a class="idx" href="https://finance.yahoo.com/quote/%5ENDX" target="_blank" rel="noopener"><div class="n">나스닥100 <span class="ext">↗</span></div><div class="p" id="idx_NDX">—</div><div class="c" id="idxc_NDX"></div></a>
+    <a class="idx" href="https://finance.yahoo.com/quote/%5EGSPC" target="_blank" rel="noopener"><div class="n">S&P500 <span class="ext">↗</span></div><div class="p" id="idx_GSPC">—</div><div class="c" id="idxc_GSPC"></div></a>
+    <a class="idx" href="https://finance.yahoo.com/quote/KRW=X" target="_blank" rel="noopener"><div class="n">원/달러 <span class="ext">↗</span></div><div class="p" id="idx_USDKRW">—</div><div class="c" id="idxc_USDKRW"></div></a>
+    <a class="idx" href="https://finance.yahoo.com/quote/JPYKRW=X" target="_blank" rel="noopener"><div class="n">원/100엔 <span class="ext">↗</span></div><div class="p" id="idx_JPYKRW">—</div><div class="c" id="idxc_JPYKRW"></div></a>
   </div>
 
   <div class="keybar" id="keybar">
@@ -221,24 +227,24 @@
 
   <div class="top">
     <div class="half"><div class="lbl">역대 최고가</div><div class="big" id="ath">—</div><div class="sub" id="athDate">—</div></div>
-    <div class="half"><div class="lbl">현재 가격</div><div class="big" id="price">—</div><div class="sub" id="priceChg">—</div><div class="sub" id="priceExt" style="font-size:10px;margin-top:2px"></div></div>
+    <a class="half" id="priceLink" target="_blank" rel="noopener"><div class="lbl">현재 가격 <span class="ext">↗</span></div><div class="big" id="price">—</div><div class="sub" id="priceChg">—</div><div class="sub" id="priceExt" style="font-size:10px;margin-top:2px"></div></a>
     <div class="half"><div class="lbl">최고가 대비</div><div class="big" id="drawdown">—</div><div class="sub">고점 대비 낙폭</div></div>
   </div>
 
   <div class="grid">
-    <div class="card"><div class="t">🧠 CNN 공포탐욕</div><div class="v" id="fng">—</div><div class="s" id="fngTxt">—</div></div>
-    <div class="card"><div class="t">⚡ VIX 변동성</div><div class="v" id="vix">—</div><div class="s" id="vixTxt">—</div></div>
-    <div class="card"><div class="t">📊 RSI (14)</div><div class="v" id="rsi">—</div><div class="s">70↑과매수 / 30↓과매도</div></div>
+    <a class="card" href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener"><div class="t">🧠 CNN 공포탐욕 <span class="ext">↗</span></div><div class="v" id="fng">—</div><div class="s" id="fngTxt">—</div></a>
+    <a class="card" href="https://finance.yahoo.com/quote/%5EVIX" target="_blank" rel="noopener"><div class="t">⚡ VIX 변동성 <span class="ext">↗</span></div><div class="v" id="vix">—</div><div class="s" id="vixTxt">—</div></a>
+    <a class="card" id="rsiLink" target="_blank" rel="noopener"><div class="t">📊 RSI (14) <span class="ext">↗</span></div><div class="v" id="rsi">—</div><div class="s">70↑과매수 / 30↓과매도</div></a>
     <a class="card" id="calCard" href="https://tradingeconomics.com/united-states/calendar" target="_blank" rel="noopener">
-      <div class="t">📅 미국 중요 발표</div>
+      <div class="t">📅 미국 중요 발표 <span class="ext">↗</span></div>
       <div class="v" id="calDday" style="color:var(--red)">—</div>
       <div class="s" id="calEvent">불러오는 중…</div></a>
   </div>
 
   <div class="top" style="margin-top:12px;">
-    <div class="half"><div class="lbl">📈 10년 국채</div><div class="big" id="tnx">—</div><div class="sub">10년물 금리</div></div>
-    <div class="half"><div class="lbl">📈 2년 국채</div><div class="big" id="two">—</div><div class="sub">2년물 금리</div></div>
-    <div class="half"><div class="lbl">🔀 10Y-2Y</div><div class="big" id="spread">—</div><div class="sub" id="spreadTxt">역전 시 침체</div></div>
+    <a class="half" href="https://fred.stlouisfed.org/series/DGS10" target="_blank" rel="noopener"><div class="lbl">📈 10년 국채 <span class="ext">↗</span></div><div class="big" id="tnx">—</div><div class="sub">10년물 금리</div></a>
+    <a class="half" href="https://fred.stlouisfed.org/series/DGS2" target="_blank" rel="noopener"><div class="lbl">📈 2년 국채 <span class="ext">↗</span></div><div class="big" id="two">—</div><div class="sub">2년물 금리</div></a>
+    <a class="half" href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank" rel="noopener"><div class="lbl">🔀 10Y-2Y <span class="ext">↗</span></div><div class="big" id="spread">—</div><div class="sub" id="spreadTxt">역전 시 침체</div></a>
   </div>
 
   <div class="foot">
@@ -255,7 +261,7 @@
   <div class="warn">
     데이터: Twelve Data(가격·RSI) · FMP(VIX·국채) · CNN(공포탐욕). 무료 키 한도(FMP 250회/일 등) 때문에
     자동 새로고침은 5분 간격이며 국채·공포탐욕은 하루치를 캐시합니다. 수 분 지연·오차 가능, 매매 전 원본 재확인 필수.
-    <br><span style="opacity:.75">빌드 2026-08-04 · 15</span>
+    <br><span style="opacity:.75">빌드 2026-08-04 · 25 (XIRR 설명 도움말)</span>
   </div>
   </div><!-- /tabHome -->
 
@@ -350,7 +356,9 @@
     <div class="sec hero">
       <div class="hlab">💼 총 평가 금액</div>
       <div class="hval" id="portTotal">—</div>
+      <div class="sub" id="portPrev" style="margin:2px 0 10px;display:none;"></div>
       <div class="hbadges" id="hbadges"></div>
+      <div id="xirrHelp" style="display:none;font-size:11.5px;line-height:1.55;color:var(--sub);text-align:left;background:var(--fill);border-radius:12px;padding:10px 12px;margin:-4px 0 12px;">💡 <b>XIRR(내부수익률)</b>은 입·출금 시점까지 반영해 <b>1년 기준</b>으로 환산한 수익률입니다. '올해 총수익 ÷ 연초자산'(단순 YTD)과 달리 ① 연 단위로 환산하고 ② 돈을 넣은 시점을 고려하므로, 단순 수익률과 다를 수 있어요.</div>
       <div class="chips" id="chips"></div>
     </div>
 
@@ -366,6 +374,7 @@
         <div class="top" id="assetStats" style="margin-top:10px;display:none">
           <div class="half"><div class="lbl">최고점</div><div class="big" id="asPeak">—</div><div class="sub" id="asPeakDate">—</div></div>
           <div class="half"><div class="lbl">현재 대비 고점</div><div class="big" id="asVsPeak">—</div><div class="sub" id="asDiff">—</div></div>
+          <div class="half"><div class="lbl">올해 투자액</div><div class="big" id="asDep">—</div><div class="sub">2026 신규 입금</div></div>
         </div>
       </div>
     </div>
@@ -386,7 +395,8 @@
       </div>
       <div class="chartbox" style="height:250px;"><canvas id="donut"></canvas></div>
       <div id="modeSub" class="sub" style="text-align:center;margin-top:6px;"></div>
-      <div class="sub" style="text-align:center;font-size:10.5px;margin-top:2px;">조각을 누르면 아래 목록에서 강조됩니다</div>
+      <div id="cashInfo" style="display:none;text-align:center;margin-top:8px;font-size:13px;font-weight:700;background:var(--fill);border-radius:12px;padding:9px 10px;"></div>
+      <div class="sub" style="text-align:center;font-size:10.5px;margin-top:6px;">조각을 누르면 아래 목록에서 강조됩니다</div>
     </div>
 
     <div class="sec">
@@ -603,6 +613,34 @@ function extractCash(rows){
   }
   return 0;
 }
+function extractYearStart(rows){
+  // Portfolio 시트의 '2026 연초총자산'(= 2025.12.31 평가금액) 읽기
+  for(let r=0;r<rows.length;r++) for(let c=0;c<rows[r].length;c++){
+    const nb=(rows[r][c]||"").toString().replace(/\s/g,"");
+    if(nb.includes("연초총자산")){
+      for(let rr=r+1;rr<Math.min(rows.length,r+4);rr++){ const v=pnum(rows[rr]&&rows[rr][c]); if(v>0) return v; }
+      for(let k=c+1;k<rows[r].length;k++){ const v=pnum(rows[r][k]); if(v>0) return v; }
+    }
+  }
+  return null;
+}
+function extractDeposits2026(rows){
+  // Portfolio 시트의 '2026년 입출금 금액(반전)' 열을 합산 → 부호 반전(입금=양수)
+  let pos=null;
+  for(let r=0;r<rows.length && !pos;r++) for(let c=0;c<rows[r].length;c++){
+    const nb=(rows[r][c]||"").toString().replace(/\s/g,"");
+    if(nb.includes("입출금금액")){ pos={r,c}; break; }
+  }
+  if(!pos) return null;
+  let sum=0, found=false, blanks=0;
+  for(let r=pos.r+1;r<rows.length;r++){
+    const raw=(rows[r] && rows[r][pos.c]); const s=(raw==null?"":String(raw)).trim();
+    const v=pnum(s);
+    if(s!=="" && isFinite(v)){ sum+=v; found=true; blanks=0; }
+    else { blanks++; if(found && blanks>=4) break; }
+  }
+  return found? -sum : null;
+}
 function extractXirrSheet(rows){
   // 시트가 직접 계산한 "연환산 수익률 XIRR" 값(%)을 그대로 사용
   for(let r=0;r<rows.length;r++) for(let c=0;c<rows[r].length;c++){
@@ -712,7 +750,7 @@ async function loadPortfolio(){
     sres.flat.forEach(s=>{ const k=s.theme||"기타"; (th[k]||(th[k]={t:k,v:0})).v+=s.v; });
     const cashAmt=extractCash(rows0)||sres.cash||0;
     if(cashAmt>0) (th["현금"]=th["현금"]||{t:"현금",v:0}).v+=cashAmt;
-    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:cashAmt, xirrSheet:extractXirrSheet(rows0)};
+    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:cashAmt, xirrSheet:extractXirrSheet(rows0), deposits2026:extractDeposits2026(rows0), yearStart:extractYearStart(rows0)};
     drawHero(); drawAsset(); drawMonthly(); drawPort(); drawQuotes();
     st.textContent="업데이트 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
     document.getElementById("csvbar").style.display="none";
@@ -799,6 +837,12 @@ function drawPort(){
       `${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
       `<span>${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>`).join("");
   }
+  const ci=document.getElementById("cashInfo");
+  if(ci){
+    const tt=(PORT.byTheme||[]).reduce((s,x)=>s+x.v,0)||PORT.total||mt;
+    if(PORT.cash>0 && tt>0){ ci.style.display="block"; ci.innerHTML=`💵 현금 보유율 <b style="color:var(--accent)">${(PORT.cash/tt*100).toFixed(1)}%</b> · <b style="color:var(--ink)">${cur}${Math.round(PORT.cash).toLocaleString("en-US")}</b>`; }
+    else ci.style.display="none";
+  }
 }
 // 전일대비 수익금(원)과 전일대비 수익률(%): history 탭의 일별 총수익금 변화로 계산
 function dailyGain(){
@@ -834,17 +878,28 @@ function xirr(){
   for(let i=0;i<200;i++){ const mid=(lo+hi)/2, fm=npv(mid); r=mid; if(Math.abs(fm)<1) break; if((flo<0)===(fm<0)){lo=mid;flo=fm;}else hi=mid; }
   return isFinite(r)?r*100:null;
 }
+function toggleXirrHelp(){ const e=document.getElementById("xirrHelp"); if(e) e.style.display=(e.style.display==="none"||!e.style.display)?"block":"none"; }
 function drawHero(){
   if(!PORT) return;
   const cur=PORT.cur, m=(PORT.summ&&PORT.summ.metrics)||{};
   const M=v=>{ const n=pnum(v); return isNaN(n)?(v||"-"):cur+n.toLocaleString("en-US",{maximumFractionDigits:0}); };
   const rate=m["총수익률"], rn=pnum(rate);
+  const ys=PORT.yearStart;
+  const pp=document.getElementById("portPrev");
+  if(pp){
+    if(ys>0){ pp.innerHTML=`2025.12.31 평가금액 <b style="color:var(--ink)">${cur}${Math.round(ys).toLocaleString("en-US")}</b>`; pp.style.display="block"; }
+    else pp.style.display="none";
+  }
+  // YTD 단순 수익률 = 2026 총수익 ÷ 연초자산
+  const prof=pnum(m["총수익"]);
+  const ytdRet=(ys>0 && isFinite(prof)) ? prof/ys*100 : null;
+  const ytdBadge = ytdRet!=null ? `<span class="badge2" style="background:${ytdRet<0?'#fdeaea':'#e7f7ee'};color:${ytdRet<0?'#c0343a':'#0f7a43'}">YTD ${(ytdRet>=0?'+':'')+ytdRet.toFixed(2)}%</span>` : "";
   const badges=document.getElementById("hbadges");
   const xSheet=(PORT.xirrSheet!=null)?PORT.xirrSheet:null;
   const xr = xSheet!=null ? xSheet : xirr();
   const xLab = xSheet!=null ? "연환산 XIRR" : "연환산 XIRR·추정";
-  const xBadge = xr!=null ? `<span class="badge2" style="background:${xr<0?'#eef2f7':'#efeafe'};color:${xr<0?'#5b6472':'#6c4cf1'}">${xLab} ${(xr>0?'+':'')+xr.toFixed(2)}%</span>` : "";
-  badges.innerHTML = (rate? `<span class="badge2" style="background:${rn<0?'#fdeaea':'#e7f7ee'};color:${rn<0?'#c0343a':'#0f7a43'}">총 수익률 ${rate}</span>`:"") + xBadge;
+  const xBadge = xr!=null ? `<span class="badge2" style="background:${xr<0?'#eef2f7':'#efeafe'};color:${xr<0?'#5b6472':'#6c4cf1'}">${xLab} ${(xr>0?'+':'')+xr.toFixed(2)}%</span><span class="qhelp" onclick="toggleXirrHelp()">?</span>` : "";
+  badges.innerHTML = (rate? `<span class="badge2" style="background:${rn<0?'#fdeaea':'#e7f7ee'};color:${rn<0?'#c0343a':'#0f7a43'}">총 수익률 ${rate}</span>`:"") + ytdBadge + xBadge;
   const dgObj=dailyGain(), dg=dgObj.won, dgp=dgObj.pct;
   const sc=v=>{ const n=pnum(v); return isNaN(n)?'var(--ink)':n<0?'var(--blue)':n>0?'var(--red)':'var(--ink)'; };
   const dgCol = dg==null?'var(--sub)':dg<0?'var(--blue)':dg>0?'var(--red)':'var(--sub)';
@@ -873,7 +928,8 @@ function drawAsset(){
     const labels=H.map(p=>p.dstr), asset=H.map(p=>p.asset), inv=H.map(p=>p.invest);
     assetChart=new Chart(el,{type:"line",data:{labels,datasets:[
       {label:"자산",data:asset,borderColor:"#7c5cfc",backgroundColor:(ctx)=>{const c=ctx.chart.ctx,gr=c.createLinearGradient(0,0,0,230);gr.addColorStop(0,"rgba(124,92,252,.28)");gr.addColorStop(1,"rgba(124,92,252,.02)");return gr;},fill:true,tension:.35,pointRadius:0,borderWidth:2.5,datalabels:{display:false}},
-      {label:"원금",data:inv,borderColor:"#cbd0dc",borderDash:[4,4],fill:false,tension:.35,pointRadius:0,borderWidth:2,datalabels:{display:false}}
+      {label:"원금",data:inv,borderColor:"#cbd0dc",borderDash:[4,4],fill:false,tension:.35,pointRadius:0,borderWidth:2,datalabels:{display:false}},
+      {label:"수익금",data:H.map(p=>p.asset-p.invest),borderColor:"#00c471",fill:false,tension:.35,pointRadius:0,borderWidth:2,datalabels:{display:false}}
     ]},
     options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
       plugins:{legend:{display:true,labels:{boxWidth:12,font:{size:11}}},
@@ -901,6 +957,9 @@ function drawAsset(){
     document.getElementById("asPeakDate").textContent=peakKey?pk(peakKey):"—";
     const vp=document.getElementById("asVsPeak"); vp.textContent=(vsPeak>0?"+":"")+vsPeak.toFixed(2)+"%"; vp.style.color=colOf(vsPeak);
     const df=document.getElementById("asDiff"); df.textContent=(diff>0?"+":diff<0?"-":"")+cur+short2(Math.abs(diff)); df.style.color=colOf(diff);
+    let dep=(typeof PORT.deposits2026==="number"&&isFinite(PORT.deposits2026))?PORT.deposits2026:null;
+    if(dep==null){ dep=H.length?(H[H.length-1].invest-H[0].invest):0; if(!(dep>0)) dep=H.length?H[H.length-1].invest:0; }
+    const de=document.getElementById("asDep"); if(de) de.textContent=cur+short2(dep);
     if(stats) stats.style.display="flex";
   } else if(note){
     note.textContent="history 탭을 아직 못 읽었습니다 (게시 전파 지연일 수 있어요). 잠시 후 새로고침하세요.";
@@ -1134,18 +1193,27 @@ async function loadBonds(){
   const today=new Date().toISOString().slice(0,10);
   let row=bondCache.data;
   if(bondCache.date!==today || !row){
-    const arr=await fmp(`treasury-rates`);
-    row=Array.isArray(arr)?arr[0]:arr;
+    const iso=d=>d.toISOString().slice(0,10);
+    const from=iso(new Date(Date.now()-14*864e5)), to=iso(new Date());
+    let arr;
+    try{ arr=await fmp(`treasury-rates?from=${from}&to=${to}`); }
+    catch(e){ arr=await fmp(`treasury-rates`); }
+    const list=Array.isArray(arr)?arr.slice():(arr?[arr]:[]);
+    // 최신 날짜 선택
+    list.sort((a,b)=>String(b&&b.date||"").localeCompare(String(a&&a.date||"")));
+    row=list[0]||{};
     bondCache={date:today,data:row};
   }
-  const y10=parseFloat(row.year10 ?? row["10 year"]);
-  const y2 =parseFloat(row.year2  ?? row["2 year"]);
+  const num=(...keys)=>{ for(const k of keys){ const v=row[k]; if(v!=null && !isNaN(parseFloat(v))) return parseFloat(v); } return NaN; };
+  const y10=num("year10","10 year","tenYear","year_10");
+  const y2 =num("year2","2 year","twoYear","year_2");
   document.getElementById("tnx").textContent=fmt(y10,2)+"%"; document.getElementById("tnx").style.color="var(--green)";
   document.getElementById("two").textContent=fmt(y2,2)+"%";  document.getElementById("two").style.color="var(--green)";
   const sp=y10-y2, se=document.getElementById("spread");
-  se.textContent=(sp>=0?"+":"")+fmt(sp,2)+"%p";
+  se.textContent=(isNaN(sp)?"—":(sp>=0?"+":"")+fmt(sp,2)+"%p");
   se.style.color=sp<0?"var(--red)":"var(--ink)";
-  document.getElementById("spreadTxt").textContent=sp<0?"⚠ 역전(침체 경계)":"정상(비역전)";
+  const asof=row&&row.date?String(row.date).slice(5).replace("-","/"):"";
+  document.getElementById("spreadTxt").textContent=(sp<0?"⚠ 역전(침체 경계)":"정상(비역전)")+(asof?` · ${asof} 기준`:"");
 }
 
 // 미국 중요 경제 발표 D-day (FMP 캘린더, 하루 캐시)
@@ -1238,10 +1306,11 @@ function paintFNG(s,r,cached){
 
 // 상단 지수 띠 (야후 파이낸스 — Worker 경유, 없으면 공개 프록시)
 const IDX=[
-  {sym:"^KS11", id:"KS11",  dec:2},
-  {sym:"^NDX",  id:"NDX",   dec:2},
-  {sym:"^GSPC", id:"GSPC",  dec:2},
-  {sym:"KRW=X", id:"USDKRW",dec:1}
+  {sym:"^KS11",    id:"KS11",  dec:2},
+  {sym:"^NDX",     id:"NDX",   dec:2},
+  {sym:"^GSPC",    id:"GSPC",  dec:2},
+  {sym:"KRW=X",    id:"USDKRW",dec:1},
+  {sym:"JPYKRW=X", id:"JPYKRW",dec:1, mult:100}
 ];
 function idxProxy(u){
   return wkUrl ? (wkUrl+(wkUrl.includes("?")?"&":"?")+"url="+encodeURIComponent(u))
@@ -1255,9 +1324,10 @@ async function loadIndices(){
       const yu=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(x.sym)}?range=1d&interval=1d`;
       const j=await (await fetch(idxProxy(yu),{cache:"no-store"})).json();
       const m=j.chart.result[0].meta;
+      const mult=x.mult||1;
       const price=Number(m.regularMarketPrice);
       const prev=Number(m.chartPreviousClose ?? m.previousClose);
-      pe.textContent=isNaN(price)?"—":price.toLocaleString("en-US",{minimumFractionDigits:x.dec,maximumFractionDigits:x.dec});
+      pe.textContent=isNaN(price)?"—":(price*mult).toLocaleString("en-US",{minimumFractionDigits:x.dec,maximumFractionDigits:x.dec});
       if(!isNaN(price)&&!isNaN(prev)&&prev){
         const pct=(price/prev-1)*100;
         ce.textContent=(pct>=0?"▲ +":"▼ ")+pct.toFixed(2)+"%";
@@ -1496,6 +1566,7 @@ let loading=false;
 async function loadAll(){
   if(!tdKey||!fmpKey){ document.getElementById("keybar").classList.remove("hide"); return; }
   if(loading) return; loading=true;
+  updateDetailLinks();
   setStatus("loading","데이터 불러오는 중…");
   try{
     const price=await loadQuote();
@@ -1530,8 +1601,13 @@ function buildTickers(){
   });
 }
 function tick(){document.getElementById("clock").textContent=new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});}
+// 지표 타일 → 상세 출처 링크 (현재가·RSI는 선택 종목 기준)
+function updateDetailLinks(){
+  const pl=document.getElementById("priceLink"); if(pl) pl.href="https://finance.yahoo.com/quote/"+encodeURIComponent(current);
+  const rl=document.getElementById("rsiLink"); if(rl) rl.href="https://www.tradingview.com/symbols/"+encodeURIComponent(current)+"/";
+}
 
-buildTickers(); tick(); setInterval(tick,10000);
+buildTickers(); updateDetailLinks(); tick(); setInterval(tick,10000);
 if(tdKey&&fmpKey){ document.getElementById("keybar").classList.add("hide"); loadAll(true); }
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&tdKey&&fmpKey) loadAll(); });
 setInterval(()=>{ if(tdKey&&fmpKey&&!document.hidden) loadAll(); },300000);
