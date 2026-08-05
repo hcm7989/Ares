@@ -263,7 +263,7 @@
   <div class="warn">
     데이터: Twelve Data(가격·RSI) · FMP(VIX·국채) · CNN(공포탐욕). 무료 키 한도(FMP 250회/일 등) 때문에
     자동 새로고침은 5분 간격이며 국채·공포탐욕은 하루치를 캐시합니다. 수 분 지연·오차 가능, 매매 전 원본 재확인 필수.
-    <br><span style="opacity:.75">빌드 2026-08-05 · 31 (올해 투자액 소수점 제거)</span>
+    <br><span style="opacity:.75">빌드 2026-08-05 · 32 (신형 한국코드 국내 분류)</span>
   </div>
   </div><!-- /tabHome -->
 
@@ -1087,7 +1087,7 @@ function drawQuotes(){
     .map(x=>({t:x.t,code:x.code,price:x.price,day:x.day,d:num(x.day)}));
   if(!all.length){ el.innerHTML='<div class="sub" style="text-align:center;padding:8px">시세 데이터 없음</div>'; return; }
   const byd=(a,b)=>(isNaN(b.d)?-1e9:b.d)-(isNaN(a.d)?-1e9:a.d);
-  const isDom=x=>/^\d{3,6}$/.test(String(x.code||"").trim());
+  const isDom=x=>{ const c=String(x.code||"").trim().toUpperCase(); return /^\d[0-9A-Z]{5}$/.test(c) || /^\d{3,6}$/.test(c); };
   const dom=all.filter(isDom).sort(byd), foreign=all.filter(x=>!isDom(x)).sort(byd);
   const rowHtml=x=>{ const d=String(x.day||"").trim(); const neg=d.startsWith("-");
     const col=d?(neg?"var(--blue)":"var(--red)"):"var(--sub)";
