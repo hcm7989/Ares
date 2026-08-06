@@ -128,11 +128,12 @@
   .cbreak{margin-top:6px;padding-top:1px;}
   .cmini{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--sub);padding:4px 0;border-top:1px dashed var(--line);}
   .cmini b{font-weight:800;color:var(--ink);font-size:12.5px;font-variant-numeric:tabular-nums;}
-  .chip-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;}
+  .chip-h{flex-direction:row;align-items:center;justify-content:space-between;gap:8px;padding:12px;overflow:hidden;}
   .chip-h .chL{flex:0 0 auto;min-width:0;}
-  .chip-h .chR{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
-  .cmini2{display:flex;justify-content:flex-end;align-items:baseline;gap:7px;font-size:11px;color:var(--sub);white-space:nowrap;}
-  .cmini2 b{font-weight:800;font-size:12px;font-variant-numeric:tabular-nums;}
+  .chip-h .chL .v{font-size:16.5px;}
+  .chip-h .chR{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:flex-end;}
+  .cmini2{display:flex;justify-content:flex-end;align-items:baseline;gap:5px;font-size:10px;color:var(--sub);white-space:nowrap;max-width:100%;overflow:hidden;}
+  .cmini2 b{font-weight:800;font-size:11px;font-variant-numeric:tabular-nums;}
   /* 생동감 있는 진행바 */
   .pbar{position:relative;background:var(--fill);border-radius:10px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.09);}
   .pbarfill{position:relative;height:100%;width:0;border-radius:10px;overflow:hidden;
@@ -160,6 +161,8 @@
   @keyframes flashbg{0%{background:#fff3bf}100%{background:transparent}}
   .prow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line);font-size:13px;}
   .prow:last-child{border-bottom:none;}
+  .prow .pnm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .prow .pvl{flex:0 0 auto;white-space:nowrap;text-align:right;}
   .dot2{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle;flex:0 0 auto;}
   .chartbox{position:relative;width:100%;}
   .pacc{border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:0 1px 3px rgba(30,50,90,.05);margin-bottom:9px;overflow:hidden;}
@@ -954,9 +957,9 @@ function drawPort(){
   } else {
     lt.textContent = portMode==="tick"?"종목별 비중 (계좌 합산)":"유형별 비중";
     tb.innerHTML=data.map((x,i)=>
-      `<div class="prow" data-name="${x.t}"><span><span class="dot2" style="background:${colFull[i]}"></span>${x.t}`+
+      `<div class="prow" data-name="${x.t}"><span class="pnm"><span class="dot2" style="background:${colFull[i]}"></span>${x.t}`+
       `${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
-      `<span>${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>`).join("");
+      `<span class="pvl">${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>`).join("");
   }
   const ci=document.getElementById("cashInfo");
   if(ci){
@@ -1045,11 +1048,11 @@ function drawHero(){
   const wgTxt = wg==null?'-':`${wg>0?'+':wg<0?'-':''}${cur}${Math.abs(Math.round(wg)).toLocaleString("en-US")}${wgp!=null?` (${wgp>0?'+':''}${wgp.toFixed(2)}%)`:''}`;
   document.getElementById("chips").innerHTML=[
     `<div class="chip chip-h"><div class="chL"><div class="k">총 평가손익</div><div class="v" style="color:${sc(m["총평가손익"])}">${M(m["총평가손익"])}</div></div>`+
-      `<div class="chR"><div class="cmini2"><span>전일대비 수익금</span><b style="color:${dgCol}">${dgTxt}</b></div>`+
-      `<div class="cmini2"><span>1주일전 대비 수익금</span><b style="color:${wgCol}">${wgTxt}</b></div></div></div>`,
+      `<div class="chR"><div class="cmini2"><span>전일대비</span><b style="color:${dgCol}">${dgTxt}</b></div>`+
+      `<div class="cmini2"><span>1주일전</span><b style="color:${wgCol}">${wgTxt}</b></div></div></div>`,
     `<div class="chip chip-h"><div class="chL"><div class="k">26년 총수익</div><div class="v" style="color:${sc(m["총수익"])}">${M(m["총수익"])}</div></div>`+
-      `<div class="chR"><div class="cmini2"><span>26년 주식수익</span><b style="color:${sc(m["주식수익"])}">${M(m["주식수익"])}</b></div>`+
-      `<div class="cmini2"><span>무한매수 수익</span><b style="color:${sc(m["무매수익"])}">${M(m["무매수익"])}</b></div></div></div>`
+      `<div class="chR"><div class="cmini2"><span>주식수익</span><b style="color:${sc(m["주식수익"])}">${M(m["주식수익"])}</b></div>`+
+      `<div class="cmini2"><span>무한매수</span><b style="color:${sc(m["무매수익"])}">${M(m["무매수익"])}</b></div></div></div>`
   ].join("");
   // 2026 예상자산(FIRE 25% 시나리오) 대비 현재 자산 달성률
   const FIRE2026=2.12e8;
@@ -1158,8 +1161,8 @@ function drawQuotes(){
   const dom=all.filter(isDom).sort(byd), foreign=all.filter(x=>!isDom(x)).sort(byd);
   const rowHtml=x=>{ const d=String(x.day||"").trim(); const neg=d.startsWith("-");
     const col=d?(neg?"var(--blue)":"var(--red)"):"var(--sub)";
-    return `<div class="prow"><span>${x.t}${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
-      `<span><span class="scode">${x.price||""}</span> &nbsp;<b style="color:${col}">${d||"-"}</b></span></div>`; };
+    return `<div class="prow"><span class="pnm">${x.t}${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
+      `<span class="pvl"><span class="scode">${x.price||""}</span> &nbsp;<b style="color:${col}">${d||"-"}</b></span></div>`; };
   const sec=(title,arr)=> arr.length? `<div class="qgroup"><div class="qsec">${title}<span class="qn">${arr.length}</span></div>`+arr.map(rowHtml).join("")+`</div>` : "";
   el.innerHTML = (sec("🇺🇸 국외주식",foreign)+sec("🇰🇷 국내주식",dom)) || '<div class="sub" style="text-align:center;padding:8px">시세 데이터 없음</div>';
 }
