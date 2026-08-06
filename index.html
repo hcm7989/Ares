@@ -77,8 +77,8 @@
   .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
   .pulse{animation:p 1.4s infinite;}@keyframes p{0%,100%{opacity:.35}50%{opacity:1}}
   .tabbar{display:flex;gap:5px;margin:0 2px 14px;}
-  .tabbar button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--sub);padding:10px 2px;border-radius:12px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;transition:.15s;}
-  .tabbar button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(108,76,241,.32);}
+  .tabbar button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--sub);padding:10px 2px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:.15s;}
+  .tabbar button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(108,76,241,.32);font-weight:700;}
   .sec{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);padding:18px 15px;margin-bottom:12px;}
   .sec h2{font-size:15px;margin:0 0 4px;font-weight:800;}
   .sec h3{font-size:13px;margin:14px 0 4px;font-weight:800;color:var(--accent);}
@@ -907,6 +907,8 @@ function highlightRow(name){
   target.scrollIntoView({behavior:"smooth",block:"center"});
   target.classList.remove("flash"); void target.offsetWidth; target.classList.add("flash");
 }
+// 네이버 검색(주가)으로 이동
+function openNaver(q){ q=(q||"").toString().trim(); if(!q||q==="현금"||q==="💵 현금") return; window.open("https://search.naver.com/search.naver?query="+encodeURIComponent(q+" 주가"),"_blank","noopener"); }
 function drawPort(){
   if(!PORT) return;
   const cur=PORT.cur, M=v=>cur+Number(v).toLocaleString("en-US",{maximumFractionDigits:0});
@@ -957,7 +959,7 @@ function drawPort(){
   } else {
     lt.textContent = portMode==="tick"?"종목별 비중 (계좌 합산)":"유형별 비중";
     tb.innerHTML=data.map((x,i)=>
-      `<div class="prow" data-name="${x.t}"><span class="pnm"><span class="dot2" style="background:${colFull[i]}"></span>${x.t}`+
+      `<div class="prow" data-name="${x.t}" onclick="openNaver(this.dataset.name)" style="cursor:pointer"><span class="pnm"><span class="dot2" style="background:${colFull[i]}"></span>${x.t}`+
       `${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
       `<span class="pvl">${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>`).join("");
   }
@@ -1161,7 +1163,7 @@ function drawQuotes(){
   const dom=all.filter(isDom).sort(byd), foreign=all.filter(x=>!isDom(x)).sort(byd);
   const rowHtml=x=>{ const d=String(x.day||"").trim(); const neg=d.startsWith("-");
     const col=d?(neg?"var(--blue)":"var(--red)"):"var(--sub)";
-    return `<div class="prow"><span class="pnm">${x.t}${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
+    return `<div class="prow" data-name="${x.t}" onclick="openNaver(this.dataset.name)" style="cursor:pointer"><span class="pnm">${x.t}${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
       `<span class="pvl"><span class="scode">${x.price||""}</span> &nbsp;<b style="color:${col}">${d||"-"}</b></span></div>`; };
   const sec=(title,arr)=> arr.length? `<div class="qgroup"><div class="qsec">${title}<span class="qn">${arr.length}</span></div>`+arr.map(rowHtml).join("")+`</div>` : "";
   el.innerHTML = (sec("🇺🇸 국외주식",foreign)+sec("🇰🇷 국내주식",dom)) || '<div class="sub" style="text-align:center;padding:8px">시세 데이터 없음</div>';
@@ -1711,6 +1713,7 @@ function renderTreemap(tiles){
     el.style.padding=padY+"px "+padX+"px";
     el.innerHTML=html;
     el.title=`${t.sym}${t.name?" · "+t.name:""}  ${t.day==null?"":(t.day>0?"+":"")+t.day.toFixed(2)+"%"}  ·  ${Math.round(t.value).toLocaleString("en-US")}`;
+    if(!t.isCash){ el.style.cursor="pointer"; el.onclick=()=>openNaver(t.sym); }
     box.appendChild(el);
   });
 }
