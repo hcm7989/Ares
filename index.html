@@ -201,6 +201,53 @@
   .tmval{font-size:9px;color:#7a8290;margin-top:1px;font-variant-numeric:tabular-nums;}
   .maplegend{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--sub);font-weight:700;}
   .maplegend span{display:inline-block;width:26px;height:12px;border-radius:3px;}
+/* ═══ 무한매수 프리미엄 스타일 ═══ */
+#tabMuhan{font-feature-settings:"tnum" 1,"cv01" 1}
+#tabMuhan h2{color:var(--ink)}
+#tabMuhan .mh-ticker{flex:1 0 auto;min-width:152px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+#tabMuhan .mh-sum{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+#tabMuhan #muhanSummary{padding:15px 20px;border-radius:20px}
+#tabMuhan .mh-card{flex:1 1 calc(50% - 6px);min-width:150px;max-width:calc(50% - 6px);text-align:center;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .18s cubic-bezier(.2,.8,.3,1),box-shadow .18s}
+#tabMuhan .mh-card:hover{transform:translateY(-2px)}
+#tabMuhan .mh-card:active{transform:scale(.985)}
+#tabMuhan .mh-glow{position:absolute;border-radius:50%;pointer-events:none}
+#tabMuhan .mh-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--fill);border:1px solid var(--line);border-radius:20px;padding:5px 12px;color:var(--sub)}
+#tabMuhan .mh-btn{cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:9px 14px;font-size:12.5px;font-weight:700;color:var(--sub);font-family:inherit;transition:all .15s;box-shadow:var(--shadow)}
+#tabMuhan .mh-btn:hover{border-color:var(--sub)}
+#tabMuhan .mh-btn-primary{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 45%,transparent);background:color-mix(in srgb,var(--blue) 9%,var(--card))}
+#tabMuhan .mh-track{height:9px;border-radius:6px;background:var(--fill);overflow:hidden;position:relative;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}
+#tabMuhan .mh-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--green),var(--blue));box-shadow:0 0 10px rgba(34,211,138,.45);transition:width .5s cubic-bezier(.2,.8,.3,1)}
+#tabMuhan .mh-metric{background:var(--fill);padding:13px 8px}
+#tabMuhan .mh-grad-buy{background:linear-gradient(135deg,color-mix(in srgb,var(--amber) 16%,transparent),color-mix(in srgb,var(--amber) 4%,transparent));border:1px solid color-mix(in srgb,var(--amber) 32%,transparent)}
+#tabMuhan .mh-grad-sell{background:linear-gradient(135deg,color-mix(in srgb,var(--green) 16%,transparent),color-mix(in srgb,var(--green) 4%,transparent));border:1px solid color-mix(in srgb,var(--green) 32%,transparent)}
+#tabMuhan input,#tabMuhan select{transition:border-color .15s}
+#tabMuhan input:focus,#tabMuhan select:focus{border-color:var(--blue);outline:none}
+/* 무한매수 생성 모달 */
+#mhModal{position:fixed;inset:0;z-index:9999;display:none;align-items:flex-end;justify-content:center}
+#mhModal.on{display:flex}
+#mhModalBg{position:absolute;inset:0;background:rgba(15,18,30,.55);backdrop-filter:blur(3px)}
+#mhModalSheet{position:relative;width:100%;max-width:460px;max-height:92vh;background:var(--bg);border-radius:26px 26px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.3);display:flex;flex-direction:column;animation:mhUp .28s cubic-bezier(.2,.85,.3,1)}
+@keyframes mhUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+#mhModalHead{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
+#mhModalBody{overflow-y:auto;padding:16px 16px 24px;-webkit-overflow-scrolling:touch}
+.mh-mcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:6px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.mh-mrow{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+.mh-mrow:last-child{border-bottom:none}
+.mh-mlabel{font-size:14px;font-weight:600;color:var(--ink)}
+.mh-mseg{display:inline-flex;background:var(--fill);border-radius:12px;padding:4px;gap:2px}
+.mh-mseg button{border:none;background:none;cursor:pointer;padding:9px 15px;border-radius:9px;font-size:13.5px;font-weight:700;color:var(--sub);font-family:inherit;transition:all .15s}
+.mh-mseg button.on{background:var(--card);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.mh-minput{border:none;background:none;outline:none;text-align:right;font-size:15px;font-weight:700;color:var(--ink);font-family:inherit;width:100%;font-variant-numeric:tabular-nums}
+.mh-minput::placeholder{color:var(--sub);font-weight:500}
+.mh-mfield{background:var(--fill);border-radius:12px;padding:13px 15px;display:flex;align-items:center;gap:8px}
+.mh-mfield .k{font-size:13px;color:var(--sub);font-weight:600;white-space:nowrap}
+.mh-chip{cursor:pointer;border:none;background:var(--fill);border-radius:20px;padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--sub);font-family:inherit;transition:all .15s}
+.mh-chip:active{transform:scale(.96)}
+.mh-fold{cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;font-family:inherit;padding:14px 0;color:var(--blue);font-size:15px;font-weight:700}
+.mh-sign{display:inline-flex;border-radius:11px;overflow:hidden;border:1px solid var(--line)}
+.mh-sign button{border:none;cursor:pointer;padding:11px 15px;font-size:16px;font-weight:800;font-family:inherit;background:var(--fill);color:var(--sub)}
+.mh-sign button.on-pos{background:var(--red);color:#fff}
+.mh-sign button.on-neg{background:var(--blue);color:#fff}
 </style>
 </head>
 <body>
@@ -221,6 +268,7 @@
     <button id="tabBtnMap" onclick="showTab('map')">🗺️ 자산맵</button>
     <button id="tabBtnStrat" onclick="showTab('strat')">📚 전략·링크</button>
     <button id="tabBtnFire" onclick="showTab('fire')">🔥 FIRE</button>
+    <button id="tabBtnMuhan" onclick="showTab('muhan')">♾️ 무한매수</button>
   </div>
 
   <div id="tabHome">
@@ -571,24 +619,722 @@
 
   </div><!-- /tabFire -->
 
+  <!-- ═══════════════ 무한매수 탭 ═══════════════ -->
+  <div id="tabMuhan" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:2px 2px 16px">
+      <div>
+        <h2 style="margin:0;font-size:20px;font-weight:800;letter-spacing:-.4px">무한매수</h2>
+        <div style="font-size:10.5px;color:var(--sub);margin-top:2px;font-weight:500">TQQQ · SOXL · 라오어式 V4.0</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="muhanCurBtn" class="mh-btn" onclick="toggleMuhanCur()" style="border-radius:22px;min-width:58px;padding:9px 12px;font-family:ui-monospace,monospace">$ ⇄ ₩</button>
+        <button class="mh-btn mh-btn-primary" onclick="openMuhanCreate()" style="border-radius:22px;padding:9px 15px">+ 새 사이클</button>
+      </div>
+    </div>
+
+    <!-- 시세 티커 (기존 앱 데이터 연동) -->
+    <div id="muhanTicker" style="display:flex;gap:11px;margin-bottom:14px;overflow-x:auto"></div>
+
+    <!-- 진행 중 순익 + POOL -->
+    <div class="mh-sum" id="muhanSummary" style="margin-bottom:14px"></div>
+
+    <!-- 사이클 카드 (좌우 배열) -->
+    <div id="muhanCards" style="display:flex;gap:12px;flex-wrap:wrap;align-items:stretch"></div>
+
+    <!-- 상세/생성 -->
+    <div id="muhanDetail" style="margin-top:14px"></div>
+
+    <div style="margin-top:18px;font-size:10.5px;color:var(--sub);line-height:1.75;text-align:center;opacity:.8">
+      실제 주문·체결은 증권사 앱에서 · 이 앱은 계산·확인용<br>방법론 저작권: 라오어 · 3배 레버리지 원금손실 위험
+    </div>
+  </div><!-- /tabMuhan -->
+
+  <!-- 무한매수 새 사이클 모달 -->
+  <div id="mhModal">
+    <div id="mhModalBg" onclick="closeMuhanModal()"></div>
+    <div id="mhModalSheet">
+      <div id="mhModalHead">
+        <button onclick="closeMuhanModal()" style="border:none;background:none;cursor:pointer;font-size:15px;font-weight:600;color:var(--blue);font-family:inherit">취소</button>
+        <span id="mhModalTitle" style="font-size:16px;font-weight:800;color:var(--ink)">새 사이클</span>
+        <button id="mhModalSave" style="border:none;background:none;cursor:pointer;font-size:15px;font-weight:800;color:var(--blue);font-family:inherit">생성</button>
+      </div>
+      <div id="mhModalBody"></div>
+    </div>
+  </div>
+
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
 <script>
+/* ═══════════════════ 무한매수 로직 (프리미엄) ═══════════════════ */
+var MUHAN = { cycles: [], cur: "USD" };
+var MUHAN_QUOTES = { TQQQ:{price:74.11,chg:3.39}, SOXL:{price:137.08,chg:-2.26} };
+
+/* 기존 앱에서 환율(USD/KRW) 읽어오기 — idx_USDKRW 요소 활용 */
+function muhanFx(){
+  try{
+    var el=document.getElementById("idx_USDKRW");
+    if(el){ var v=parseFloat(el.textContent.replace(/[^0-9.]/g,"")); if(v>500) return v; }
+  }catch(e){}
+  return 1400; // 로드 전 기본값
+}
+
+/* 기존 앱 포트폴리오(PORT.byTicker)에서 TQQQ·SOXL 현재가·등락 읽어오기 */
+function muhanSyncQuotes(){
+  try{
+    var P = (typeof window!=="undefined" && window.PORT) ? window.PORT : null;
+    if(P && P.byTicker){
+      ["TQQQ","SOXL"].forEach(function(sym){
+        var row=P.byTicker.find(function(x){ return (x.code&&x.code.toUpperCase()===sym)||(x.t&&x.t.toUpperCase().indexOf(sym)>=0); });
+        if(row){
+          var p=parseFloat(String(row.price).replace(/[^0-9.]/g,""));
+          var d=parseFloat(String(row.day).replace(/[^0-9.\-]/g,""));
+          if(p>0) MUHAN_QUOTES[sym].price=p;
+          if(!isNaN(d)) MUHAN_QUOTES[sym].chg=d;
+        }
+      });
+    }
+  }catch(e){}
+}
+
+function muhanSave(){ try{ localStorage.setItem("dip_muhan", JSON.stringify({cycles:MUHAN.cycles,cur:MUHAN.cur})); }catch(e){} }
+function muhanLoad(){
+  try{ var s=localStorage.getItem("dip_muhan"); if(s){ var d=JSON.parse(s); if(d.cycles) MUHAN.cycles=d.cycles; if(d.cur) MUHAN.cur=d.cur; } }catch(e){}
+  if(MUHAN.cycles.length===0){
+    MUHAN.cycles=[
+      {id:1,name:"TQQQ 260622",ticker:"TQQQ",version:"V4.0",splits:20,principal:20000,bought:7469.74,remaining:12530.26,maxPct:15,avg:68.53,qty:109,T:4.08,pnl:1400.68,pnlPct:4.67,price:74.11,prevClose:73.80},
+      {id:2,name:"SOXL 260622",ticker:"SOXL",version:"V4.0",splits:20,principal:30000,bought:18000,remaining:12000,maxPct:20,avg:151.84,qty:57,T:12.20,pnl:-1802.58,pnlPct:-12.02,price:137.08,prevClose:140.25}
+    ];
+  }
+}
+
+/* num 포맷 (원본 동일) */
+function mNum(n,d){ d=(d===undefined?2:d); return (isNaN(n)||n==null)?"—":Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+/* 별% (원본 starPctV4 그대로) */
+function starPctV4(t,s,T){ if(s===20) return t==="TQQQ"?15-1.5*T:20-2*T; return t==="TQQQ"?15-0.75*T:20-T; }
+
+/* 오늘의 주문 계산 (원본 computeOrders 완전 이식: V4.0 + V2.2/V3.0 + 큰수 + 매도분할 + 폭락대비) */
+function computeMuhan(cy){
+  var ticker=cy.ticker, splits=cy.splits, version=cy.version, avg=cy.avg, qty=cy.qty, T=cy.T;
+  var principal=cy.principal, prevClose=cy.prevClose||cy.price||avg, maxPct=cy.maxPct;
+  var remaining=(cy.remaining!==undefined?cy.remaining:(principal-(cy.bought||0)));
+  // maxPct 기본값 (버전·종목별)
+  if(maxPct===undefined||maxPct===null){
+    var MP={"V2.2":{TQQQ:10,SOXL:15},"V3.0":{TQQQ:15,SOXL:20},"V4.0":{TQQQ:15,SOXL:20}};
+    maxPct=(MP[version]&&MP[version][ticker])||10;
+  }
+  var half=splits/2, secondHalf=T>=half;
+  var buys=[], sells=[];
+  var starPct, starPoint, buyPoint, perBuy;
+
+  if(version==="V4.0"){
+    perBuy=remaining/(splits-T);
+    starPct=starPctV4(ticker,splits,T);
+    starPoint=avg*(1+starPct/100); buyPoint=starPoint-0.01;
+    if(T===0 && qty===0){
+      var big=prevClose*1.12;
+      buys.push({label:"큰수",price:big,shares:Math.floor((perBuy*0.7)/big)});
+      buys.push({label:"평단",price:prevClose,shares:Math.floor((perBuy*0.3)/prevClose)});
+    } else if(!secondHalf){
+      buys.push({label:mNum(starPct,1)+"%",price:buyPoint,shares:Math.floor((perBuy/2)/buyPoint),hot:true});
+      buys.push({label:"평단",price:avg,shares:Math.floor((perBuy/2)/avg)});
+    } else {
+      buys.push({label:mNum(starPct,1)+"%",price:buyPoint,shares:Math.floor(perBuy/buyPoint),hot:true});
+    }
+    if(qty>0){
+      var qq=Math.floor(qty/4), lp=ticker==="TQQQ"?15:20;
+      sells.push({label:mNum(starPct,1)+"%",price:starPoint,shares:qq});
+      sells.push({label:"지정가",price:avg*(1+lp/100),shares:qty-qq,tag:"+"+lp+"%"});
+    }
+  } else {
+    perBuy=principal/splits;
+    var pct=secondHalf?10-T/2:maxPct; starPct=pct;
+    buyPoint=avg*(1+(secondHalf?pct:maxPct)/100); starPoint=buyPoint;
+    if(!secondHalf){
+      buys.push({label:"+"+mNum(maxPct,1)+"%",price:avg*(1+maxPct/100),shares:Math.floor((perBuy/2)/(avg*(1+maxPct/100))),hot:true});
+      buys.push({label:"평단",price:avg,shares:Math.floor((perBuy/2)/avg)});
+    } else {
+      buys.push({label:mNum(pct,1)+"%",price:avg*(1+pct/100),shares:Math.floor(perBuy/(avg*(1+pct/100))),hot:true});
+    }
+    if(qty>0){
+      var qq2=Math.floor(qty/4), sp=10-T/2;
+      sells.push({label:mNum(sp,1)+"%",price:avg*(1+sp/100),shares:qq2});
+      sells.push({label:"지정가",price:avg*1.1,shares:qty-qq2,tag:"+10%"});
+    }
+  }
+  var crash=[], b=buyPoint*0.892;
+  for(var i=0;i<5;i++){ crash.push({price:b,shares:1}); b*=0.958; }
+  return {starPct:starPct,starPoint:starPoint,buyPoint:buyPoint,perBuy:perBuy,secondHalf:secondHalf,sellLimit:avg*(ticker==="TQQQ"?1.15:1.20),buys:buys,sells:sells,crash:crash};
+}
+
+/* 체결 판정 (원본 judgeFills: 매수는 종가≤주문가, 매도는 종가≥주문가) */
+function judgeFills(buys,sells,close){
+  var out=[];
+  buys.forEach(function(o){ out.push(Object.assign({},o,{side:"buy",filled:close<=o.price})); });
+  sells.forEach(function(o){ out.push(Object.assign({},o,{side:"sell",filled:close>=o.price})); });
+  return out;
+}
+
+/* 체결 등록 → 사이클 자동 진행 (T·평단·보유·잔금·실현손익 갱신) */
+function applyFills(cy,fillDate,close,selected){
+  var qty=cy.qty, avg=cy.avg, bought=cy.bought||0, remaining=(cy.remaining!==undefined?cy.remaining:cy.principal-bought);
+  var realized=cy.realized||0;
+  var T=cy.T||0;
+  var hist=cy.hist?cy.hist.slice():[];
+  var buyCount=0; // 이번에 매수가 체결된 건수 (T 증가용)
+  selected.forEach(function(f){
+    var amt=f.price*f.shares;
+    if(f.side==="buy"){
+      var newQty=qty+f.shares;
+      avg = newQty>0 ? (avg*qty+f.price*f.shares)/newQty : f.price;
+      qty=newQty; bought+=amt; remaining-=amt;
+      buyCount++;
+      hist.unshift({date:fillDate,side:"매수",price:f.price,qty:f.shares,pnl:null,amt:amt});
+    } else {
+      var pnl=(f.price-avg)*f.shares;
+      realized+=pnl; qty-=f.shares; if(qty<0)qty=0;
+      bought=avg*qty;
+      hist.unshift({date:fillDate,side:"매도",price:f.price,qty:f.shares,pnl:pnl,amt:amt});
+    }
+  });
+  // 매수 체결이 있으면 T를 1 증가 (하루 매수 = T+1). 매도만 있으면 T 유지.
+  // 전량 매도로 보유 0이 되면 사이클 리셋(T=0)
+  if(buyCount>0) T=Math.min(cy.splits, T+1);
+  if(qty===0){ T=0; avg=0; bought=0; remaining=cy.principal; }
+  var price=MUHAN_QUOTES[cy.ticker]?MUHAN_QUOTES[cy.ticker].price:avg;
+  var pnl=(price-avg)*qty, pnlPct=avg>0?((price-avg)/avg*100):0;
+  return Object.assign({},cy,{qty:qty,avg:avg,bought:bought,remaining:remaining,realized:realized,T:T,price:price,prevClose:close,pnl:pnl,pnlPct:pnlPct,hist:hist});
+}
+
+/* 포맷 */
+function mUsd(n){ return "$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function mUsd0(n){ return "$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:0}); }
+function mSgn(n){ return (n>=0?"+":"−")+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function mKrw(n){ return "₩"+Math.round(Math.abs(n)).toLocaleString("ko-KR"); }
+function mSgnKrw(n){ return (n>=0?"+":"−")+mKrw(n); }
+function mCur(n){ return MUHAN.cur==="KRW" ? mSgnKrw(n*muhanFx()) : mSgn(n); }
+function mUsdCur(n){ return MUHAN.cur==="KRW" ? "₩"+Math.round(n*muhanFx()).toLocaleString("ko-KR") : mUsd(n); }
+function toggleMuhanCur(){ MUHAN.cur = MUHAN.cur==="USD"?"KRW":"USD"; muhanSave(); renderMuhan(); }
+
+/* CSS 변수 읽기 (테마 대응) */
+function cssv(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+/* 무한매수 종목의 최근 거래일 종가 가져오기 (야후 우선, 실패 시 TD) */
+var MH_DAILY = {}; // {TQQQ:[{date,close,chg}], SOXL:[...]}
+function muhanLoadDaily(ticker,cb){
+  if(MH_DAILY[ticker]){ if(cb)cb(MH_DAILY[ticker]); return; }
+  // 야후 차트 API (키 불필요) — 기존 앱의 idxProxy 재사용
+  var url="https://query1.finance.yahoo.com/v8/finance/chart/"+ticker+"?range=1mo&interval=1d";
+  var proxied = (typeof idxProxy==="function") ? idxProxy(url) : url;
+  fetch(proxied,{cache:"no-store"}).then(function(r){return r.json();}).then(function(j){
+    var res=j.chart.result[0];
+    var ts=res.timestamp||[];
+    var q=res.indicators.quote[0];
+    var closes=q.close||[];
+    var rows=[];
+    for(var i=0;i<ts.length;i++){
+      if(closes[i]==null) continue;
+      var d=new Date(ts[i]*1000);
+      var prev=rows.length? rows[rows.length-1].close : (i>0&&closes[i-1]!=null?closes[i-1]:closes[i]);
+      rows.push({date:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"),
+                 close:closes[i], chg: prev? ((closes[i]/prev-1)*100):0,
+                 dow:["일","월","화","수","목","금","토"][d.getDay()]});
+    }
+    // 등락률 재계산 (직전 거래일 대비)
+    for(var k=1;k<rows.length;k++){ rows[k].chg=(rows[k].close/rows[k-1].close-1)*100; }
+    MH_DAILY[ticker]=rows.slice(-10); // 최근 10거래일
+    if(cb)cb(MH_DAILY[ticker]);
+  }).catch(function(e){ if(cb)cb(null); });
+}
+
+/* 다이나믹 게이지 (원본 앱과 동일: 3색 그라데이션·틱·헤드도트·글로우) */
+var MG_ID=0;
+function muhanGauge(T,splits,size){
+  size=size||112;
+  var stroke=9, r=(size-stroke)/2, cx=size/2, cy=size/2;
+  var arc=270, circ=2*Math.PI*r, arcLen=arc/360*circ;
+  var pct=Math.min(1,T/splits), dash=pct*arcLen;
+  var second=T>=splits/2;
+  var front=["#22D3EE","#6366F1","#A855F7"], back=["#FBBF24","#F97316","#EF4444"];
+  var cols=second?back:front, headCol=cols[2];
+  var offset=-((360-arc)/2/360)*circ;
+  var startAngle=135;
+  var toRad=function(a){return a*Math.PI/180;};
+  var headAngle=startAngle+pct*arc;
+  var hx=cx+r*Math.cos(toRad(headAngle)), hy=cy+r*Math.sin(toRad(headAngle));
+  var midAngle=startAngle+arc*0.5;
+  var mx=cx+r*Math.cos(toRad(midAngle)), my=cy+r*Math.sin(toRad(midAngle));
+  var fill=cssv("--fill")||"#eee", ink=cssv("--ink")||"#191f28", sub=cssv("--sub")||"#8b95a1", card=cssv("--card")||"#fff", faint=sub;
+  // 틱
+  var ticks="", step=splits/4||1;
+  for(var i=0;i<=splits;i++){
+    var a=startAngle+(i/splits)*arc, major=(i%step===0);
+    var inner=r-stroke/2-2, outer=r-stroke/2-(major?6:4);
+    var x1=cx+inner*Math.cos(toRad(a)), y1=cy+inner*Math.sin(toRad(a));
+    var x2=cx+outer*Math.cos(toRad(a)), y2=cy+outer*Math.sin(toRad(a));
+    ticks+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+faint+'" stroke-width="'+(major?1.4:0.7)+'" opacity="'+(major?0.55:0.3)+'" stroke-linecap="round"/>';
+  }
+  var id=++MG_ID, gid="mg"+id, glowId="mgl"+id, headId="mgh"+id;
+  var head = pct>0.01 ?
+    '<circle cx="'+hx+'" cy="'+hy+'" r="'+(stroke/2+3)+'" fill="'+headCol+'" opacity="0.25"/>'+
+    '<circle cx="'+hx+'" cy="'+hy+'" r="'+(stroke/2-0.5)+'" fill="url(#'+headId+')" filter="url(#'+glowId+')"/>' : "";
+  var fs1=size*0.205, fs2=size*0.1, fs3=size*0.088;
+  return '<svg width="'+size+'" height="'+size+'" style="display:block;overflow:visible">'+
+    '<defs>'+
+      '<linearGradient id="'+gid+'" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="'+cols[0]+'"/><stop offset="50%" stop-color="'+cols[1]+'"/><stop offset="100%" stop-color="'+cols[2]+'"/></linearGradient>'+
+      '<filter id="'+glowId+'" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'+
+      '<radialGradient id="'+headId+'"><stop offset="0%" stop-color="#fff" stop-opacity="0.95"/><stop offset="60%" stop-color="'+headCol+'"/><stop offset="100%" stop-color="'+headCol+'" stop-opacity="0.6"/></radialGradient>'+
+    '</defs>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+fill+'" stroke-width="'+stroke+'" stroke-dasharray="'+arcLen+' '+(circ-arcLen)+'" stroke-dashoffset="'+offset+'" stroke-linecap="round" transform="rotate(90 '+cx+' '+cy+')"/>'+
+    ticks+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="url(#'+gid+')" stroke-width="'+stroke+'" stroke-dasharray="'+dash+' '+(circ-dash)+'" stroke-dashoffset="'+offset+'" stroke-linecap="round" transform="rotate(90 '+cx+' '+cy+')" filter="url(#'+glowId+')"/>'+
+    '<circle cx="'+mx+'" cy="'+my+'" r="2.5" fill="'+card+'" stroke="'+faint+'" stroke-width="1.5"/>'+
+    head+
+    '<text x="'+cx+'" y="'+(cy-1)+'" text-anchor="middle" fill="'+ink+'" font-size="'+fs1+'" font-weight="800" font-family="\'Pretendard Variable\',Pretendard,-apple-system,sans-serif" font-variant-numeric="tabular-nums" letter-spacing="0.5" style="font-feature-settings:\'tnum\' 1">'+T.toFixed(2)+'</text>'+
+    '<text x="'+cx+'" y="'+(cy+size*0.13)+'" text-anchor="middle" fill="'+sub+'" font-size="'+fs2+'" font-weight="600" font-family="\'Pretendard Variable\',Pretendard,-apple-system,sans-serif" font-variant-numeric="tabular-nums">/ '+splits+'</text>'+
+    '<text x="'+cx+'" y="'+(cy+size*0.25)+'" text-anchor="middle" fill="'+headCol+'" font-size="'+fs3+'" font-weight="700" font-family="\'Pretendard Variable\',Pretendard,-apple-system,sans-serif" letter-spacing="0.5">'+(second?"후반전":"전반전")+'</text>'+
+    '</svg>';
+}
+
+/* 메인 렌더 */
+function renderMuhan(){
+  if(MUHAN.cycles.length===0) muhanLoad();
+  muhanSyncQuotes();
+  var active=MUHAN.cycles.filter(function(c){return !c.done;});
+  var fx=muhanFx();
+
+  // 통화 버튼
+  var curBtn=document.getElementById("muhanCurBtn");
+  if(curBtn) curBtn.innerHTML='<span style="color:'+(MUHAN.cur==="USD"?"var(--blue)":"var(--sub)")+'">$</span><span style="color:var(--sub);margin:0 3px;font-size:10px">⇄</span><span style="color:'+(MUHAN.cur==="KRW"?"var(--blue)":"var(--sub)")+'">₩</span>';
+
+  // 시세 티커 (기존 앱 데이터)
+  var tk=document.getElementById("muhanTicker");
+  if(tk) tk.innerHTML=Object.keys(MUHAN_QUOTES).map(function(sym){
+    var q=MUHAN_QUOTES[sym], up=q.chg>=0;
+    var dirCol=up?"var(--red)":"var(--blue)";
+    return '<div class="mh-ticker">'+
+      '<div class="mh-glow" style="right:-24px;top:0;width:72px;height:100%;background:radial-gradient(circle,'+(up?"rgba(240,68,82,.09)":"rgba(49,130,246,.09)")+',transparent 72%)"></div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;position:relative">'+
+        '<span style="font-size:12.5px;font-weight:800;color:var(--ink);letter-spacing:.2px">'+sym+'</span>'+
+        '<span style="font-size:11px;font-weight:700;color:'+dirCol+';font-variant-numeric:tabular-nums">'+(up?"▲ +":"▼ ")+q.chg.toFixed(2)+'%</span>'+
+      '</div>'+
+      '<div style="display:flex;align-items:baseline;gap:7px;position:relative">'+
+        '<span style="font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.6px;font-variant-numeric:tabular-nums">'+mUsd(q.price)+'</span>'+
+        '<span style="font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums">₩'+Math.round(q.price*fx).toLocaleString("ko-KR")+'</span>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+
+  // 요약 + POOL
+  var totalPnl=active.reduce(function(s,c){return s+c.pnl;},0);
+  var budget=active.reduce(function(s,c){return s+(c.principal||0);},0);
+  var deployed=active.reduce(function(s,c){return s+(c.bought||0);},0);
+  var ratio=budget>0?deployed/budget:0, up=totalPnl>=0;
+  var sumEl=document.getElementById("muhanSummary");
+  sumEl.innerHTML=
+    '<div class="mh-glow" style="top:-40px;right:-30px;width:180px;height:180px;background:radial-gradient(circle,'+(up?"rgba(240,68,82,.12)":"rgba(49,130,246,.12)")+' 0%,transparent 70%)"></div>'+
+    '<div style="position:relative">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'+
+        '<span style="font-size:12px;color:var(--sub);font-weight:600;letter-spacing:.2px">진행 중 순익 · '+active.length+'개 사이클</span>'+
+        '<span class="mh-pill" style="font-weight:600">₩'+fx.toLocaleString("ko-KR")+' / $</span>'+
+      '</div>'+
+      '<div style="font-size:27px;font-weight:800;color:'+(up?"var(--red)":"var(--blue)")+';letter-spacing:-1.2px;line-height:1.05;font-variant-numeric:tabular-nums">'+mCur(totalPnl)+'</div>'+
+      (budget>0?(
+      '<div style="margin-top:11px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">'+
+          '<span style="font-size:11.5px;color:var(--sub);font-weight:600">POOL 투입률</span>'+
+          '<span style="font-size:11.5px;font-variant-numeric:tabular-nums"><b style="color:var(--green)">'+mUsdCur(deployed)+'</b><span style="color:var(--sub);margin:0 2px">/</span><span style="color:var(--sub)">'+mUsdCur(budget)+'</span> <b style="color:var(--ink);margin-left:3px">'+Math.round(ratio*100)+'%</b></span>'+
+        '</div>'+
+        '<div class="mh-track"><div class="mh-fill" style="width:'+Math.min(100,ratio*100)+'%"></div></div>'+
+        '<div style="text-align:right;font-size:10.5px;color:var(--sub);margin-top:3px;font-variant-numeric:tabular-nums">여유 '+mUsdCur(budget-deployed)+'</div>'+
+      '</div>'):'')+
+    '</div>';
+
+  // 사이클 카드
+  var cardsEl=document.getElementById("muhanCards");
+  if(active.length===0){ cardsEl.innerHTML='<div style="width:100%;text-align:center;padding:48px 20px;color:var(--sub);font-size:13.5px;line-height:1.8">진행 중인 사이클이 없습니다.<br>+ 새 사이클로 시작하세요.</div>'; }
+  else cardsEl.innerHTML=active.map(function(cy){
+    var cup=cy.pnl>=0, glowc=cup?"rgba(240,68,82,.11)":"rgba(49,130,246,.11)";
+    return '<div class="mh-card" onclick="openMuhanDetail('+cy.id+')">'+
+      '<div class="mh-glow" style="top:-34px;right:-34px;width:140px;height:140px;background:radial-gradient(circle,'+glowc+' 0%,transparent 70%)"></div>'+
+      '<div style="position:relative">'+
+        '<div style="font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.2px">'+cy.name+'</div>'+
+        '<div style="font-size:10.5px;color:var(--sub);margin-top:3px;font-weight:500;letter-spacing:.3px">'+cy.ticker+' · '+cy.version+'</div>'+
+        '<div style="display:flex;justify-content:center;margin:14px 0 12px">'+muhanGauge(cy.T,cy.splits,116)+'</div>'+
+        '<div style="font-size:20px;font-weight:800;color:'+(cup?"var(--red)":"var(--blue)")+';letter-spacing:-.7px;font-variant-numeric:tabular-nums">'+mCur(cy.pnl)+'</div>'+
+        '<div style="font-size:12px;font-weight:700;color:'+(cup?"var(--red)":"var(--blue)")+';margin-top:3px;font-variant-numeric:tabular-nums">'+(cup?"+":"")+cy.pnlPct.toFixed(2)+'%</div>'+
+        '<div style="display:flex;flex-direction:column;gap:0;margin-top:14px;border-top:1px solid var(--line)">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)"><span style="font-size:11px;color:var(--sub);font-weight:500">보유</span><b style="font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums">'+cy.qty+'주</b></div>'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0"><span style="font-size:11px;color:var(--sub);font-weight:500">평단</span><b style="font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsdCur(cy.avg)+'</b></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+  document.getElementById("muhanDetail").innerHTML="";
+  muhanSave();
+}
+
+/* 상세: 오늘의 주문 가이드 */
+function openMuhanDetail(id){
+  var cy=MUHAN.cycles.find(function(c){return c.id===id;});
+  if(!cy) return;
+  var r=computeMuhan(cy);
+  var el=document.getElementById("muhanDetail");
+  // 매수 주문 행
+  var buyRows=r.buys.map(function(o){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">'+
+      '<span style="font-size:14px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(o.price)+'<span style="font-size:11px;color:var(--sub)"> ×'+o.shares+'</span></span>'+
+      '<span style="font-size:10px;font-weight:700;color:var(--amber);background:color-mix(in srgb,var(--amber) 14%,transparent);padding:4px 9px;border-radius:12px">'+(o.tag||o.label)+'</span>'+
+    '</div>';
+  }).join("");
+  // 폭락 대비 행
+  var crashRows='<div style="font-size:10px;color:var(--sub);margin:11px 0 5px;letter-spacing:1.2px">폭락 대비</div>'+
+    r.crash.map(function(c){ return '<div style="display:flex;justify-content:space-between;padding:5px 0"><span style="font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums">'+mUsd(c.price)+'</span><span style="font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums">×'+c.shares+'</span></div>'; }).join("");
+  // 매도 주문 행
+  var sellRows = r.sells.length ? r.sells.map(function(o){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">'+
+      '<span style="font-size:14px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(o.price)+'<span style="font-size:11px;color:var(--sub)"> ×'+o.shares+'</span></span>'+
+      '<span style="font-size:10px;font-weight:700;color:var(--green);background:color-mix(in srgb,var(--green) 14%,transparent);padding:4px 9px;border-radius:12px">'+(o.tag||o.label)+'</span>'+
+    '</div>';
+  }).join("") : '<div style="font-size:12px;color:var(--sub);padding:14px 0;text-align:center">보유 수량이 없어<br>매도 주문이 없습니다</div>';
+
+  var phase = (cy.T===0&&cy.qty===0) ? "첫 매수 (T0)" : (r.secondHalf?"후반전":"전반전");
+  el.innerHTML=
+    '<div class="mh-sum" style="text-align:left">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'+
+        '<div><div style="font-size:16.5px;font-weight:800;color:var(--ink);letter-spacing:-.3px">'+cy.name+'</div>'+
+        '<div style="font-size:10.5px;color:var(--sub);margin-top:2px;font-weight:500">'+cy.ticker+' · '+cy.version+' · '+cy.splits+'분할 · '+phase+'</div></div>'+
+        '<button class="mh-btn" onclick="renderMuhan()" style="padding:7px 13px;font-size:12px">✕ 닫기</button>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:16px">'+
+        muhanCell("평단",mUsd(cy.avg))+muhanCell("보유",cy.qty+"주")+muhanCell("☆%",mNum(r.starPct,1)+"%")+muhanCell("1회매수금",mUsd(r.perBuy))+
+      '</div>'+
+      '<div style="font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.2px">오늘의 주문 가이드</div>'+
+      '<div style="font-size:10.5px;color:var(--sub);margin:3px 0 13px">증권사 앱에 이대로 주문하세요 · '+(cy.version==="V4.0"?"매수점=별지점−$0.01":"")+'</div>'+
+      '<div style="display:flex;gap:11px;align-items:flex-start">'+
+        '<div class="mh-grad-buy" style="flex:1;border-radius:16px;padding:14px 15px">'+
+          '<div style="font-size:11px;font-weight:800;color:var(--amber);margin-bottom:6px;letter-spacing:.3px">매수 · LOC</div>'+
+          buyRows+crashRows+
+        '</div>'+
+        '<div class="mh-grad-sell" style="flex:1;border-radius:16px;padding:14px 15px">'+
+          '<div style="font-size:11px;font-weight:800;color:var(--green);margin-bottom:6px;letter-spacing:.3px">매도 · LOC/지정가</div>'+
+          sellRows+
+        '</div>'+
+      '</div>'+
+      '<div style="margin-top:14px;font-size:10px;color:var(--sub);line-height:1.7;background:var(--fill);border-radius:12px;padding:12px 14px">'+
+        '<b style="color:var(--ink)">주문 타이밍</b> · LOC는 본장 접수 · 지정가 매도는 프리장 시작에 걸어 애프터까지 유지 · 주간장 금지'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;margin-top:14px">'+
+        '<button class="mh-btn" onclick="editMuhan('+cy.id+')" style="flex:1">✎ 수정</button>'+
+        '<button class="mh-btn" onclick="deleteMuhan('+cy.id+')" style="flex:1;color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,transparent)">🗑 삭제</button>'+
+      '</div>'+
+    '</div>'+
+    // ── 체결 기록 등록 카드 ──
+    renderFillSection(cy,r);
+  if(el.scrollIntoView)el.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+/* 체결 기록 등록 섹션 (스크린샷 디자인) */
+var MH_FILL = { cycleId:null, close:"", date:"" };
+function renderFillSection(cy,r){
+  var today=new Date();
+  var dstr=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");
+  if(MH_FILL.cycleId!==cy.id){ MH_FILL={cycleId:cy.id,close:"",date:dstr}; }
+  var close=parseFloat(MH_FILL.close);
+  var hasClose=!isNaN(close)&&close>0;
+  var fills = hasClose ? judgeFills(r.buys,r.sells,close) : [];
+  var limitPrice=cy.avg*(cy.ticker==="TQQQ"?1.15:1.20);
+
+  // 가격 축 (평단·별지점·지정가 마커 + 체결가 위치)
+  var axis="";
+  if(hasClose){
+    var lo=Math.min(cy.avg,close)*0.985, hi=Math.max(limitPrice,close)*1.015;
+    var pos=function(p){ return Math.max(0,Math.min(100,((p-lo)/(hi-lo))*100)); };
+    axis='<div style="position:relative;height:9px;border-radius:6px;margin:26px 0 30px;background:linear-gradient(90deg,var(--red) 0%,color-mix(in srgb,var(--red) 35%,transparent) 38%,color-mix(in srgb,var(--blue) 35%,transparent) 62%,var(--blue) 100%)">'+
+      [{l:"평단",p:cy.avg,c:"var(--sub)"},{l:"☆ "+mNum(r.starPct,1)+"%",p:r.starPoint,c:"var(--amber)"},{l:"+"+(cy.ticker==="TQQQ"?"15":"20")+"%",p:limitPrice,c:"var(--blue)"}].map(function(m){
+        return '<div style="position:absolute;left:'+pos(m.p)+'%;top:-3px;width:2px;height:15px;background:'+m.c+';transform:translateX(-50%);border-radius:2px"></div>'+
+          '<div style="position:absolute;left:'+pos(m.p)+'%;top:16px;transform:translateX(-50%);text-align:center;white-space:nowrap"><div style="font-size:9px;color:var(--sub)">'+m.l+'</div><div style="font-size:10px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(m.p)+'</div></div>';
+      }).join("")+
+      '<div style="position:absolute;left:'+pos(close)+'%;top:-6px;width:14px;height:21px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center"><div style="width:11px;height:11px;border-radius:11px;background:var(--accent);border:2.5px solid var(--card);box-shadow:0 0 8px var(--accent)"></div></div>'+
+    '</div>';
+  }
+
+  // 체결 판정 행
+  var judgeRows = hasClose ? fills.map(function(f){
+    var col=f.side==="buy"?"var(--red)":"var(--blue)";
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:12px;margin-bottom:6px;background:'+(f.filled?"color-mix(in srgb,"+col+" 12%,transparent)":"transparent")+';opacity:'+(f.filled?1:0.4)+';border:1px solid '+(f.filled?"color-mix(in srgb,"+col+" 30%,transparent)":"transparent")+'">'+
+      '<span style="font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px">'+
+        '<span style="width:7px;height:7px;border-radius:7px;background:'+(f.filled?col:"var(--sub)")+';box-shadow:'+(f.filled?"0 0 6px "+col:"none")+'"></span>'+
+        (f.tag||f.label)+' '+(f.side==="buy"?"매수":"매도")+'</span>'+
+      '<span style="font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums">'+mUsd(f.price)+' ×'+f.shares+'</span>'+
+    '</div>';
+  }).join("") : '<div style="font-size:12px;color:var(--sub);text-align:center;padding:16px">체결가를 입력하면<br>어떤 주문이 체결됐는지 판정합니다</div>';
+
+  // 매매 히스토리
+  var hist=cy.hist||[];
+  var histRows = hist.length ? hist.slice(0,6).map(function(h){
+    var isBuy=h.side==="매수";
+    return '<div style="padding:12px 0;border-bottom:1px solid var(--line)">'+
+      '<div style="font-size:11px;color:var(--sub);margin-bottom:5px">'+h.date+'</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="display:flex;align-items:center;gap:8px">'+
+          '<span style="font-size:10px;font-weight:700;color:'+(isBuy?"var(--red)":"var(--blue)")+';background:color-mix(in srgb,'+(isBuy?"var(--red)":"var(--blue)")+' 13%,transparent);padding:3px 8px;border-radius:8px">'+h.side+'</span>'+
+          '<b style="font-size:13.5px;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(h.price)+' × '+h.qty+'주</b>'+
+        '</span>'+
+        '<span style="text-align:right">'+(h.pnl!=null?'<span style="font-size:12px;font-weight:700;color:'+(h.pnl>=0?"var(--red)":"var(--blue)")+';font-variant-numeric:tabular-nums">'+(h.pnl>=0?"+":"−")+"$"+mNum(Math.abs(h.pnl))+'</span> ':'')+'<span style="font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums">$'+mNum(h.amt)+'</span></span>'+
+      '</div>'+
+    '</div>';
+  }).join("") : '<div style="font-size:12px;color:var(--sub);text-align:center;padding:16px">아직 체결 기록이 없습니다</div>';
+
+  return '<div class="mh-sum" style="text-align:left;margin-top:14px">'+
+    '<div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:3px">체결 기록 등록</div>'+
+    '<div style="font-size:10.5px;color:var(--sub);margin-bottom:14px">날짜를 선택하거나 종가를 입력하면 체결 여부를 판정하고, 등록 시 사이클이 진행됩니다</div>'+
+    // 날짜 카드 (최근 거래일 종가·등락률) — 클릭 시 자동 입력
+    '<div id="mhDayCards_'+cy.id+'" style="display:flex;gap:8px;overflow-x:auto;margin-bottom:6px;padding-bottom:4px">'+
+      renderDayCards(cy.ticker)+
+    '</div>'+
+    '<div style="text-align:center;font-size:10px;color:var(--sub);margin-bottom:14px">← 스크롤하여 이전 날짜</div>'+
+    '<div style="display:flex;gap:10px;margin-bottom:14px">'+
+      '<div class="mh-mfield" style="flex:1"><span class="k">체결일</span><input class="mh-minput" style="text-align:left" value="'+MH_FILL.date+'" oninput="MH_FILL.date=this.value"></div>'+
+      '<div class="mh-mfield" style="flex:1"><span class="k">종가</span><span style="color:var(--sub);font-size:13px">$</span><input class="mh-minput" type="number" placeholder="0.00" value="'+MH_FILL.close+'" oninput="MH_FILL.close=this.value;refreshFillSection('+cy.id+')"></div>'+
+    '</div>'+
+    axis+
+    '<div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:10px">체결 판정</div>'+
+    judgeRows+
+    (hasClose?'<button class="mh-btn" style="width:100%;margin-top:12px;color:#fff;background:linear-gradient(135deg,var(--blue),var(--accent));border:none;padding:15px;font-size:14px" onclick="submitFills('+cy.id+')">체결 기록 등록</button>':'')+
+    '<div style="font-size:13px;font-weight:800;color:var(--ink);margin:20px 0 6px">매매 히스토리 <span style="font-size:11px;color:var(--sub);font-weight:600">· '+hist.length+'건</span></div>'+
+    histRows+
+  '</div>';
+}
+
+/* 날짜 카드 렌더 (최근 5거래일) */
+function renderDayCards(ticker){
+  var rows=MH_DAILY[ticker];
+  if(!rows){
+    // 비동기 로드 시작 → 완료되면 해당 사이클 카드만 갱신
+    muhanLoadDaily(ticker,function(){ 
+      var cy=MUHAN.cycles.find(function(c){return c.ticker===ticker && !c.done;});
+      // 열려있는 상세의 날짜카드 갱신
+      document.querySelectorAll('[id^="mhDayCards_"]').forEach(function(el){ el.innerHTML=renderDayCards(ticker); });
+    });
+    return '<div style="font-size:11px;color:var(--sub);padding:14px;text-align:center;width:100%">최근 종가 불러오는 중…</div>';
+  }
+  var recent=rows.slice(-5);
+  var sel=MH_FILL.close;
+  return recent.map(function(w){
+    var up=w.chg>=0;
+    var active = sel && Math.abs(parseFloat(sel)-w.close)<0.005;
+    return '<button onclick="pickDayCard(\''+ticker+'\',\''+w.date+'\','+w.close+')" style="flex:0 0 auto;min-width:72px;cursor:pointer;background:'+(active?"color-mix(in srgb,var(--accent) 10%,var(--card))":"var(--card)")+';border:1.5px solid '+(active?"var(--accent)":"var(--line)")+';border-radius:14px;padding:10px 8px;text-align:center;font-family:inherit">'+
+      '<div style="font-size:9.5px;color:var(--sub);margin-bottom:3px">'+w.dow+'</div>'+
+      '<div style="font-size:10px;font-weight:600;color:'+(active?"var(--accent)":"var(--sub)")+';margin-bottom:4px;font-variant-numeric:tabular-nums">'+w.date.slice(5)+'</div>'+
+      '<div style="font-size:13px;font-weight:700;color:'+(active?"var(--accent)":"var(--ink)")+';font-variant-numeric:tabular-nums">$'+mNum(w.close)+'</div>'+
+      '<div style="font-size:10px;font-weight:600;color:'+(up?"var(--red)":"var(--blue)")+';margin-top:2px;font-variant-numeric:tabular-nums">'+(up?"+":"")+mNum(w.chg)+'%</div>'+
+    '</button>';
+  }).join("");
+}
+/* 날짜 카드 클릭 → 체결가·체결일 자동 입력 */
+function pickDayCard(ticker,date,close){
+  MH_FILL.close=String(close);
+  MH_FILL.date=date;
+  var cy=MUHAN.cycles.find(function(c){return c.ticker===ticker && !c.done;});
+  if(cy) refreshFillSection(cy.id);
+}
+function refreshFillSection(id){
+  var cy=MUHAN.cycles.find(function(c){return c.id===id;}); if(!cy) return;
+  var r=computeMuhan(cy);
+  // 체결 섹션만 다시 그리기 (상세 전체 리렌더 대신 해당 카드 교체)
+  var detail=document.getElementById("muhanDetail");
+  var cards=detail.querySelectorAll(".mh-sum");
+  if(cards.length>=2){ cards[cards.length-1].outerHTML=renderFillSection(cy,r); }
+}
+function submitFills(id){
+  var cy=MUHAN.cycles.find(function(c){return c.id===id;}); if(!cy) return;
+  var close=parseFloat(MH_FILL.close);
+  if(isNaN(close)||close<=0){ alert("종가를 입력하세요."); return; }
+  var r=computeMuhan(cy);
+  var fills=judgeFills(r.buys,r.sells,close).filter(function(f){return f.filled;});
+  if(fills.length===0){ if(!confirm("체결된 주문이 없습니다. 그래도 기록할까요?")) return; }
+  var msg=fills.map(function(f){return (f.side==="buy"?"매수":"매도")+" "+mUsd(f.price)+"×"+f.shares;}).join("\n");
+  if(!confirm("다음 체결을 반영합니다:\n\n"+msg+"\n\n사이클의 평단·보유·T값이 갱신됩니다.")) return;
+  var updated=applyFills(cy,MH_FILL.date,close,fills);
+  var i=MUHAN.cycles.findIndex(function(c){return c.id===id;});
+  MUHAN.cycles[i]=updated;
+  MH_FILL={cycleId:null,close:"",date:""};
+  muhanSave();
+  openMuhanDetail(id); // 갱신된 상태로 다시 열기
+}
+function muhanCell(l,v){ return '<div class="mh-metric"><div style="font-size:10px;color:var(--sub);margin-bottom:5px;font-weight:500">'+l+'</div><div style="font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:-.2px;font-variant-numeric:tabular-nums">'+v+'</div></div>'; }
+function deleteMuhan(id){
+  var cy=MUHAN.cycles.find(function(c){return c.id===id;});
+  if(cy && confirm('"'+cy.name+'" 사이클을 삭제할까요?')){
+    MUHAN.cycles=MUHAN.cycles.filter(function(c){return c.id!==id;});
+    renderMuhan();
+  }
+}
+
+/* ── 새 사이클 모달 (스크린샷 디자인) ── */
+var MH_FORM = {}; // 폼 임시 상태
+function openMuhanCreate(editId){
+  var cy = editId ? MUHAN.cycles.find(function(c){return c.id===editId;}) : null;
+  var today=new Date(); var ymd=today.getFullYear()+"."+String(today.getMonth()+1).padStart(2,"0")+"."+String(today.getDate()).padStart(2,"0");
+  MH_FORM = cy ? {
+    editId:editId, name:cy.name, ticker:cy.ticker, version:cy.version, splits:cy.splits, maxPct:(cy.maxPct!==undefined?cy.maxPct:10),
+    principal:cy.principal, fee:(cy.fee!==undefined?cy.fee:0), startDate:cy.startDate||ymd, avg:cy.avg, qty:cy.qty, foldOpen:true,
+    sells:(cy.sellHist?cy.sellHist.slice():[]), sSign:"pos", sDate:"", sPrice:"", sQty:"", sPnl:""
+  } : {
+    editId:0, name:"", ticker:"TQQQ", version:"V2.2", splits:20, maxPct:10, principal:"", fee:0, startDate:ymd,
+    avg:"", qty:"", foldOpen:false, sells:[], sSign:"pos", sDate:"", sPrice:"", sQty:"", sPnl:""
+  };
+  document.getElementById("mhModalTitle").textContent = cy ? "사이클 수정" : "새 사이클";
+  document.getElementById("mhModalSave").textContent = cy ? "저장" : "생성";
+  document.getElementById("mhModalSave").onclick = function(){ saveMuhan(MH_FORM.editId); };
+  renderMuhanModalBody();
+  document.getElementById("mhModal").classList.add("on");
+  document.body.style.overflow="hidden";
+}
+function closeMuhanModal(){ document.getElementById("mhModal").classList.remove("on"); document.body.style.overflow=""; }
+function editMuhan(id){ openMuhanCreate(id); }
+
+/* 버전별 max% 기본값 */
+function mhDefaultMax(version,ticker){ var MP={"V2.2":{TQQQ:10,SOXL:15},"V3.0":{TQQQ:15,SOXL:20},"V4.0":{TQQQ:15,SOXL:20}}; return (MP[version]&&MP[version][ticker])||10; }
+
+function mhSet(k,v){ MH_FORM[k]=v; if(k==="version"||k==="ticker"){ MH_FORM.maxPct=mhDefaultMax(MH_FORM.version,MH_FORM.ticker); } renderMuhanModalBody(); }
+function mhSetField(k,v){ MH_FORM[k]=v; } // 리렌더 없이 값만 저장(입력 중 포커스 유지)
+
+function renderMuhanModalBody(){
+  var f=MH_FORM;
+  var FEES=[["메리츠",0.07],["토스",0.1],["카카오페이",0.1],["키움",0.25],["한투",0.25],["삼성",0.25]];
+  var b=document.getElementById("mhModalBody");
+  b.innerHTML=
+    // 기본 정보 카드
+    '<div class="mh-mcard">'+
+      '<div class="mh-mrow"><span class="mh-mlabel">사이클명</span>'+
+        '<input class="mh-minput" style="max-width:60%" placeholder="TQQQ 1차" value="'+(f.name||"")+'" oninput="mhSetField(\'name\',this.value)"></div>'+
+      '<div class="mh-mrow"><span class="mh-mlabel">종목</span>'+
+        '<div class="mh-mseg">'+
+          '<button class="'+(f.ticker==="TQQQ"?"on":"")+'" onclick="mhSet(\'ticker\',\'TQQQ\')">TQQQ</button>'+
+          '<button class="'+(f.ticker==="SOXL"?"on":"")+'" onclick="mhSet(\'ticker\',\'SOXL\')">SOXL</button>'+
+        '</div></div>'+
+      '<div class="mh-mrow"><span class="mh-mlabel">버전</span>'+
+        '<div class="mh-mseg">'+
+          ['V2.2','V3.0','V4.0'].map(function(v){return '<button class="'+(f.version===v?"on":"")+'" onclick="mhSet(\'version\',\''+v+'\')">'+v+'</button>';}).join("")+
+        '</div></div>'+
+    '</div>'+
+    // 설정 카드
+    '<div class="mh-mcard" style="padding:16px">'+
+      '<div style="display:flex;gap:10px;margin-bottom:10px">'+
+        '<div class="mh-mfield" style="flex:1"><span class="k">분할</span><input class="mh-minput" type="number" value="'+(f.splits||"")+'" oninput="mhSetField(\'splits\',this.value)"></div>'+
+        '<div class="mh-mfield" style="flex:1"><span class="k">max%</span><input class="mh-minput" type="number" value="'+(f.maxPct||"")+'" oninput="mhSetField(\'maxPct\',this.value)"></div>'+
+      '</div>'+
+      '<div class="mh-mfield"><span class="k">총 원금</span><span style="color:var(--sub);font-size:13px">$</span><input class="mh-minput" type="number" placeholder="0" value="'+(f.principal||"")+'" oninput="mhSetField(\'principal\',this.value)"></div>'+
+    '</div>'+
+    // 수수료율 카드
+    '<div class="mh-mcard" style="padding:16px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
+        '<span class="mh-mlabel">수수료율 (%)</span>'+
+        '<input class="mh-minput" style="max-width:120px;color:var(--blue)" type="number" step="0.001" value="'+(f.fee||0)+'" oninput="mhSetField(\'fee\',this.value)"></div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:8px">'+
+        FEES.map(function(x){return '<button class="mh-chip" onclick="mhSet(\'fee\','+x[1]+')">'+x[0]+' '+x[1]+'</button>';}).join("")+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--sub);margin-top:10px">이벤트/등급에 따라 다를 수 있습니다</div>'+
+    '</div>'+
+    // 기존 매매 기록 가져오기 (접이식)
+    '<div class="mh-mcard" style="padding:0 16px">'+
+      '<button class="mh-fold" onclick="mhSet(\'foldOpen\','+(!f.foldOpen)+')">기존 매매 기록 가져오기 <span style="font-size:13px">'+(f.foldOpen?"⌃":"⌄")+'</span></button>'+
+    '</div>'+
+    (f.foldOpen?(
+    // 시작 정보
+    '<div class="mh-mcard" style="padding:6px 16px">'+
+      '<div class="mh-mrow"><span class="mh-mlabel">시작 날짜</span>'+
+        '<input class="mh-minput" style="max-width:55%;color:var(--blue)" placeholder="2026.08.12" value="'+(f.startDate||"")+'" oninput="mhSetField(\'startDate\',this.value)"></div>'+
+      '<div style="display:flex;gap:10px;padding:14px 0">'+
+        '<div class="mh-mfield" style="flex:1"><span class="k">평단가</span><span style="color:var(--sub);font-size:13px">$</span><input class="mh-minput" type="number" placeholder="0" value="'+(f.avg||"")+'" oninput="mhSetField(\'avg\',this.value)"></div>'+
+        '<div class="mh-mfield" style="flex:1"><span class="k">수량</span><input class="mh-minput" type="number" placeholder="0" value="'+(f.qty||"")+'" oninput="mhSetField(\'qty\',this.value)"><span style="color:var(--sub);font-size:12px">주</span></div>'+
+      '</div>'+
+    '</div>'+
+    // 매도 이력
+    '<div class="mh-mcard" style="padding:16px">'+
+      '<div style="font-size:13px;color:var(--sub);font-weight:600;margin-bottom:12px">매도 이력</div>'+
+      (f.sells.length?('<div style="margin-bottom:10px">'+f.sells.map(function(s,i){
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--fill);border-radius:10px;margin-bottom:6px">'+
+          '<span style="font-size:12px;color:var(--ink)">'+(s.date||"-")+' · $'+mNum(s.price)+' ×'+s.qty+'</span>'+
+          '<span style="font-size:12px;font-weight:700;color:'+(s.pnl>=0?"var(--red)":"var(--blue)")+';font-variant-numeric:tabular-nums">'+(s.pnl>=0?"+":"−")+"$"+mNum(Math.abs(s.pnl))+' <span style="cursor:pointer;color:var(--sub);margin-left:6px" onclick="mhDelSell('+i+')">✕</span></span>'+
+        '</div>';
+      }).join("")+'</div>'):'')+
+      '<div class="mh-mfield" style="margin-bottom:8px"><span class="k">날짜</span><input class="mh-minput" placeholder="선택" value="'+(f.sDate||"")+'" oninput="mhSetField(\'sDate\',this.value)"></div>'+
+      '<div style="display:flex;gap:8px;margin-bottom:8px">'+
+        '<div class="mh-mfield" style="flex:1"><span class="k">매도가</span><span style="color:var(--sub);font-size:12px">$</span><input class="mh-minput" type="number" placeholder="0" value="'+(f.sPrice||"")+'" oninput="mhSetField(\'sPrice\',this.value)"></div>'+
+        '<div class="mh-mfield" style="flex:1"><span class="k">수량</span><input class="mh-minput" type="number" placeholder="0" value="'+(f.sQty||"")+'" oninput="mhSetField(\'sQty\',this.value)"><span style="color:var(--sub);font-size:12px">주</span></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;align-items:center">'+
+        '<div class="mh-sign">'+
+          '<button class="'+(f.sSign==="pos"?"on-pos":"")+'" onclick="mhSet(\'sSign\',\'pos\')">+</button>'+
+          '<button class="'+(f.sSign==="neg"?"on-neg":"")+'" onclick="mhSet(\'sSign\',\'neg\')">−</button>'+
+        '</div>'+
+        '<div class="mh-mfield" style="flex:1"><span class="k">손익</span><span style="color:var(--sub);font-size:12px">$</span><input class="mh-minput" type="number" placeholder="0" value="'+(f.sPnl||"")+'" oninput="mhSetField(\'sPnl\',this.value)"></div>'+
+        '<button class="mh-btn mh-btn-primary" style="white-space:nowrap" onclick="mhAddSell()">추가</button>'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--sub);text-align:center;margin-top:12px">매도 이력이 없으면 비워두세요</div>'+
+    '</div>'
+    ):'');
+}
+function mhAddSell(){
+  var f=MH_FORM;
+  var price=parseFloat(f.sPrice)||0, qty=parseInt(f.sQty)||0, pnl=parseFloat(f.sPnl)||0;
+  if(price<=0||qty<=0){ alert("매도가와 수량을 입력하세요."); return; }
+  if(f.sSign==="neg") pnl=-Math.abs(pnl); else pnl=Math.abs(pnl);
+  f.sells.push({date:f.sDate,price:price,qty:qty,pnl:pnl});
+  f.sDate="";f.sPrice="";f.sQty="";f.sPnl="";
+  renderMuhanModalBody();
+}
+function mhDelSell(i){ MH_FORM.sells.splice(i,1); renderMuhanModalBody(); }
+
+function saveMuhan(editId){
+  var f=MH_FORM;
+  var principal=parseFloat(f.principal)||0;
+  if(principal<=0){ alert("총 원금을 입력하세요."); return; }
+  var ticker=f.ticker, version=f.version, avg=parseFloat(f.avg)||0, qty=parseInt(f.qty)||0;
+  var bought=avg*qty;
+  var price=MUHAN_QUOTES[ticker]?MUHAN_QUOTES[ticker].price:avg;
+  var pnl=(price-avg)*qty, pnlPct=avg>0?((price-avg)/avg*100):0;
+  var maxPct=parseFloat(f.maxPct); if(isNaN(maxPct)) maxPct=mhDefaultMax(version,ticker);
+  var realized=(f.sells||[]).reduce(function(s,x){return s+(x.pnl||0);},0);
+  var data={
+    name:(f.name||"").trim()||(ticker+" 1차"), ticker:ticker, version:version,
+    splits:parseInt(f.splits)||20, principal:principal, maxPct:maxPct, fee:parseFloat(f.fee)||0,
+    startDate:f.startDate, avg:avg, qty:qty, bought:bought, remaining:principal-bought,
+    T:0, price:price, prevClose:price, pnl:pnl, pnlPct:pnlPct,
+    sellHist:f.sells||[], realized:realized
+  };
+  // T값 추정: 이미 보유가 있으면 매수 진행 정도로 추정 (bought/1회매수금)
+  if(bought>0 && data.splits>0){ var perBuy=principal/data.splits; data.T=Math.min(data.splits, Math.round((bought/perBuy)*100)/100); }
+  if(editId){
+    var i=MUHAN.cycles.findIndex(function(c){return c.id===editId;});
+    if(i>=0) MUHAN.cycles[i]=Object.assign({},MUHAN.cycles[i],data);
+  } else { data.id=Date.now(); MUHAN.cycles.push(data); }
+  closeMuhanModal();
+  renderMuhan();
+}
+
 function showTab(t){
   document.getElementById("tabHome").style.display  = t==="home" ?"block":"none";
   document.getElementById("tabStrat").style.display = t==="strat"?"block":"none";
   document.getElementById("tabPort").style.display  = t==="port" ?"block":"none";
   document.getElementById("tabMap").style.display   = t==="map"  ?"block":"none";
   document.getElementById("tabFire").style.display  = t==="fire" ?"block":"none";
+  document.getElementById("tabMuhan").style.display = t==="muhan"?"block":"none";
   document.getElementById("tabBtnHome").classList.toggle("on",t==="home");
   document.getElementById("tabBtnStrat").classList.toggle("on",t==="strat");
   document.getElementById("tabBtnPort").classList.toggle("on",t==="port");
   document.getElementById("tabBtnMap").classList.toggle("on",t==="map");
   document.getElementById("tabBtnFire").classList.toggle("on",t==="fire");
+  document.getElementById("tabBtnMuhan").classList.toggle("on",t==="muhan");
   window.scrollTo(0,0);
+  if(t==="muhan"){ try{ if(!window.PORT && typeof csvUrl!=="undefined" && csvUrl){ loadPortfolio().then(function(){renderMuhan();}); } }catch(e){} renderMuhan(); }
   if(t==="port") loadPortfolio();
   if(t==="map") loadMap();
   if(t==="fire"){ if((typeof PORT==="undefined"||!PORT) && csvUrl){ try{ loadPortfolio().then(()=>drawFire()); }catch(e){} } drawFire(); }
@@ -896,6 +1642,7 @@ async function loadPortfolio(){
     const cashAmt=extractCash(rows0)||sres.cash||0;
     if(cashAmt>0) (th["현금"]=th["현금"]||{t:"현금",v:0}).v+=cashAmt;
     PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:cashAmt, xirrSheet:extractXirrSheet(rows0), deposits2026:extractDeposits2026(rows0), yearStart:extractYearStart(rows0)};
+    try{ window.PORT=PORT; }catch(e){}
     drawHero(); drawAsset(); drawMonthly(); drawPort(); drawQuotes();
     st.textContent="업데이트 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
     document.getElementById("csvbar").style.display="none";
@@ -1227,6 +1974,8 @@ async function hardReset(){
 }
 /* ── 저장된 테마 적용 (기본: 브라이트) ── */
 setTheme(localStorage.getItem("dip_theme")||"bright");
+/* 무한매수 데이터 로드 */
+muhanLoad();
 /* ── 빌드 표시: 파일 마지막 수정일(=GitHub 업로드 시각) 자동 반영 ── */
 (function(){
   const el=document.getElementById("buildStamp"); if(!el) return;
