@@ -186,6 +186,9 @@
   .modetog{display:flex;gap:6px;background:var(--fill);border-radius:12px;padding:4px;margin:6px 0 12px;}
   .modetog button{flex:1;border:none;background:transparent;color:var(--sub);font-weight:800;font-size:13px;padding:8px 0;border-radius:8px;cursor:pointer;}
   .modetog button.on{background:var(--card);color:var(--accent);box-shadow:0 2px 6px rgba(60,50,120,.14);}
+  .rangesel{display:flex;flex-wrap:nowrap;gap:4px;margin:8px 0 0;}
+  .rangesel button{flex:1;min-width:0;border:1px solid var(--line);background:var(--card);color:var(--sub);padding:5px 2px;border-radius:12px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .rangesel button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 3px 9px rgba(108,76,241,.28);}
   .maphead{display:flex;justify-content:space-between;align-items:flex-end;margin:0 2px 10px;}
   .maphead .mt{font-size:12px;color:var(--sub);font-weight:700;}
   .maphead .mv{font-size:22px;font-weight:800;line-height:1.1;}
@@ -274,6 +277,24 @@
     <a class="half" href="https://fred.stlouisfed.org/series/DGS10" target="_blank" rel="noopener"><div class="lbl">📈 10년 국채 <span class="ext">↗</span></div><div class="big" id="tnx">—</div><div class="sub">10년물 금리</div></a>
     <a class="half" href="https://fred.stlouisfed.org/series/DGS2" target="_blank" rel="noopener"><div class="lbl">📈 2년 국채 <span class="ext">↗</span></div><div class="big" id="two">—</div><div class="sub">2년물 금리</div></a>
     <a class="half" href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank" rel="noopener"><div class="lbl">🔀 10Y-2Y <span class="ext">↗</span></div><div class="big" id="spread">—</div><div class="sub" id="spreadTxt">역전 시 침체</div></a>
+  </div>
+
+  <div class="sec" style="margin-top:12px">
+    <h2 style="font-size:15px">📉 VIX · 공포탐욕 추이</h2>
+    <div class="sub" style="margin:8px 0 2px;font-weight:700">⚡ VIX 변동성</div>
+    <div class="chartbox" style="height:120px"><canvas id="vixChart"></canvas></div>
+    <div class="sub" style="margin:12px 0 2px;font-weight:700">🧠 CNN 공포탐욕</div>
+    <div class="chartbox" style="height:120px"><canvas id="fgChart"></canvas></div>
+    <div class="rangesel" id="trendRange" style="margin-top:12px">
+      <button data-r="1w" onclick="setTrendRange(this)">1W</button>
+      <button data-r="1m" onclick="setTrendRange(this)">1M</button>
+      <button data-r="3m" class="on" onclick="setTrendRange(this)">3M</button>
+      <button data-r="6m" onclick="setTrendRange(this)">6M</button>
+      <button data-r="1y" onclick="setTrendRange(this)">1Y</button>
+      <button data-r="3y" onclick="setTrendRange(this)">3Y</button>
+      <button data-r="5y" onclick="setTrendRange(this)">5Y</button>
+      <button data-r="max" onclick="setTrendRange(this)">Max</button>
+    </div>
   </div>
 
   <div class="foot">
@@ -1452,6 +1473,69 @@ async function loadCalendar(){
   }
 }
 
+// VIX·공포탐욕 추이 미니 라인차트 + 기간 선택
+let vixChart=null, fgChart=null, fgHistData=null, trendRange="3m";
+const TREND_RANGES={
+  "1w":{sec:7*86400, iv:"60m"},
+  "1m":{sec:31*86400, iv:"1d"},
+  "3m":{sec:93*86400, iv:"1d"},
+  "6m":{sec:186*86400, iv:"1d"},
+  "1y":{sec:366*86400, iv:"1d"},
+  "3y":{sec:3*366*86400, iv:"1wk"},
+  "5y":{sec:5*366*86400, iv:"1wk"},
+  "max":{sec:40*366*86400, iv:"1mo"}
+};
+function trendLabel(ms, longR){ const d=new Date(ms); return longR?((d.getFullYear()%100)+"."+(d.getMonth()+1)):((d.getMonth()+1)+"/"+d.getDate()); }
+function setTrendRange(btn){
+  trendRange=btn.getAttribute("data-r");
+  document.querySelectorAll("#trendRange button").forEach(b=>b.classList.toggle("on",b===btn));
+  loadVixHist(); drawFgFromRange();
+}
+function drawMini(id, ref, labels, data, color, yMin, yMax, thresholds){
+  const el=document.getElementById(id); if(!el||!window.Chart) return ref;
+  if(!dlReg && window.ChartDataLabels){ Chart.register(window.ChartDataLabels); dlReg=true; }
+  if(ref) ref.destroy();
+  const thPlugin={ id:"thlines", afterDatasetsDraw(ch){
+    if(!thresholds||!thresholds.length) return;
+    const ctx=ch.ctx, ca=ch.chartArea, ys=ch.scales.y;
+    thresholds.forEach(t=>{ const yp=ys.getPixelForValue(t.y); if(yp<ca.top-1||yp>ca.bottom+1) return;
+      ctx.save(); ctx.strokeStyle=t.color; ctx.lineWidth=1.2; ctx.setLineDash([5,4]);
+      ctx.beginPath(); ctx.moveTo(ca.left,yp); ctx.lineTo(ca.right,yp); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle=t.color; ctx.font='700 9px -apple-system,sans-serif'; ctx.textAlign="left"; ctx.textBaseline="bottom";
+      ctx.fillText(t.label, ca.left+3, yp-1.5); ctx.restore();
+    });
+  }};
+  return new Chart(el,{type:"line",data:{labels,datasets:[{data,borderColor:color,
+    backgroundColor:(ctx)=>{const c=ctx.chart.ctx,g=c.createLinearGradient(0,0,0,120);g.addColorStop(0,color+"40");g.addColorStop(1,color+"08");return g;},
+    fill:true,tension:.3,pointRadius:0,borderWidth:2,datalabels:{display:false}}]},
+    options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:it=>it[0].label,label:c=>" "+c.parsed.y}}},
+      scales:{y:{min:yMin,max:yMax,ticks:{font:{size:9},maxTicksLimit:4}},x:{grid:{display:false},ticks:{font:{size:9},maxTicksLimit:5,autoSkip:true}}}},
+    plugins:[thPlugin]});
+}
+async function loadVixHist(){
+  try{
+    const cfg=TREND_RANGES[trendRange]||TREND_RANGES["3m"];
+    const now=Math.floor(Date.now()/1000), p1=now-cfg.sec, longR=cfg.sec>400*86400;
+    const yu=`https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?period1=${p1}&period2=${now}&interval=${cfg.iv}`;
+    const j=await (await fetch(idxProxy(yu),{cache:"no-store"})).json();
+    const res=j.chart.result[0], ts=res.timestamp||[], cl=(res.indicators.quote[0].close)||[];
+    const labels=[], data=[];
+    for(let i=0;i<ts.length;i++){ if(cl[i]==null) continue; labels.push(trendLabel(ts[i]*1000,longR)); data.push(+(+cl[i]).toFixed(2)); }
+    if(data.length){ const yMax=Math.max.apply(null,data.concat([32]))*1.06;
+      vixChart=drawMini("vixChart",vixChart,labels,data,"#f2a516",0,yMax,[{y:30,color:"#e5484d",label:"30 공포·기회"}]); }
+  }catch(e){}
+}
+function drawFgFromRange(){
+  if(!fgHistData||!fgHistData.length) return;
+  const cfg=TREND_RANGES[trendRange]||TREND_RANGES["3m"];
+  const cutoff=Date.now()-cfg.sec*1000, longR=cfg.sec>400*86400;
+  let arr=fgHistData.filter(pt=>pt.x>=cutoff);
+  if(arr.length<2) arr=fgHistData.slice();       // 데이터가 짧으면 전체
+  if(arr.length>130){ const step=Math.ceil(arr.length/130); arr=arr.filter((_,i)=>i%step===0); }
+  const labels=arr.map(pt=>trendLabel(pt.x,longR)), data=arr.map(pt=>+(+pt.y).toFixed(1));
+  fgChart=drawMini("fgChart",fgChart,labels,data,"#8b5cf6",0,100,[{y:15,color:"#1a9c5b",label:"15 극공포·매수"},{y:60,color:"#e5484d",label:"60 탐욕·경계"}]);
+}
 // CNN 공포탐욕: 여러 프록시 시도 + 마지막 성공값 캐시
 async function loadFNG(){
   const target="https://production.dataviz.cnn.io/index/fearandgreed/graphdata";
@@ -1466,6 +1550,10 @@ async function loadFNG(){
       const s=j.fear_and_greed.score, r=j.fear_and_greed.rating;
       paintFNG(s,r);
       localStorage.setItem("dip_fng",JSON.stringify({s,r,t:Date.now()}));
+      try{
+        const hist=j.fear_and_greed_historical && j.fear_and_greed_historical.data;
+        if(hist && hist.length){ fgHistData=hist; drawFgFromRange(); }
+      }catch(e){}
       return;
     }catch(e){}
   }
@@ -1756,6 +1844,7 @@ async function loadAll(){
     await loadCalendar();
     loadIndices();
     loadFNG();
+    loadVixHist();
     renderSignal();
     const t=new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     setStatus("ok","마지막 업데이트 "+t);
