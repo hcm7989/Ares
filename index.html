@@ -910,23 +910,51 @@ function muhanLoadDaily(ticker,cb){
   var proxied = (typeof idxProxy==="function") ? idxProxy(url) : url;
   fetch(proxied,{cache:"no-store"}).then(function(r){return r.json();}).then(function(j){
     var res=j.chart.result[0];
+    var meta=res.meta||{};
     var ts=res.timestamp||[];
     var q=res.indicators.quote[0];
     var closes=q.close||[];
+    // 미국 동부 기준 '오늘' 날짜 (미완성 당일봉 판별용)
+    var nowET=new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
+    var etToday=nowET.getFullYear()+"-"+String(nowET.getMonth()+1).padStart(2,"0")+"-"+String(nowET.getDate()).padStart(2,"0");
+    // 장 상태: 야후 meta로 정규장 마감 여부 추정
     var rows=[];
     for(var i=0;i<ts.length;i++){
       if(closes[i]==null) continue;
-      var d=new Date(ts[i]*1000);
-      var prev=rows.length? rows[rows.length-1].close : (i>0&&closes[i-1]!=null?closes[i-1]:closes[i]);
-      rows.push({date:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"),
-                 close:closes[i], chg: prev? ((closes[i]/prev-1)*100):0,
-                 dow:["일","월","화","수","목","금","토"][d.getDay()]});
+      // 봉의 날짜는 미국 동부 기준으로 계산
+      var dET=new Date(new Date(ts[i]*1000).toLocaleString("en-US",{timeZone:"America/New_York"}));
+      var ds=dET.getFullYear()+"-"+String(dET.getMonth()+1).padStart(2,"0")+"-"+String(dET.getDate()).padStart(2,"0");
+      rows.push({date:ds, close:closes[i], chg:0,
+                 dow:["일","월","화","수","목","금","토"][dET.getDay()],
+                 isToday:(ds===etToday)});
     }
-    // 등락률 재계산 (직전 거래일 대비)
     for(var k=1;k<rows.length;k++){ rows[k].chg=(rows[k].close/rows[k-1].close-1)*100; }
-    MH_DAILY[ticker]=rows.slice(-10); // 최근 10거래일
+    // 마지막 봉이 '오늘(동부)'이고 정규장이 아직 안 끝났으면 미완성으로 표시
+    var last=rows[rows.length-1];
+    if(last){
+      // 정규장 마감(동부 16:00) 이후면 오늘 봉도 확정으로 간주
+      var etHour=nowET.getHours()+nowET.getMinutes()/60;
+      var marketClosed = etHour>=16 || etHour<9.5; // 16시 이후 또는 개장 전(전일 마감상태)
+      last.closed = !last.isToday || marketClosed;
+    }
+    MH_DAILY[ticker]=rows.slice(-12);
     if(cb)cb(MH_DAILY[ticker]);
   }).catch(function(e){ if(cb)cb(null); });
+}
+
+/* 마지막으로 '마감된' 거래일 종가 (미완성 당일봉 제외) */
+function muhanLastClose(ticker){
+  var rows=MH_DAILY[ticker];
+  if(!rows||!rows.length) return null;
+  // 뒤에서부터 '마감된' 봉을 찾음
+  for(var i=rows.length-1;i>=0;i--){
+    if(rows[i].closed!==false){ // closed가 명시적 false가 아니면 마감으로 간주
+      // 단, 마지막 봉이 오늘(미완성)이면 건너뜀
+      if(rows[i].isToday && rows[i].closed===false) continue;
+      return rows[i];
+    }
+  }
+  return rows[rows.length-1];
 }
 
 /* 다이나믹 게이지 (원본 앱과 동일: 3색 그라데이션·틱·헤드도트·글로우) */
@@ -1559,7 +1587,8 @@ function mhFirstBuyPreview(f){
   var principal=parseFloat(f.principal)||0;
   var splits=parseInt(f.splits)||20;
   var bigPct=f.bigPct||10;
-  var prevClose = (MH_DAILY[f.ticker] && MH_DAILY[f.ticker].length) ? MH_DAILY[f.ticker][MH_DAILY[f.ticker].length-1].close : (MUHAN_QUOTES[f.ticker]?MUHAN_QUOTES[f.ticker].price:0);
+  var lastRow = muhanLastClose(f.ticker);
+  var prevClose = lastRow ? lastRow.close : (MUHAN_QUOTES[f.ticker]?MUHAN_QUOTES[f.ticker].price:0);
   if(principal<=0 || prevClose<=0){
     return '<div style="font-size:11px;color:var(--sub);text-align:center;padding:8px">총 원금을 입력하면 첫 매수 금액이 표시됩니다</div>';
   }
@@ -1569,7 +1598,7 @@ function mhFirstBuyPreview(f){
   return '<div style="background:var(--fill);border-radius:12px;padding:12px 14px">'+
     '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--sub)">1회 매수금</span><b style="font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(perBuy)+'</b></div>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--line)"><span style="font-size:12px;color:var(--amber);font-weight:700">큰수 LOC (+'+bigPct+'%)</span><span style="font-size:13px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(bigPrice)+' × '+bigShares+'주</span></div>'+
-    '<div style="font-size:10px;color:var(--sub);margin-top:8px;text-align:center">전일종가 $'+mNum(prevClose)+' × (1+'+bigPct+'%) · 그 아래 폭락대비 단계 추가</div>'+
+    '<div style="font-size:10px;color:var(--sub);margin-top:8px;text-align:center">기준 종가 $'+mNum(prevClose)+(lastRow&&lastRow.date?' ('+lastRow.date.slice(5)+' 마감)':'')+' × (1+'+bigPct+'%) · 그 아래 폭락대비 단계</div>'+
   '</div>';
 }
 
@@ -1682,7 +1711,8 @@ function saveMuhan(editId){
   var pnl=(price-avg)*qty, pnlPct=avg>0?((price-avg)/avg*100):0;
   var maxPct=parseFloat(f.maxPct); if(isNaN(maxPct)) maxPct=mhDefaultMax(version,ticker);
   var realized=(f.sells||[]).reduce(function(s,x){return s+(x.pnl||0);},0);
-  var prevClose = (MH_DAILY[ticker]&&MH_DAILY[ticker].length)?MH_DAILY[ticker][MH_DAILY[ticker].length-1].close:price;
+  var lastCloseRow = muhanLastClose(ticker);
+  var prevClose = lastCloseRow ? lastCloseRow.close : price;
   var data={
     name:(f.name||"").trim()||(ticker+" 1차"), ticker:ticker, version:version,
     splits:parseInt(f.splits)||20, principal:principal, maxPct:maxPct, fee:parseFloat(f.fee)||0, bigPct:(f.bigPct||10),
