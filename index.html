@@ -244,6 +244,8 @@
 .mh-chip{cursor:pointer;border:1.5px solid transparent;background:var(--fill);border-radius:20px;padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--sub);font-family:inherit;transition:all .15s}
 .mh-chip:active{transform:scale(.96)}
 .mh-chip.on{background:color-mix(in srgb,var(--blue) 12%,var(--card));border-color:var(--blue);color:var(--blue)}
+.mh-seg-btn{flex:1;cursor:pointer;border:none;background:none;border-radius:11px;padding:11px;font-size:13.5px;font-weight:700;color:var(--sub);font-family:inherit;transition:all .15s}
+.mh-seg-btn.on{background:var(--card);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .mh-fold{cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;font-family:inherit;padding:14px 0;color:var(--blue);font-size:15px;font-weight:700}
 .mh-sign{display:inline-flex;border-radius:11px;overflow:hidden;border:1px solid var(--line)}
 .mh-sign button{border:none;cursor:pointer;padding:11px 15px;font-size:16px;font-weight:800;font-family:inherit;background:var(--fill);color:var(--sub)}
@@ -633,17 +635,26 @@
       </div>
     </div>
 
-    <!-- 시세 티커 (기존 앱 데이터 연동) -->
-    <div id="muhanTicker" style="display:flex;gap:11px;margin-bottom:14px;overflow-x:auto"></div>
+    <!-- 진행중/완료 전환 -->
+    <div style="display:flex;gap:4px;background:var(--fill);border-radius:14px;padding:4px;margin-bottom:14px">
+      <button id="mhSegActive" class="mh-seg-btn on" onclick="setMuhanView('active')">진행중</button>
+      <button id="mhSegDone" class="mh-seg-btn" onclick="setMuhanView('done')">완료</button>
+    </div>
 
-    <!-- 진행 중 순익 + POOL -->
-    <div class="mh-sum" id="muhanSummary" style="margin-bottom:14px"></div>
+    <!-- 진행중 화면 -->
+    <div id="muhanActiveView">
+      <!-- 시세 티커 (기존 앱 데이터 연동) -->
+      <div id="muhanTicker" style="display:flex;gap:11px;margin-bottom:14px;overflow-x:auto"></div>
 
-    <!-- 사이클 카드 (좌우 배열) -->
-    <div id="muhanCards" style="display:flex;gap:12px;flex-wrap:wrap;align-items:stretch"></div>
+      <!-- 진행 중 순익 + POOL -->
+      <div class="mh-sum" id="muhanSummary" style="margin-bottom:14px"></div>
 
-    <!-- 완료된 사이클 내역 -->
-    <div id="muhanDone" style="margin-top:16px"></div>
+      <!-- 사이클 카드 (좌우 배열) -->
+      <div id="muhanCards" style="display:flex;gap:12px;flex-wrap:wrap;align-items:stretch"></div>
+    </div>
+
+    <!-- 완료 화면 -->
+    <div id="muhanDone" style="display:none"></div>
 
     <!-- 상세/생성 -->
     <div id="muhanDetail" style="margin-top:14px"></div>
@@ -736,58 +747,95 @@ function mNum(n,d){ d=(d===undefined?2:d); return (isNaN(n)||n==null)?"—":Numb
 /* 별% (원본 starPctV4 그대로) */
 function starPctV4(t,s,T){ if(s===20) return t==="TQQQ"?15-1.5*T:20-2*T; return t==="TQQQ"?15-0.75*T:20-T; }
 
-/* 오늘의 주문 계산 (원본 computeOrders 완전 이식: V4.0 + V2.2/V3.0 + 큰수 + 매도분할 + 폭락대비) */
+/* 별% 계산 (문서 기준, 버전·분할·종목별) */
+function starPctCalc(version,ticker,splits,T){
+  if(version==="V2.2"){
+    // 일반형: 10 − (T/2)×(40/a)
+    return 10 - (T/2)*(40/splits);
+  }
+  // V3.0 / V4.0 (동일 별% 공식)
+  if(ticker==="TQQQ") return splits<=20 ? 15-1.5*T : 15-0.75*T;
+  return splits<=20 ? 20-2*T : 20-T;
+}
+function starPctV4(t,s,T){ return starPctCalc("V4.0",t,s,T); } // 하위호환
+
+/* 오늘의 주문 계산 (문서 완전 반영: V2.2 / V3.0 / V4.0 · 20·40분할 · 리버스모드) */
 function computeMuhan(cy){
   var ticker=cy.ticker, splits=cy.splits, version=cy.version, avg=cy.avg, qty=cy.qty, T=cy.T;
-  var principal=cy.principal, prevClose=cy.prevClose||cy.price||avg, maxPct=cy.maxPct;
+  var principal=cy.principal, prevClose=cy.prevClose||cy.price||avg;
   var remaining=(cy.remaining!==undefined?cy.remaining:(principal-(cy.bought||0)));
-  // maxPct 기본값 (버전·종목별)
-  if(maxPct===undefined||maxPct===null){
-    var MP={"V2.2":{TQQQ:10,SOXL:15},"V3.0":{TQQQ:15,SOXL:20},"V4.0":{TQQQ:15,SOXL:20}};
-    maxPct=(MP[version]&&MP[version][ticker])||10;
-  }
+  var profitReserve=cy.profitReserve||0; // V3.0 반복리 보관분
   var half=splits/2, secondHalf=T>=half;
   var buys=[], sells=[];
-  var starPct, starPoint, buyPoint, perBuy;
+  var starPct=starPctCalc(version,ticker,splits,T);
+  var starPoint=avg*(1+starPct/100);
+  var buyPoint=starPoint-0.01;
+  var perBuy;
 
-  if(version==="V4.0"){
-    perBuy=remaining/(splits-T);
-    starPct=starPctV4(ticker,splits,T);
-    starPoint=avg*(1+starPct/100); buyPoint=starPoint-0.01;
-    if(T===0 && qty===0){
-      var big=prevClose*(1+((cy.bigPct||12)/100));
-      buys.push({label:"큰수",price:big,shares:Math.floor((perBuy*0.7)/big)});
-      buys.push({label:"평단",price:prevClose,shares:Math.floor((perBuy*0.3)/prevClose)});
-    } else if(!secondHalf){
-      buys.push({label:mNum(starPct,1)+"%",price:buyPoint,shares:Math.floor((perBuy/2)/buyPoint),hot:true});
-      buys.push({label:"평단",price:avg,shares:Math.floor((perBuy/2)/avg)});
-    } else {
-      buys.push({label:mNum(starPct,1)+"%",price:buyPoint,shares:Math.floor(perBuy/buyPoint),hot:true});
-    }
-    if(qty>0){
-      var qq=Math.floor(qty/4), lp=ticker==="TQQQ"?15:20;
-      sells.push({label:mNum(starPct,1)+"%",price:starPoint,shares:qq});
-      sells.push({label:"지정가",price:avg*(1+lp/100),shares:qty-qq,tag:"+"+lp+"%"});
-    }
-  } else {
-    perBuy=principal/splits;
-    var pct=secondHalf?10-T/2:maxPct; starPct=pct;
-    buyPoint=avg*(1+(secondHalf?pct:maxPct)/100); starPoint=buyPoint;
-    if(!secondHalf){
-      buys.push({label:"+"+mNum(maxPct,1)+"%",price:avg*(1+maxPct/100),shares:Math.floor((perBuy/2)/(avg*(1+maxPct/100))),hot:true});
-      buys.push({label:"평단",price:avg,shares:Math.floor((perBuy/2)/avg)});
-    } else {
-      buys.push({label:mNum(pct,1)+"%",price:avg*(1+pct/100),shares:Math.floor(perBuy/(avg*(1+pct/100))),hot:true});
-    }
-    if(qty>0){
-      var qq2=Math.floor(qty/4), sp=10-T/2;
-      sells.push({label:mNum(sp,1)+"%",price:avg*(1+sp/100),shares:qq2});
-      sells.push({label:"지정가",price:avg*1.1,shares:qty-qq2,tag:"+10%"});
-    }
+  // ── 리버스(소진)모드: V4.0에서 T > 분할−1 ──
+  var reverse = (version==="V4.0") && (T > splits-1) && qty>0;
+  if(reverse){
+    return computeReverse(cy);
   }
-  var crash=[], b=buyPoint*0.892;
-  for(var i=0;i<5;i++){ crash.push({price:b,shares:1}); b*=0.958; }
-  return {starPct:starPct,starPoint:starPoint,buyPoint:buyPoint,perBuy:perBuy,secondHalf:secondHalf,sellLimit:avg*(ticker==="TQQQ"?1.15:1.20),buys:buys,sells:sells,crash:crash};
+
+  // ── 1회매수금 ──
+  if(version==="V4.0"){ perBuy=remaining/(splits-T); }
+  else if(version==="V3.0"){ perBuy=(principal/splits) + (cy.reCompound||0); } // 반복리 반영분
+  else { perBuy=principal/splits; } // V2.2
+
+  // ── 매수 ──
+  if(T===0 && qty===0){
+    // 첫 매수: 큰수 LOC에 1회매수금 전액 (전일종가 +큰수%)
+    var big=prevClose*(1+((cy.bigPct||12)/100));
+    buys.push({label:"큰수",price:big,shares:Math.floor(perBuy/big),hot:true});
+  } else if(!secondHalf){
+    // 전반전: 절반 별지점 + 절반 평단
+    buys.push({label:mNum(starPct,1)+"%",price:buyPoint,shares:Math.floor((perBuy/2)/buyPoint),hot:true});
+    buys.push({label:"평단",price:avg,shares:Math.floor((perBuy/2)/avg)});
+  } else {
+    // 후반전: 전액 별지점
+    buys.push({label:mNum(starPct,1)+"%",price:buyPoint,shares:Math.floor(perBuy/buyPoint),hot:true});
+  }
+
+  // ── 매도 (보유수량 1/4 별지점 + 3/4 지정가) ──
+  if(qty>0){
+    var qq=Math.floor(qty/4);
+    var lp; // 지정가 익절 %
+    if(version==="V2.2") lp=10;
+    else lp=(ticker==="TQQQ"?15:20);
+    sells.push({label:mNum(starPct,1)+"%",price:starPoint,shares:qq});
+    sells.push({label:"지정가",price:avg*(1+lp/100),shares:qty-qq,tag:"+"+lp+"%"});
+  }
+
+  // ── 폭락 대비 (큰수/매수점 기준 단계 하락, 원문 예시 배율) ──
+  var crash=[], crashBase = (T===0&&qty===0) ? prevClose*(1+((cy.bigPct||12)/100)) : buyPoint;
+  var cb=crashBase*0.924;
+  for(var i=0;i<5;i++){ crash.push({price:cb,shares:1}); cb*=0.928; }
+
+  return {starPct:starPct,starPoint:starPoint,buyPoint:buyPoint,perBuy:perBuy,secondHalf:secondHalf,
+          sellLimit:avg*(1+((version==="V2.2"?10:(ticker==="TQQQ"?15:20))/100)),
+          buys:buys,sells:sells,crash:crash,reverse:false};
+}
+
+/* 리버스모드 계산 (V4.0 · 무한매도 + 쿼터매수) */
+function computeReverse(cy){
+  var ticker=cy.ticker, splits=cy.splits, qty=cy.qty, avg=cy.avg;
+  var remaining=(cy.remaining!==undefined?cy.remaining:0);
+  // 별지점 = 직전 5거래일 종가 평균
+  var star5=cy.star5||avg; // 없으면 평단 근사
+  // 매도 개수: 20분할 1/10, 40분할 1/20 (내림)
+  var div=splits<=20?10:20;
+  var sellQty=Math.floor(qty/div);
+  var buys=[], sells=[];
+  // 무한매도: 별지점 위에서 매도
+  sells.push({label:"별5",price:star5,shares:sellQty,tag:"리버스매도"});
+  // 쿼터매수: 잔금/4를 별지점 아래 LOC (첫날 제외지만 가이드로 표시)
+  var buyAmt=remaining/4;
+  var buyPrice=star5*0.99;
+  buys.push({label:"쿼터매수",price:buyPrice,shares:Math.floor(buyAmt/buyPrice),hot:true});
+  return {starPct:0,starPoint:star5,buyPoint:star5*0.99,perBuy:buyAmt,secondHalf:true,
+          sellLimit:star5,buys:buys,sells:sells,crash:[],reverse:true,
+          reverseInfo:{div:div,sellQty:sellQty,star5:star5}};
 }
 
 /* 체결 판정 (원본 judgeFills: 매수는 종가≤주문가, 매도는 종가≥주문가) */
@@ -931,6 +979,17 @@ function muhanGauge(T,splits,size){
 }
 
 /* 메인 렌더 */
+var MUHAN_VIEW="active"; // active | done
+function setMuhanView(v){
+  MUHAN_VIEW=v;
+  document.getElementById("mhSegActive").classList.toggle("on",v==="active");
+  document.getElementById("mhSegDone").classList.toggle("on",v==="done");
+  document.getElementById("muhanActiveView").style.display = v==="active"?"block":"none";
+  document.getElementById("muhanDone").style.display = v==="done"?"block":"none";
+  document.getElementById("muhanDetail").innerHTML="";
+  renderMuhan();
+}
+
 function renderMuhan(){
   if(!MUHAN.loaded){ muhanLoad(); MUHAN.loaded=true; }
   muhanSyncQuotes();
@@ -1009,27 +1068,46 @@ function renderMuhan(){
   var done=MUHAN.cycles.filter(function(c){return c.done;});
   var doneEl=document.getElementById("muhanDone");
   if(doneEl){
-    if(done.length===0){ doneEl.innerHTML=""; }
+    if(done.length===0){ doneEl.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--sub);font-size:13.5px;line-height:1.8">아직 완료된 사이클이 없습니다.<br>사이클을 전량 매도하면<br>여기에 실적이 기록됩니다.</div>'; }
     else {
       var totalRealized=done.reduce(function(s,c){return s+(c.finalRealized||c.realized||0);},0);
       var wins=done.filter(function(c){return (c.finalRealized||0)>=0;}).length;
+      // 통계
+      var pnls=done.map(function(c){return c.finalRealized||0;});
+      var avgPnl=pnls.reduce(function(s,x){return s+x;},0)/done.length;
+      var maxPnl=Math.max.apply(null,pnls);
+      var days=done.map(function(c){ return muhanDaysBetween(c.startDate,c.doneDate); });
+      var avgDays=Math.round(days.reduce(function(s,x){return s+x;},0)/done.length);
+      var totalDays=(function(){
+        var all=done.map(function(c){return c.startDate;}).concat(done.map(function(c){return c.doneDate;})).filter(Boolean).sort();
+        return all.length>=2?muhanDaysBetween(all[0],all[all.length-1]):0;
+      })();
       doneEl.innerHTML=
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin:4px 2px 10px">'+
-          '<span style="font-size:14px;font-weight:800;color:var(--ink)">완료된 사이클 <span style="font-size:11px;color:var(--sub);font-weight:600">· '+done.length+'개</span></span>'+
-          '<span style="font-size:12px;font-weight:700;color:'+(totalRealized>=0?"var(--red)":"var(--blue)")+';font-variant-numeric:tabular-nums">누적 '+mCur(totalRealized)+' · 승률 '+Math.round(wins/done.length*100)+'%</span>'+
+        // 누적 수익 요약 카드
+        '<div class="mh-sum" style="text-align:left;margin-bottom:14px;padding:18px 20px">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+            '<span style="font-size:12px;color:var(--sub);font-weight:600">누적 수익</span>'+
+            '<span class="mh-pill">₩'+muhanFx().toLocaleString("ko-KR")+' / $</span>'+
+          '</div>'+
+          '<div style="font-size:26px;font-weight:800;color:'+(totalRealized>=0?"var(--red)":"var(--blue)")+';letter-spacing:-1px;font-variant-numeric:tabular-nums">'+mCur(totalRealized)+'</div>'+
+          '<div style="font-size:11px;color:var(--sub);margin-top:2px">사이클 <b style="color:var(--ink)">'+done.length+'회</b> 완료 · 승률 '+Math.round(wins/done.length*100)+'%</div>'+
+          '<div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap">'+
+            [["평균 수익",mCur(avgPnl)],["최고 수익",mCur(maxPnl)],["평균 운용일",avgDays+"일"],["총 운용",totalDays+"일"]].map(function(x){
+              return '<div><div style="font-size:10px;color:var(--sub);margin-bottom:2px">'+x[0]+'</div><div style="font-size:13px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums">'+x[1]+'</div></div>';
+            }).join("")+
+          '</div>'+
         '</div>'+
         done.slice().reverse().map(function(c){
           var up=(c.finalRealized||0)>=0;
-          return '<div class="mh-mcard" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+          return '<div class="mh-mcard" onclick="openDoneDetail('+c.id+')" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;cursor:pointer">'+
             '<div>'+
               '<div style="font-size:13.5px;font-weight:700;color:var(--ink)">'+c.name+' <span style="font-size:10px;color:var(--sub);font-weight:500">'+c.ticker+' · '+c.version+'</span></div>'+
-              '<div style="font-size:10.5px;color:var(--sub);margin-top:3px">'+(c.startDate||"—")+' → '+(c.doneDate||"—")+'</div>'+
+              '<div style="font-size:10.5px;color:var(--sub);margin-top:3px">'+(c.startDate||"—")+' ~ '+(c.doneDate||"—")+'</div>'+
             '</div>'+
             '<div style="text-align:right;display:flex;align-items:center;gap:10px">'+
               '<div><div style="font-size:15px;font-weight:800;color:'+(up?"var(--red)":"var(--blue)")+';font-variant-numeric:tabular-nums">'+mCur(c.finalRealized||0)+'</div>'+
               '<div style="font-size:11px;font-weight:600;color:'+(up?"var(--red)":"var(--blue)")+';font-variant-numeric:tabular-nums">'+((c.finalPnlPct||0)>=0?"+":"")+(c.finalPnlPct||0).toFixed(2)+'%</div></div>'+
               '<span style="font-size:15px;color:var(--sub);cursor:pointer" onclick="event.stopPropagation();reopenMuhan('+c.id+')" title="다시 진행">↺</span>'+
-              '<span style="font-size:14px;color:var(--red);cursor:pointer" onclick="event.stopPropagation();deleteMuhan('+c.id+')" title="삭제">✕</span>'+
             '</div>'+
           '</div>';
         }).join("");
@@ -1038,6 +1116,92 @@ function renderMuhan(){
 
   document.getElementById("muhanDetail").innerHTML="";
   muhanSave();
+}
+
+/* 두 날짜 사이 일수 */
+function muhanDaysBetween(a,b){
+  if(!a||!b) return 0;
+  var d1=new Date(a.replace(/\./g,"-")), d2=new Date(b.replace(/\./g,"-"));
+  if(isNaN(d1)||isNaN(d2)) return 0;
+  return Math.max(0,Math.round((d2-d1)/86400000));
+}
+
+/* 완료 사이클 상세 (차트 + 매매내역) */
+var muhanDoneChart=null;
+function openDoneDetail(id){
+  var cy=MUHAN.cycles.find(function(c){return c.id===id;});
+  if(!cy) return;
+  var up=(cy.finalRealized||0)>=0;
+  var hist=(cy.hist||[]).slice().reverse(); // 과거→현재
+  var el=document.getElementById("muhanDetail");
+  el.innerHTML=
+    '<div class="mh-sum" style="text-align:left">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'+
+        '<div><div style="font-size:17px;font-weight:800;color:var(--ink)">'+cy.name+'</div>'+
+        '<div style="font-size:10.5px;color:var(--sub);margin-top:2px">'+cy.ticker+' · '+cy.version+'</div></div>'+
+        '<button class="mh-btn" onclick="closeDoneDetail()" style="padding:7px 13px;font-size:12px">✕ 닫기</button>'+
+      '</div>'+
+      '<div style="font-size:28px;font-weight:800;color:'+(up?"var(--red)":"var(--blue)")+';letter-spacing:-1px;font-variant-numeric:tabular-nums">'+mCur(cy.finalRealized||0)+' <span style="font-size:14px">'+((cy.finalPnlPct||0)>=0?"+":"")+(cy.finalPnlPct||0).toFixed(1)+'%</span></div>'+
+      '<div style="display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);flex-wrap:wrap">'+
+        [["티커",cy.ticker],["버전",cy.version],["원금",mUsd(cy.principal)],["기간",(cy.startDate||"—")+" ~ "+(cy.doneDate||"—")]].map(function(x){
+          return '<div><div style="font-size:10px;color:var(--sub);margin-bottom:2px">'+x[0]+'</div><div style="font-size:12.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums">'+x[1]+'</div></div>';
+        }).join("")+
+      '</div>'+
+      // 차트
+      '<div style="font-size:13px;font-weight:800;color:var(--ink);margin:18px 0 10px">매매 · 평단가</div>'+
+      '<div style="height:220px;position:relative"><canvas id="doneChart"></canvas></div>'+
+      // 매매 내역
+      '<div style="font-size:13px;font-weight:800;color:var(--ink);margin:18px 0 6px">매매 내역 <span style="font-size:11px;color:var(--sub);font-weight:600">· '+hist.length+'건</span></div>'+
+      (hist.length? hist.slice().reverse().map(function(h){
+        var isBuy=h.side==="매수";
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">'+
+          '<span style="font-size:11px;color:var(--sub);min-width:78px">'+h.date+'</span>'+
+          '<span style="font-size:10px;font-weight:700;color:'+(isBuy?"var(--red)":"var(--blue)")+';background:color-mix(in srgb,'+(isBuy?"var(--red)":"var(--blue)")+' 13%,transparent);padding:3px 8px;border-radius:8px;min-width:34px;text-align:center">'+h.side+'</span>'+
+          '<span style="font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums;flex:1;text-align:right">'+mUsd(h.price)+'</span>'+
+          '<span style="font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;min-width:44px;text-align:right">'+h.qty+'주</span>'+
+          '<span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;min-width:70px;text-align:right;color:'+(h.pnl!=null?(h.pnl>=0?"var(--red)":"var(--blue)"):"var(--sub)")+'">'+(h.pnl!=null?((h.pnl>=0?"+":"−")+"$"+mNum(Math.abs(h.pnl))):"—")+'</span>'+
+        '</div>';
+      }).join("") : '<div style="font-size:12px;color:var(--sub);text-align:center;padding:16px">매매 내역이 없습니다</div>')+
+      '<button class="mh-btn" onclick="deleteMuhan('+cy.id+')" style="width:100%;margin-top:16px;color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,transparent)">🗑 이 사이클 삭제</button>'+
+    '</div>';
+  if(el.scrollIntoView) el.scrollIntoView({behavior:"smooth",block:"start"});
+  // 차트 그리기
+  setTimeout(function(){ drawDoneChart(cy,hist); },50);
+}
+function closeDoneDetail(){
+  if(muhanDoneChart){ try{muhanDoneChart.destroy();}catch(e){} muhanDoneChart=null; }
+  document.getElementById("muhanDetail").innerHTML="";
+}
+function drawDoneChart(cy,hist){
+  var cv=document.getElementById("doneChart"); if(!cv||typeof Chart==="undefined") return;
+  if(muhanDoneChart){ try{muhanDoneChart.destroy();}catch(e){} }
+  // 매매 시점별 평단 추이 재구성
+  var labels=[], closeLine=[], avgLine=[], buyPts=[], sellPts=[];
+  var qty=0, avg=0;
+  hist.forEach(function(h){
+    if(h.side==="매수"){ var nq=qty+h.qty; avg=nq>0?(avg*qty+h.price*h.qty)/nq:h.price; qty=nq; }
+    else { qty-=h.qty; if(qty<0)qty=0; }
+    labels.push((h.date||"").slice(5));
+    closeLine.push(h.price);
+    avgLine.push(Number(avg.toFixed(2)));
+    buyPts.push(h.side==="매수"?h.price:null);
+    sellPts.push(h.side==="매도"?h.price:null);
+  });
+  var ink=cssv("--ink"), sub=cssv("--sub"), line=cssv("--line"), red=cssv("--red"), blue=cssv("--blue"), amber=cssv("--amber");
+  muhanDoneChart=new Chart(cv.getContext("2d"),{
+    type:"line",
+    data:{labels:labels,datasets:[
+      {label:"종가",data:closeLine,borderColor:line,borderWidth:1.5,pointRadius:0,tension:0.1,order:3},
+      {label:"평단가",data:avgLine,borderColor:amber,borderWidth:2,borderDash:[5,4],pointRadius:0,tension:0.1,order:2},
+      {label:"매수",data:buyPts,borderColor:"transparent",backgroundColor:red,pointRadius:4,showLine:false,order:1},
+      {label:"매도",data:sellPts,borderColor:"transparent",backgroundColor:blue,pointRadius:4,showLine:false,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:sub,font:{size:10},boxWidth:12,usePointStyle:true}}},
+      scales:{x:{ticks:{color:sub,font:{size:9},maxTicksLimit:8},grid:{display:false}},
+              y:{ticks:{color:sub,font:{size:9},callback:function(v){return "$"+v;}},grid:{color:line}}}
+    }
+  });
 }
 
 /* 완료 사이클 다시 진행 (새 사이클로 리셋) */
@@ -1073,7 +1237,7 @@ function openMuhanDetail(id){
     '</div>';
   }).join("") : '<div style="font-size:12px;color:var(--sub);padding:14px 0;text-align:center">보유 수량이 없어<br>매도 주문이 없습니다</div>';
 
-  var phase = (cy.T===0&&cy.qty===0) ? "첫 매수 (T0)" : (r.secondHalf?"후반전":"전반전");
+  var phase = r.reverse ? "🔄 리버스모드" : ((cy.T===0&&cy.qty===0) ? "첫 매수 (T0)" : (r.secondHalf?"후반전":"전반전"));
   el.innerHTML=
     '<div class="mh-sum" style="text-align:left">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'+
@@ -1401,13 +1565,11 @@ function mhFirstBuyPreview(f){
   }
   var perBuy=principal/splits;                 // 1회 매수금
   var bigPrice=prevClose*(1+bigPct/100);       // 큰수 매수가
-  var bigShares=Math.floor((perBuy*0.7)/bigPrice); // 70% 큰수
-  var avgShares=Math.floor((perBuy*0.3)/prevClose); // 30% 평단(전일종가)
+  var bigShares=Math.floor(perBuy/bigPrice);   // 큰수에 전액
   return '<div style="background:var(--fill);border-radius:12px;padding:12px 14px">'+
     '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--sub)">1회 매수금</span><b style="font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(perBuy)+'</b></div>'+
-    '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--line)"><span style="font-size:12px;color:var(--amber);font-weight:700">큰수 (+'+bigPct+'%)</span><span style="font-size:12.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(bigPrice)+' × '+bigShares+'주</span></div>'+
-    '<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--sub);font-weight:600">평단 (전일종가)</span><span style="font-size:12.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(prevClose)+' × '+avgShares+'주</span></div>'+
-    '<div style="font-size:10px;color:var(--sub);margin-top:8px;text-align:center">전일종가 $'+mNum(prevClose)+' 기준 · 시작일에 이대로 주문</div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--line)"><span style="font-size:12px;color:var(--amber);font-weight:700">큰수 LOC (+'+bigPct+'%)</span><span style="font-size:13px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums">'+mUsd(bigPrice)+' × '+bigShares+'주</span></div>'+
+    '<div style="font-size:10px;color:var(--sub);margin-top:8px;text-align:center">전일종가 $'+mNum(prevClose)+' × (1+'+bigPct+'%) · 그 아래 폭락대비 단계 추가</div>'+
   '</div>';
 }
 
