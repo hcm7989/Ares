@@ -55,6 +55,8 @@
   .tickerSel button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(108,76,241,.28);}
   .top{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;overflow:hidden;margin-bottom:12px;}
   .top .half{flex:1;padding:15px 5px;text-align:center;min-width:0;}
+  .top .half .big{font-size:19px;}
+  .top .half .lbl{font-size:11px;}
   .top .half:not(:last-child){border-right:1px solid var(--line);}
   .lbl{font-size:11.5px;color:var(--sub);font-weight:700;margin-bottom:6px;letter-spacing:.2px;}
   .big{font-size:22px;font-weight:800;line-height:1.12;white-space:nowrap;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
@@ -326,6 +328,7 @@
 
   <div class="top" style="margin-top:12px;">
     <a class="half" href="https://fred.stlouisfed.org/series/DGS10" target="_blank" rel="noopener"><div class="lbl">📈 10년 국채 <span class="ext">↗</span></div><div class="big" id="tnx">—</div><div class="sub">10년물 금리</div></a>
+    <a class="half" href="https://fred.stlouisfed.org/series/DGS30" target="_blank" rel="noopener"><div class="lbl">📈 30년 국채 <span class="ext">↗</span></div><div class="big" id="thirty">—</div><div class="sub">30년물 금리</div></a>
     <a class="half" href="https://fred.stlouisfed.org/series/DGS2" target="_blank" rel="noopener"><div class="lbl">📈 2년 국채 <span class="ext">↗</span></div><div class="big" id="two">—</div><div class="sub">2년물 금리</div></a>
     <a class="half" href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank" rel="noopener"><div class="lbl">🔀 10Y-2Y <span class="ext">↗</span></div><div class="big" id="spread">—</div><div class="sub" id="spreadTxt">역전 시 침체</div></a>
   </div>
@@ -643,6 +646,10 @@
 
     <!-- 진행중 화면 -->
     <div id="muhanActiveView">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--sub);font-weight:600">실시간 종가 (Yahoo)</span>
+        <button class="mh-btn" onclick="muhanRefreshQuotes()" style="padding:6px 12px;font-size:11px">↻ 새로고침</button>
+      </div>
       <!-- 시세 티커 (기존 앱 데이터 연동) -->
       <div id="muhanTicker" style="display:flex;gap:11px;margin-bottom:14px;overflow-x:auto"></div>
 
@@ -698,17 +705,27 @@ function muhanFx(){
 }
 
 /* 기존 앱 포트폴리오(PORT.byTicker)에서 TQQQ·SOXL 현재가·등락 읽어오기 */
+/* 수동 새로고침: 종가 캐시 비우고 재로드 */
+function muhanRefreshQuotes(){
+  ["TQQQ","SOXL"].forEach(function(sym){ delete MH_DAILY[sym]; });
+  var done=0;
+  ["TQQQ","SOXL"].forEach(function(sym){
+    muhanLoadDaily(sym,function(){ done++; if(done>=2) renderMuhan(); }, true);
+  });
+}
+
 function muhanSyncQuotes(){
   try{
     // 1순위: 야후에서 받아온 일봉의 최신 종가 (정확)
     ["TQQQ","SOXL"].forEach(function(sym){
-      if(MH_DAILY[sym] && MH_DAILY[sym].length){
-        var rows=MH_DAILY[sym];
-        var last=rows[rows.length-1];
+      var cached=MH_DAILY[sym];
+      var stale = cached && cached._meta && (Date.now()-cached._meta.fetchedAt > 10*60*1000); // 10분 경과
+      if(cached && cached.length && !stale){
+        var last=cached[cached.length-1];
         if(last.close>0){ MUHAN_QUOTES[sym].price=last.close; MUHAN_QUOTES[sym].chg=last.chg; }
       } else {
-        // 아직 안 받아왔으면 로드 시작 → 완료 시 무한매수 화면 갱신
-        muhanLoadDaily(sym,function(){ if(document.getElementById("tabMuhan") && document.getElementById("tabMuhan").style.display!=="none") renderMuhan(); });
+        // 미보유 또는 오래된 캐시면 (재)로드
+        muhanLoadDaily(sym,function(){ if(document.getElementById("tabMuhan") && document.getElementById("tabMuhan").style.display!=="none") renderMuhan(); }, stale);
       }
     });
     // 2순위: 기존 앱 포트폴리오(보유 중이면)
@@ -903,10 +920,10 @@ function cssv(name){ return getComputedStyle(document.documentElement).getProper
 
 /* 무한매수 종목의 최근 거래일 종가 가져오기 (야후 우선, 실패 시 TD) */
 var MH_DAILY = {}; // {TQQQ:[{date,close,chg}], SOXL:[...]}
-function muhanLoadDaily(ticker,cb){
-  if(MH_DAILY[ticker]){ if(cb)cb(MH_DAILY[ticker]); return; }
-  // 야후 차트 API (키 불필요) — 기존 앱의 idxProxy 재사용
-  var url="https://query1.finance.yahoo.com/v8/finance/chart/"+ticker+"?range=1mo&interval=1d";
+function muhanLoadDaily(ticker,cb,force){
+  if(MH_DAILY[ticker] && !force){ if(cb)cb(MH_DAILY[ticker]); return; }
+  // 야후 차트 API (키 불필요). range 2mo로 넉넉히, 정규장 종가만.
+  var url="https://query1.finance.yahoo.com/v8/finance/chart/"+ticker+"?range=2mo&interval=1d&includePrePost=false";
   var proxied = (typeof idxProxy==="function") ? idxProxy(url) : url;
   fetch(proxied,{cache:"no-store"}).then(function(r){return r.json();}).then(function(j){
     var res=j.chart.result[0];
@@ -914,30 +931,52 @@ function muhanLoadDaily(ticker,cb){
     var ts=res.timestamp||[];
     var q=res.indicators.quote[0];
     var closes=q.close||[];
-    // 미국 동부 기준 '오늘' 날짜 (미완성 당일봉 판별용)
-    var nowET=new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
-    var etToday=nowET.getFullYear()+"-"+String(nowET.getMonth()+1).padStart(2,"0")+"-"+String(nowET.getDate()).padStart(2,"0");
-    // 장 상태: 야후 meta로 정규장 마감 여부 추정
     var rows=[];
     for(var i=0;i<ts.length;i++){
       if(closes[i]==null) continue;
-      // 봉의 날짜는 미국 동부 기준으로 계산
+      // 봉 날짜: 야후 일봉 타임스탬프는 그 거래일 장 시작(동부) 기준. 동부 날짜로 변환.
       var dET=new Date(new Date(ts[i]*1000).toLocaleString("en-US",{timeZone:"America/New_York"}));
       var ds=dET.getFullYear()+"-"+String(dET.getMonth()+1).padStart(2,"0")+"-"+String(dET.getDate()).padStart(2,"0");
-      rows.push({date:ds, close:closes[i], chg:0,
-                 dow:["일","월","화","수","목","금","토"][dET.getDay()],
-                 isToday:(ds===etToday)});
+      rows.push({date:ds, close:closes[i], chg:0, ts:ts[i],
+                 dow:["일","월","화","수","목","금","토"][dET.getDay()]});
     }
     for(var k=1;k<rows.length;k++){ rows[k].chg=(rows[k].close/rows[k-1].close-1)*100; }
-    // 마지막 봉이 '오늘(동부)'이고 정규장이 아직 안 끝났으면 미완성으로 표시
+
+    // ── 핵심: 정규장 마지막 종가를 meta에서 확정 ──
+    // regularMarketTime = 마지막 정규장 체결 시각, regularMarketPrice = 그 가격
+    var rmTime = meta.regularMarketTime;      // epoch sec
+    var rmPrice = meta.regularMarketPrice;    // 현재/마지막가 (장중이면 현재가)
+    var prevClose = meta.chartPreviousClose||meta.previousClose; // 직전 거래일 종가
+    // 마지막 일봉이 "오늘(동부)"인지, 그리고 정규장이 끝났는지 판단
+    var nowET=new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
+    var etToday=nowET.getFullYear()+"-"+String(nowET.getMonth()+1).padStart(2,"0")+"-"+String(nowET.getDate()).padStart(2,"0");
+    var etHour=nowET.getHours()+nowET.getMinutes()/60;
+    var afterClose = etHour>=16;   // 동부 16시(정규장 마감) 이후
     var last=rows[rows.length-1];
     if(last){
-      // 정규장 마감(동부 16:00) 이후면 오늘 봉도 확정으로 간주
-      var etHour=nowET.getHours()+nowET.getMinutes()/60;
-      var marketClosed = etHour>=16 || etHour<9.5; // 16시 이후 또는 개장 전(전일 마감상태)
-      last.closed = !last.isToday || marketClosed;
+      if(last.date===etToday){
+        // 마지막 봉이 오늘: 정규장 마감 후에만 확정. 아니면 이 봉 제거(어제가 마지막 마감)
+        last.closed = afterClose;
+        if(!afterClose){ rows._pendingToday = rows.pop(); } // 오늘 미확정 봉 분리
+      } else {
+        last.closed = true; // 마지막 봉이 과거 → 이미 마감
+      }
+    }
+    // meta 종가로 마지막 마감봉 보정 (야후 일봉이 지연될 때 대비)
+    if(rmPrice && rmTime){
+      var rmET=new Date(new Date(rmTime*1000).toLocaleString("en-US",{timeZone:"America/New_York"}));
+      var rmDs=rmET.getFullYear()+"-"+String(rmET.getMonth()+1).padStart(2,"0")+"-"+String(rmET.getDate()).padStart(2,"0");
+      var lastClosed=rows[rows.length-1];
+      // regularMarketTime이 마지막 마감봉보다 최신이고 정규장 마감 후면, 그 값으로 갱신/추가
+      if(afterClose && lastClosed && rmDs>lastClosed.date){
+        rows.push({date:rmDs,close:rmPrice,chg:(rmPrice/lastClosed.close-1)*100,ts:rmTime,
+                   dow:["일","월","화","수","목","금","토"][rmET.getDay()],closed:true});
+      } else if(lastClosed && rmDs===lastClosed.date){
+        lastClosed.close=rmPrice; // 같은 날이면 정확한 종가로 보정
+      }
     }
     MH_DAILY[ticker]=rows.slice(-12);
+    MH_DAILY[ticker]._meta={regularMarketPrice:rmPrice,previousClose:prevClose,fetchedAt:Date.now()};
     if(cb)cb(MH_DAILY[ticker]);
   }).catch(function(e){ if(cb)cb(null); });
 }
@@ -946,15 +985,10 @@ function muhanLoadDaily(ticker,cb){
 function muhanLastClose(ticker){
   var rows=MH_DAILY[ticker];
   if(!rows||!rows.length) return null;
-  // 뒤에서부터 '마감된' 봉을 찾음
   for(var i=rows.length-1;i>=0;i--){
-    if(rows[i].closed!==false){ // closed가 명시적 false가 아니면 마감으로 간주
-      // 단, 마지막 봉이 오늘(미완성)이면 건너뜀
-      if(rows[i].isToday && rows[i].closed===false) continue;
-      return rows[i];
-    }
+    if(rows[i].closed!==false) return rows[i];
   }
-  return rows[rows.length-1];
+  return rows[0];
 }
 
 /* 다이나믹 게이지 (원본 앱과 동일: 3색 그라데이션·틱·헤드도트·글로우) */
@@ -2565,7 +2599,9 @@ async function loadBonds(){
   const num=(...keys)=>{ for(const k of keys){ const v=row[k]; if(v!=null && !isNaN(parseFloat(v))) return parseFloat(v); } return NaN; };
   const y10=num("year10","10 year","tenYear","year_10");
   const y2 =num("year2","2 year","twoYear","year_2");
+  const y30=num("year30","30 year","thirtyYear","year_30");
   document.getElementById("tnx").textContent=fmt(y10,2)+"%"; document.getElementById("tnx").style.color="var(--green)";
+  document.getElementById("thirty").textContent=fmt(y30,2)+"%"; document.getElementById("thirty").style.color="var(--green)";
   document.getElementById("two").textContent=fmt(y2,2)+"%";  document.getElementById("two").style.color="var(--green)";
   const sp=y10-y2, se=document.getElementById("spread");
   se.textContent=(isNaN(sp)?"—":(sp>=0?"+":"")+fmt(sp,2)+"%p");
