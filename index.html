@@ -2338,7 +2338,16 @@ function drawMonthly(){
   const el=document.getElementById("monthly"); if(!el||!PORT) return;
   const cur=PORT.cur;
   const short=v=>{ const a=Math.abs(v); if(cur==="₩"){ if(a>=1e8) return (v/1e8).toFixed(1)+"억"; if(a>=1e4) return Math.round(v/1e4).toLocaleString()+"만"; } return Math.round(v).toLocaleString(); };
-  const months=(PORT.summ&&PORT.summ.months)||[];
+  let months=(PORT.summ&&PORT.summ.months)||[];
+  // 아직 오지 않은 '미래 달'(값 0) 잘라내기: 마지막으로 0이 아닌 달까지만 표시.
+  // (중간의 실제 0원 달은 유지, 뒤쪽 연속된 0만 제거)
+  let lastIdx=-1;
+  for(let i=0;i<months.length;i++){ if(Math.abs(months[i].v)>1e-9) lastIdx=i; }
+  // 현재 월까지는 최소한 표시 (당월이 0이어도 진행 중일 수 있으므로)
+  const nowMon=new Date().getMonth()+1;
+  let cutoff=Math.max(lastIdx, months.findIndex(x=>x.m===nowMon));
+  if(cutoff<0) cutoff=months.length-1;
+  months=months.slice(0, cutoff+1);
   const labels=months.map(x=>x.m+"월"), vals=months.map(x=>x.v);
   let run=0; const cum=vals.map(v=>run+=v);
   const barCols=vals.map(v=>v>=0?"#e5484d":"#2f6bff");
