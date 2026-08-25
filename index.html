@@ -120,9 +120,14 @@
   .hero .hval{color:var(--ink);}
   .hlab{font-size:11px;color:var(--sub);font-weight:700;letter-spacing:.4px;}
   .hval{font-size:31px;font-weight:800;margin:5px 0 11px;letter-spacing:-.9px;line-height:1.02;font-variant-numeric:tabular-nums;}
-  .hbadges{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap;margin:0 0 14px;padding-bottom:15px;border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .hbadges{display:flex;justify-content:center;gap:5px;flex-wrap:nowrap;margin:0 0 14px;padding-bottom:15px;border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .hbadges::-webkit-scrollbar{display:none;}
-  .badge2{font-size:11px;font-weight:800;padding:5px 10px;border-radius:20px;letter-spacing:-.3px;font-variant-numeric:tabular-nums;border:1px solid rgba(0,0,0,.04);white-space:nowrap;flex:0 0 auto;}
+  .badge2{font-size:10.5px;font-weight:800;padding:4px 8px;border-radius:16px;letter-spacing:-.3px;font-variant-numeric:tabular-nums;border:1px solid rgba(0,0,0,.04);white-space:nowrap;flex:0 0 auto;}
+  @media (max-width:380px){
+    .badge2{font-size:9.5px;padding:4px 7px;}
+    .hbadges{gap:4px;}
+    .qhelp{font-size:9px;width:14px;height:14px;line-height:14px;}
+  }
   .qhelp{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--fill);color:var(--sub);font-size:11px;font-weight:800;cursor:pointer;border:1px solid var(--line);vertical-align:middle;}
   .chips{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .chip{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 13px;text-align:left;box-shadow:var(--shadow);display:flex;flex-direction:column;}
@@ -488,7 +493,7 @@
     <div class="sec">
       <h2 class="fold" onclick="toggleCard('assetBody','asset',this)"><span>자산 변화 <span style="font-size:11px;font-weight:400;color:var(--sub)">(자산 vs 원금)</span></span><span class="foldcaret">▸</span></h2>
       <div id="assetBody" style="display:none">
-        <div class="chartbox" style="height:230px;"><canvas id="asset"></canvas></div>
+        <div class="chartbox" style="height:175px;"><canvas id="asset"></canvas></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
           <span class="sub" style="font-size:10px">🔍 두 손가락으로 확대·이동</span>
           <button class="miniedit" onclick="if(assetChart)assetChart.resetZoom()">↺ 확대 초기화</button>
@@ -505,24 +510,25 @@
     <div class="sec">
       <h2 class="fold" onclick="toggleCard('monthlyBody','monthly',this)"><span>월별 손익 <span style="font-size:11px;font-weight:400;color:var(--sub)">(막대 + 누적)</span></span><span class="foldcaret">▸</span></h2>
       <div id="monthlyBody" style="display:none">
-        <div class="chartbox" style="height:220px;"><canvas id="monthly"></canvas></div>
+        <div class="chartbox" style="height:170px;"><canvas id="monthly"></canvas></div>
       </div>
     </div>
 
     <div class="sec">
-      <h2>비중</h2>
       <div class="modetog">
-        <button id="mTick" class="on" onclick="setMode('tick')">종목별</button>
+        <button id="mTick" onclick="setMode('tick')">종목별</button>
         <button id="mAcct" onclick="setMode('acct')">계좌별</button>
         <button id="mTheme" onclick="setMode('theme')">유형별</button>
       </div>
-      <div class="chartbox" style="height:250px;"><canvas id="donut"></canvas></div>
-      <div id="modeSub" class="sub" style="text-align:center;margin-top:6px;"></div>
-      <div id="cashInfo" style="display:none;text-align:center;margin-top:8px;font-size:13px;font-weight:700;background:var(--fill);border-radius:12px;padding:9px 10px;"></div>
-      <div class="sub" style="text-align:center;font-size:10.5px;margin-top:6px;">조각을 누르면 아래 목록에서 강조됩니다</div>
+      <div id="portVizWrap" style="display:none">
+        <div class="chartbox" style="height:250px;"><canvas id="donut"></canvas></div>
+        <div id="modeSub" class="sub" style="text-align:center;margin-top:6px;"></div>
+        <div id="cashInfo" style="display:none;text-align:center;margin-top:8px;font-size:13px;font-weight:700;background:var(--fill);border-radius:12px;padding:9px 10px;"></div>
+        <div class="sub" style="text-align:center;font-size:10.5px;margin-top:6px;">조각을 누르면 아래 목록에서 강조됩니다</div>
+      </div>
     </div>
 
-    <div class="sec">
+    <div class="sec" id="portListSec" style="display:none">
       <h2 id="listTitle">계좌별 보유 종목</h2>
       <div id="portTable"></div>
     </div>
@@ -1812,7 +1818,7 @@ function setTheme(t){
 /* ── 포트폴리오 (구글시트 CSV) ── */
 let csvUrl = localStorage.getItem("dip_csv")||"";
 let donutChart=null, barChart=null, dlReg=false, zoomReg=false, fireChart=null;
-let portMode="tick", PORT=null, assetChart=null, monthlyChart=null;
+let portMode=null, PORT=null, assetChart=null, monthlyChart=null;
 let tickSort="value"; // value | profitDesc | profitAsc | retDesc | retAsc
 function setTickSort(s){ tickSort=s; drawPort(); }
 const PAL=["#6c4cf1","#8b6cf6","#22c55e","#f59e0b","#ef4444","#06b6d4","#ec4899","#a78bfa","#84cc16","#0ea5e9","#f97316","#14b8a6","#eab308","#64748b"];
@@ -1872,7 +1878,7 @@ function extractHoldings(rows){
   return {items:out, cur};
 }
 function extractStocks(rows){
-  let hRow=-1,accCol=-1,nameCol=-1,codeCol=-1,themeCol=-1,dayCol=-1,priceCol=-1,weekCol=-1,monthCol=-1,retCol=-1; const evals=[];
+  let hRow=-1,accCol=-1,nameCol=-1,codeCol=-1,themeCol=-1,dayCol=-1,priceCol=-1,weekCol=-1,monthCol=-1,retCol=-1,costCol=-1,pnlCol=-1; const evals=[];
   for(let r=0;r<rows.length;r++){
     const row=rows[r]; let a=-1,n=-1; const ev=[];
     for(let c=0;c<row.length;c++){
@@ -1883,7 +1889,7 @@ function extractStocks(rows){
     }
     if(a>=0 && n>=0 && ev.length){
       hRow=r; accCol=a; nameCol=n; ev.forEach(x=>evals.push(x));
-      for(let c=0;c<row.length;c++){ const cell=(row[c]||"").toString().trim();
+      for(let c=0;c<row.length;c++){ const cell=(row[c]||"").toString().trim(); const nb=cell.replace(/\s/g,"");
         if(cell.includes("종목코드")) codeCol=c;
         if(cell.includes("테마")) themeCol=c;
         if(cell.includes("전일대비")) dayCol=c;
@@ -1891,6 +1897,8 @@ function extractStocks(rows){
         if(cell.includes("1주일전")) weekCol=c;
         if(cell.includes("1달전")) monthCol=c;
         if(cell==="수익률") retCol=c;
+        if(nb.includes("매입금액")||nb==="매입금") costCol=c;
+        if(nb.includes("평가손익")||nb==="평가손익") pnlCol=c;
       }
       break;
     }
@@ -1905,11 +1913,14 @@ function extractStocks(rows){
       const acc=g(row,accCol), name=g(row,nameCol), v=pnum(row[valCol]);
       if(!name || !(v>0)) continue;
       if(isCashRow(acc,name)){ cashTotal+=v; continue; }
+      const cost=costCol>=0?pnum(row[costCol]):NaN;
+      const pnl=pnlCol>=0?pnum(row[pnlCol]):NaN;
       const o={acc,name,code:g(row,codeCol),theme:g(row,themeCol)||"기타",
-        price:g(row,priceCol),day:g(row,dayCol),week:g(row,weekCol),month:g(row,monthCol),ret:g(row,retCol),v};
+        price:g(row,priceCol),day:g(row,dayCol),week:g(row,weekCol),month:g(row,monthCol),ret:g(row,retCol),v,
+        cost:isNaN(cost)?null:cost, pnl:isNaN(pnl)?null:pnl};
       flat.push(o);
       const key=acc.replace(/\s/g,"");
-      (byAcc[key]=byAcc[key]||{acc,items:[]}).items.push({name,code:o.code,v,day:o.day,week:o.week,month:o.month,ret:o.ret});
+      (byAcc[key]=byAcc[key]||{acc,items:[]}).items.push({name,code:o.code,v,day:o.day,week:o.week,month:o.month,ret:o.ret,cost:o.cost,pnl:o.pnl});
     }
   }
   return {flat, byAcc, cash:cashTotal};
@@ -2096,11 +2107,21 @@ async function loadPortfolio(){
       sres=extractStocks(parseCSV(stext));
     }catch(e){}
     const tick={};
-    sres.flat.forEach(s=>{ const k=s.code||s.name; const o=tick[k]||(tick[k]={t:s.name,code:s.code,v:0,price:s.price,day:s.day,week:s.week,month:s.month,cost:0,profit:0,_hasCost:false}); o.v+=s.v; const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); if(!isNaN(rr)&&s.v){ const c=s.v/(1+rr/100); o.cost+=c; o.profit+=(s.v-c); o._hasCost=true; } });
+    sres.flat.forEach(s=>{
+      const k=s.code||s.name; const o=tick[k]||(tick[k]={t:s.name,code:s.code,v:0,price:s.price,day:s.day,week:s.week,month:s.month,cost:0,profit:0,_hasCost:false});
+      o.v+=s.v;
+      if(s.cost!=null && s.pnl!=null){ o.cost+=s.cost; o.profit+=s.pnl; o._hasCost=true; }
+      else if(s.cost!=null){ o.cost+=s.cost; o.profit+=(s.v-s.cost); o._hasCost=true; }
+      else { const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); if(!isNaN(rr)&&s.v){ const c=s.v/(1+rr/100); o.cost+=c; o.profit+=(s.v-c); o._hasCost=true; } }
+    });
     // 종목별 수익률(%) = 수익금/원금
     Object.values(tick).forEach(o=>{ o.retPct = (o._hasCost && o.cost>0) ? (o.profit/o.cost*100) : null; });
     const th={};
-    sres.flat.forEach(s=>{ const k=s.theme||"기타"; (th[k]||(th[k]={t:k,v:0})).v+=s.v; });
+    sres.flat.forEach(s=>{
+      const k=s.theme||"기타"; const o=th[k]||(th[k]={t:k,v:0,items:[]});
+      o.v+=s.v;
+      o.items.push({name:s.name,code:s.code,acc:s.acc,v:s.v,day:s.day,week:s.week,month:s.month,ret:s.ret,cost:s.cost,pnl:s.pnl});
+    });
     const cashAmt=extractCash(rows0)||sres.cash||0;
     if(cashAmt>0) (th["현금"]=th["현금"]||{t:"현금",v:0}).v+=cashAmt;
     PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:cashAmt, xirrSheet:extractXirrSheet(rows0), deposits2026:extractDeposits2026(rows0), yearStart:extractYearStart(rows0)};
@@ -2115,6 +2136,9 @@ function setMode(m){
   [["acct","mAcct"],["tick","mTick"],["theme","mTheme"]].forEach(([k,id])=>{
     const b=document.getElementById(id); if(b) b.classList.toggle("on",k===m);
   });
+  const vw=document.getElementById("portVizWrap"), ls=document.getElementById("portListSec");
+  if(vw) vw.style.display="block";
+  if(ls) ls.style.display="block";
   drawPort();
 }
 function chgSpan(s){
@@ -2140,7 +2164,7 @@ function highlightRow(name){
 // 네이버 검색(주가)으로 이동
 function openNaver(q){ q=(q||"").toString().trim(); if(!q||q==="현금"||q==="💵 현금") return; window.open("https://search.naver.com/search.naver?query="+encodeURIComponent(q+" 주가"),"_blank","noopener"); }
 function drawPort(){
-  if(!PORT) return;
+  if(!PORT || !portMode) return;
   const cur=PORT.cur, M=v=>cur+Number(v).toLocaleString("en-US",{maximumFractionDigits:0});
   let data = portMode==="acct"?PORT.accounts : portMode==="tick"?PORT.byTicker : PORT.byTheme;
   data=data.slice().sort((a,b)=>b.v-a.v);
@@ -2176,10 +2200,14 @@ function drawPort(){
     lt.innerHTML='계좌별 보유 종목 <span style="font-size:11px;font-weight:400;color:var(--sub)">(클릭해 펼치기)</span>';
     tb.innerHTML=data.map((x,i)=>{
       const gg=PORT.byAcc[x.t.replace(/\s/g,"")]; const items=gg?gg.items.slice().sort((a,b)=>b.v-a.v):[];
-      // 계좌 원금·수익금 합산 (각 종목 평가액 v와 수익률 ret로 역산)
-      let accCost=0, accVal=0, hasCost=false;
-      items.forEach(s=>{ const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); const vv=s.v||0; if(!isNaN(rr)){ const cost=vv/(1+rr/100); accCost+=cost; accVal+=vv; hasCost=true; } else { accVal+=vv; } });
-      const accProfit=accVal-accCost;
+      // 계좌 원금·수익금 합산: 시트의 매입금액·평가손익 컬럼 우선, 없으면 수익률 역산
+      let accCost=0, accProfit=0, accVal=0, hasCost=false;
+      items.forEach(s=>{
+        const vv=s.v||0; accVal+=vv;
+        if(s.cost!=null && s.pnl!=null){ accCost+=s.cost; accProfit+=s.pnl; hasCost=true; }
+        else if(s.cost!=null){ accCost+=s.cost; accProfit+=(vv-s.cost); hasCost=true; }
+        else { const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); if(!isNaN(rr)){ const c=vv/(1+rr/100); accCost+=c; accProfit+=(vv-c); hasCost=true; } }
+      });
       const summaryBar = (hasCost && accCost>0) ?
         `<div class="accsum"><span>원금 <b>${M(accCost)}</b></span><span>수익금 <b style="color:${accProfit>=0?'var(--red)':'var(--blue)'}">${accProfit>=0?'+':'−'}${cur}${Math.abs(Math.round(accProfit)).toLocaleString("en-US")}</b> <span style="color:${accProfit>=0?'var(--red)':'var(--blue)'}">(${accProfit>=0?'+':''}${(accProfit/accCost*100).toFixed(2)}%)</span></span></div>` : "";
       const sub=items.length?`<div class="substocks" style="display:none">`+summaryBar+items.map(s=>
@@ -2204,8 +2232,12 @@ function drawPort(){
       else if(tickSort==="retAsc") sorted.sort((a,b)=>((a.retPct==null?1e9:a.retPct)-(b.retPct==null?1e9:b.retPct)));
       else sorted.sort((a,b)=>b.v-a.v);
       const showPnl = tickSort!=="value"; // 정렬 선택 시 수익금·수익률 노출
-      const sortBtns=[["value","비중"],["profitDesc","수익금↓"],["profitAsc","수익금↑"],["retDesc","수익률↓"],["retAsc","수익률↑"]]
-        .map(b=>`<button class="tsortbtn${tickSort===b[0]?' on':''}" onclick="setTickSort('${b[0]}')">${b[1]}</button>`).join("");
+      const profitArrow = tickSort==="profitAsc"?"↑":"↓";
+      const retArrow = tickSort==="retAsc"?"↑":"↓";
+      const sortBtns=
+        `<button class="tsortbtn${tickSort==="value"?' on':''}" onclick="setTickSort('value')">전체</button>`+
+        `<button class="tsortbtn${(tickSort==="profitDesc"||tickSort==="profitAsc")?' on':''}" onclick="setTickSort('${tickSort==="profitDesc"?"profitAsc":"profitDesc"}')">수익금${profitArrow}</button>`+
+        `<button class="tsortbtn${(tickSort==="retDesc"||tickSort==="retAsc")?' on':''}" onclick="setTickSort('${tickSort==="retDesc"?"retAsc":"retDesc"}')">수익률${retArrow}</button>`;
       tb.innerHTML=`<div class="tsortbar">${sortBtns}</div>`+sorted.map((x)=>{
         const ci=data.indexOf(x); const col=colFull[ci>=0?ci:0];
         const pnlPart = (showPnl && x._hasCost) ?
@@ -2215,10 +2247,26 @@ function drawPort(){
           `<span class="pvl">${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%${pnlPart?`<br>${pnlPart}`:""}</span></div>`;
       }).join("");
     } else {
-      tb.innerHTML=data.map((x,i)=>
-        `<div class="prow" data-name="${x.t}" onclick="openNaver(this.dataset.name)" style="cursor:pointer"><span class="pnm"><span class="dot2" style="background:${colFull[i]}"></span>${x.t}`+
-        `${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
-        `<span class="pvl">${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>`).join("");
+      tb.innerHTML=data.map((x,i)=>{
+        const items=(x.items||[]).slice().sort((a,b)=>b.v-a.v);
+        let themeCost=0, themeProfit=0, hasCost=false;
+        items.forEach(s=>{
+          const vv=s.v||0;
+          if(s.cost!=null && s.pnl!=null){ themeCost+=s.cost; themeProfit+=s.pnl; hasCost=true; }
+          else if(s.cost!=null){ themeCost+=s.cost; themeProfit+=(vv-s.cost); hasCost=true; }
+          else { const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); if(!isNaN(rr)){ const c=vv/(1+rr/100); themeCost+=c; themeProfit+=(vv-c); hasCost=true; } }
+        });
+        const summaryBar = (hasCost && themeCost>0) ?
+          `<div class="accsum"><span>원금 <b>${M(themeCost)}</b></span><span>수익금 <b style="color:${themeProfit>=0?'var(--red)':'var(--blue)'}">${themeProfit>=0?'+':'−'}${cur}${Math.abs(Math.round(themeProfit)).toLocaleString("en-US")}</b> <span style="color:${themeProfit>=0?'var(--red)':'var(--blue)'}">(${themeProfit>=0?'+':''}${(themeProfit/themeCost*100).toFixed(2)}%)</span></span></div>` : "";
+        const sub=items.length?`<div class="substocks" style="display:none">`+summaryBar+items.map(s=>
+          `<div class="srow"><div class="sleft"><div class="sname">${s.name}${s.code?` <span class="scode">${s.code}</span>`:""}</div>`+
+          `<div class="schips">${s.acc?`<span class="mchip" style="opacity:.75">${s.acc}</span>`:""}${mchip("전일",s.day)}${mchip("주",s.week)}${mchip("월",s.month)}</div></div>`+
+          `<div class="sright"><div class="sval">${M(s.v)}</div><div class="sret">수익 ${chgSpan(s.ret)}</div></div></div>`).join("")+`</div>`:"";
+        const caret=items.length?` <span class="caret">▸</span>`:"";
+        return `<div class="pacc" data-i="th${i}"><div class="prow" data-name="${x.t}"${items.length?` style="cursor:pointer" onclick="toggleAcc('th${i}')"`:""}>`+
+          `<span class="pnm"><span class="dot2" style="background:${colFull[i]}"></span>${x.t}${caret}</span>`+
+          `<span class="pvl">${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>${sub}</div>`;
+      }).join("");
     }
   }
   const ci=document.getElementById("cashInfo");
