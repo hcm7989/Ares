@@ -120,8 +120,9 @@
   .hero .hval{color:var(--ink);}
   .hlab{font-size:11px;color:var(--sub);font-weight:700;letter-spacing:.4px;}
   .hval{font-size:31px;font-weight:800;margin:5px 0 11px;letter-spacing:-.9px;line-height:1.02;font-variant-numeric:tabular-nums;}
-  .hbadges{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:0 0 14px;padding-bottom:15px;border-bottom:1px solid var(--line);}
-  .badge2{font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;letter-spacing:-.2px;font-variant-numeric:tabular-nums;border:1px solid rgba(0,0,0,.04);}
+  .hbadges{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap;margin:0 0 14px;padding-bottom:15px;border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .hbadges::-webkit-scrollbar{display:none;}
+  .badge2{font-size:11px;font-weight:800;padding:5px 10px;border-radius:20px;letter-spacing:-.3px;font-variant-numeric:tabular-nums;border:1px solid rgba(0,0,0,.04);white-space:nowrap;flex:0 0 auto;}
   .qhelp{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--fill);color:var(--sub);font-size:11px;font-weight:800;cursor:pointer;border:1px solid var(--line);vertical-align:middle;}
   .chips{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .chip{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 13px;text-align:left;box-shadow:var(--shadow);display:flex;flex-direction:column;}
@@ -175,6 +176,13 @@
   .accval{font-size:14px;font-weight:800;}
   .accmeta{font-size:11px;color:var(--sub);margin-top:3px;}
   .substocks{background:var(--fill);border-top:1px solid var(--line);margin:0;padding:2px 13px 6px;}
+  .accsum{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding:9px 4px 8px;margin-bottom:2px;border-bottom:1px dashed var(--line);font-size:11.5px;color:var(--sub);}
+  .accsum b{color:var(--ink);font-weight:800;font-variant-numeric:tabular-nums;}
+  .tsortbar{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;margin-bottom:4px;-webkit-overflow-scrolling:touch;}
+  .tsortbar::-webkit-scrollbar{display:none;}
+  .tsortbtn{flex:0 0 auto;cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:16px;padding:6px 12px;font-size:11.5px;font-weight:700;color:var(--sub);font-family:inherit;white-space:nowrap;transition:all .15s;}
+  .tsortbtn.on{background:color-mix(in srgb,var(--accent) 12%,var(--card));border-color:var(--accent);color:var(--accent);}
+  .tpnl{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;}
   .srow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);}
   .srow:last-child{border-bottom:none;}
   .sleft{min-width:0;}
@@ -1805,6 +1813,8 @@ function setTheme(t){
 let csvUrl = localStorage.getItem("dip_csv")||"";
 let donutChart=null, barChart=null, dlReg=false, zoomReg=false, fireChart=null;
 let portMode="tick", PORT=null, assetChart=null, monthlyChart=null;
+let tickSort="value"; // value | profitDesc | profitAsc | retDesc | retAsc
+function setTickSort(s){ tickSort=s; drawPort(); }
 const PAL=["#6c4cf1","#8b6cf6","#22c55e","#f59e0b","#ef4444","#06b6d4","#ec4899","#a78bfa","#84cc16","#0ea5e9","#f97316","#14b8a6","#eab308","#64748b"];
 function saveCsv(){
   const v=document.getElementById("csvUrl").value.trim();
@@ -2025,6 +2035,12 @@ function extractHistory(rows){
   const out=Object.values(map).sort((a,b)=>a.key-b.key);
   const st=extractHistoryStats(rows);
   out.peakSheet=st.peak; out.mddSheet=st.mdd; out.dropSheet=st.drop;
+  // U2 셀(=U열 21번째, 2행) : 전일대비 수익률(%) 직접 참조
+  try{
+    const u2 = rows[1] && rows[1][20]!=null ? rows[1][20] : null;
+    const u2n = u2!=null ? pnum(u2) : NaN;
+    out.dayRetU2 = isNaN(u2n) ? null : u2n;
+  }catch(e){ out.dayRetU2=null; }
   return out;
 }
 function toggleAcc(i){
@@ -2080,7 +2096,9 @@ async function loadPortfolio(){
       sres=extractStocks(parseCSV(stext));
     }catch(e){}
     const tick={};
-    sres.flat.forEach(s=>{ const k=s.code||s.name; const o=tick[k]||(tick[k]={t:s.name,code:s.code,v:0,price:s.price,day:s.day,week:s.week,month:s.month}); o.v+=s.v; });
+    sres.flat.forEach(s=>{ const k=s.code||s.name; const o=tick[k]||(tick[k]={t:s.name,code:s.code,v:0,price:s.price,day:s.day,week:s.week,month:s.month,cost:0,profit:0,_hasCost:false}); o.v+=s.v; const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); if(!isNaN(rr)&&s.v){ const c=s.v/(1+rr/100); o.cost+=c; o.profit+=(s.v-c); o._hasCost=true; } });
+    // 종목별 수익률(%) = 수익금/원금
+    Object.values(tick).forEach(o=>{ o.retPct = (o._hasCost && o.cost>0) ? (o.profit/o.cost*100) : null; });
     const th={};
     sres.flat.forEach(s=>{ const k=s.theme||"기타"; (th[k]||(th[k]={t:k,v:0})).v+=s.v; });
     const cashAmt=extractCash(rows0)||sres.cash||0;
@@ -2158,7 +2176,13 @@ function drawPort(){
     lt.innerHTML='계좌별 보유 종목 <span style="font-size:11px;font-weight:400;color:var(--sub)">(클릭해 펼치기)</span>';
     tb.innerHTML=data.map((x,i)=>{
       const gg=PORT.byAcc[x.t.replace(/\s/g,"")]; const items=gg?gg.items.slice().sort((a,b)=>b.v-a.v):[];
-      const sub=items.length?`<div class="substocks" style="display:none">`+items.map(s=>
+      // 계좌 원금·수익금 합산 (각 종목 평가액 v와 수익률 ret로 역산)
+      let accCost=0, accVal=0, hasCost=false;
+      items.forEach(s=>{ const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); const vv=s.v||0; if(!isNaN(rr)){ const cost=vv/(1+rr/100); accCost+=cost; accVal+=vv; hasCost=true; } else { accVal+=vv; } });
+      const accProfit=accVal-accCost;
+      const summaryBar = (hasCost && accCost>0) ?
+        `<div class="accsum"><span>원금 <b>${M(accCost)}</b></span><span>수익금 <b style="color:${accProfit>=0?'var(--red)':'var(--blue)'}">${accProfit>=0?'+':'−'}${cur}${Math.abs(Math.round(accProfit)).toLocaleString("en-US")}</b> <span style="color:${accProfit>=0?'var(--red)':'var(--blue)'}">(${accProfit>=0?'+':''}${(accProfit/accCost*100).toFixed(2)}%)</span></span></div>` : "";
+      const sub=items.length?`<div class="substocks" style="display:none">`+summaryBar+items.map(s=>
         `<div class="srow"><div class="sleft"><div class="sname">${s.name}${s.code?` <span class="scode">${s.code}</span>`:""}</div>`+
         `<div class="schips">${mchip("전일",s.day)}${mchip("주",s.week)}${mchip("월",s.month)}</div></div>`+
         `<div class="sright"><div class="sval">${M(s.v)}</div><div class="sret">수익 ${chgSpan(s.ret)}</div></div></div>`).join("")+`</div>`:"";
@@ -2170,10 +2194,32 @@ function drawPort(){
     }).join("");
   } else {
     lt.textContent = portMode==="tick"?"종목별 비중 (계좌 합산)":"유형별 비중";
-    tb.innerHTML=data.map((x,i)=>
-      `<div class="prow" data-name="${x.t}" onclick="openNaver(this.dataset.name)" style="cursor:pointer"><span class="pnm"><span class="dot2" style="background:${colFull[i]}"></span>${x.t}`+
-      `${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
-      `<span class="pvl">${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>`).join("");
+    // 종목별: 정렬 옵션 + 수익금·수익률 표시
+    if(portMode==="tick"){
+      // 정렬 적용
+      let sorted=data.slice();
+      if(tickSort==="profitDesc") sorted.sort((a,b)=>(b.profit||0)-(a.profit||0));
+      else if(tickSort==="profitAsc") sorted.sort((a,b)=>(a.profit||0)-(b.profit||0));
+      else if(tickSort==="retDesc") sorted.sort((a,b)=>((b.retPct==null?-1e9:b.retPct)-(a.retPct==null?-1e9:a.retPct)));
+      else if(tickSort==="retAsc") sorted.sort((a,b)=>((a.retPct==null?1e9:a.retPct)-(b.retPct==null?1e9:b.retPct)));
+      else sorted.sort((a,b)=>b.v-a.v);
+      const showPnl = tickSort!=="value"; // 정렬 선택 시 수익금·수익률 노출
+      const sortBtns=[["value","비중"],["profitDesc","수익금↓"],["profitAsc","수익금↑"],["retDesc","수익률↓"],["retAsc","수익률↑"]]
+        .map(b=>`<button class="tsortbtn${tickSort===b[0]?' on':''}" onclick="setTickSort('${b[0]}')">${b[1]}</button>`).join("");
+      tb.innerHTML=`<div class="tsortbar">${sortBtns}</div>`+sorted.map((x)=>{
+        const ci=data.indexOf(x); const col=colFull[ci>=0?ci:0];
+        const pnlPart = (showPnl && x._hasCost) ?
+          `<span class="tpnl" style="color:${x.profit>=0?'var(--red)':'var(--blue)'}">${x.profit>=0?'+':'−'}${cur}${Math.abs(Math.round(x.profit)).toLocaleString("en-US")} <span style="opacity:.85">(${x.retPct>=0?'+':''}${x.retPct.toFixed(2)}%)</span></span>` : "";
+        return `<div class="prow" data-name="${x.t}" onclick="openNaver(this.dataset.name)" style="cursor:pointer"><span class="pnm"><span class="dot2" style="background:${col}"></span>${x.t}`+
+          `${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
+          `<span class="pvl">${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%${pnlPart?`<br>${pnlPart}`:""}</span></div>`;
+      }).join("");
+    } else {
+      tb.innerHTML=data.map((x,i)=>
+        `<div class="prow" data-name="${x.t}" onclick="openNaver(this.dataset.name)" style="cursor:pointer"><span class="pnm"><span class="dot2" style="background:${colFull[i]}"></span>${x.t}`+
+        `${x.code?` <span class="scode">${x.code}</span>`:""}</span>`+
+        `<span class="pvl">${M(x.v)} · ${(x.v/mt*100).toFixed(1)}%</span></div>`).join("");
+    }
   }
   const ci=document.getElementById("cashInfo");
   if(ci){
@@ -2182,8 +2228,19 @@ function drawPort(){
     else ci.style.display="none";
   }
 }
-// 전일대비 수익금(원)과 전일대비 수익률(%): history 탭의 일별 총수익금 변화로 계산
+// 전일대비 수익금(원)과 전일대비 수익률(%)
 function dailyGain(){
+  // 1순위: History 탭 U2 셀의 전일대비 수익률(%) 직접 참조
+  const H0=PORT&&PORT.history;
+  if(H0 && H0.dayRetU2!=null && isFinite(H0.dayRetU2)){
+    const pct=H0.dayRetU2;
+    // 금액 = 현재 총자산 대비 역산 (전일자산 = 현재/(1+pct/100))
+    const cur=PORT.total||0;
+    const prevAsset = cur/(1+pct/100);
+    const won = cur-prevAsset;
+    return {won: isFinite(won)?won:null, pct};
+  }
+  // 2순위: history 탭의 일별 총수익금 변화로 계산
   const H=PORT&&PORT.history;
   if(H && H.length>=2){
     const hasPro=H.some(p=>Math.abs(p.asset-p.invest)>1);
@@ -2193,7 +2250,7 @@ function dailyGain(){
       return {won, pct: b.asset>0? won/b.asset*100 : null};
     }
   }
-  // 폴백: 종목별 전일대비%로 역산 합산
+  // 3순위 폴백: 종목별 전일대비%로 역산 합산
   let g=0, base=0, any=false;
   (PORT.byTicker||[]).forEach(x=>{
     const d=parseFloat(String(x.day==null?"":x.day).replace(/[%\s]/g,""));
@@ -2239,10 +2296,7 @@ function drawHero(){
   const rate=m["총수익률"], rn=pnum(rate);
   const ys=PORT.yearStart;
   const pp=document.getElementById("portPrev");
-  if(pp){
-    if(ys>0){ pp.innerHTML=`2025.12.31 평가금액 <b style="color:var(--ink)">${cur}${Math.round(ys).toLocaleString("en-US")}</b>`; pp.style.display="block"; }
-    else pp.style.display="none";
-  }
+  if(pp){ pp.style.display="none"; }
   // YTD 단순 수익률 = 2026 총수익 ÷ 연초자산
   const prof=pnum(m["총수익"]);
   const ytdRet=(ys>0 && isFinite(prof)) ? prof/ys*100 : null;
