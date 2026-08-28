@@ -1991,6 +1991,51 @@ function extractStocks(rows){
   }
   return {flat, byAcc, cash:cashTotal};
 }
+function extractAccountFinancials(rows){
+  // Portfolio 시트 상단의 계좌별 요약 블록(계좌명/총 매입 금액/투자 원금/수익금/총 수익률 행)을 직접 읽는다.
+  // 종목별로 재합산하지 않고 시트가 이미 계산해 둔 값을 그대로 쓰기 위함 (정확도 최우선).
+  let nameRow=-1, labelCol=-1;
+  for(let r=0;r<rows.length && nameRow<0;r++){
+    for(let c=0;c<rows[r].length;c++){
+      if((rows[r][c]||"").toString().trim()==="계좌명"){ nameRow=r; labelCol=c; break; }
+    }
+  }
+  if(nameRow<0) return {};
+  const accCols=[];
+  for(let c=labelCol+1;c<rows[nameRow].length;c++){
+    const nm=(rows[nameRow][c]||"").toString().trim();
+    if(nm) accCols.push({c, name:nm});
+  }
+  if(!accCols.length) return {};
+  const findLabelRow=(label)=>{
+    for(let r=nameRow+1;r<Math.min(rows.length,nameRow+10);r++){
+      if((rows[r][labelCol]||"").toString().trim()===label) return r;
+    }
+    return -1;
+  };
+  const costRow=findLabelRow("총 매입 금액");
+  const profitRow=findLabelRow("수익금");
+  const principalRow=findLabelRow("투자 원금");
+  const evalRow=findLabelRow("총 평가 금액");
+  const retRow=findLabelRow("총 수익률");
+  const map={};
+  accCols.forEach(({c,name})=>{
+    const key=name.replace(/\s/g,"");
+    const cost=costRow>=0?pnum(rows[costRow][c]):NaN;
+    const profit=profitRow>=0?pnum(rows[profitRow][c]):NaN;
+    const principal=principalRow>=0?pnum(rows[principalRow][c]):NaN;
+    const evalAmt=evalRow>=0?pnum(rows[evalRow][c]):NaN;
+    const retPct=retRow>=0?pnum(rows[retRow][c]):NaN;
+    if(!isNaN(cost)||!isNaN(profit)){
+      map[key]={
+        cost:isNaN(cost)?null:cost, profit:isNaN(profit)?null:profit,
+        principal:isNaN(principal)?null:principal, evalAmt:isNaN(evalAmt)?null:evalAmt,
+        retPct:isNaN(retPct)?null:retPct
+      };
+    }
+  });
+  return map;
+}
 function extractSummary(rows){
   const findRight=(label)=>{
     for(let r=0;r<rows.length;r++) for(let c=0;c<rows[r].length;c++){
@@ -2190,7 +2235,7 @@ async function loadPortfolio(){
     });
     const cashAmt=extractCash(rows0)||sres.cash||0;
     if(cashAmt>0) (th["현금"]=th["현금"]||{t:"현금",v:0}).v+=cashAmt;
-    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:cashAmt, xirrSheet:extractXirrSheet(rows0), deposits2026:extractDeposits2026(rows0), yearStart:extractYearStart(rows0)};
+    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:cashAmt, xirrSheet:extractXirrSheet(rows0), deposits2026:extractDeposits2026(rows0), yearStart:extractYearStart(rows0), acctFin:extractAccountFinancials(rows0)};
     try{ window.PORT=PORT; }catch(e){}
     drawHero(); drawAsset(); drawMonthly(); drawPort(); drawQuotes();
     st.textContent="업데이트 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
@@ -2266,14 +2311,21 @@ function drawPort(){
     lt.innerHTML='계좌별 보유 종목 <span style="font-size:11px;font-weight:400;color:var(--sub)">(클릭해 펼치기)</span>';
     tb.innerHTML=data.map((x,i)=>{
       const gg=PORT.byAcc[x.t.replace(/\s/g,"")]; const items=gg?gg.items.slice().sort((a,b)=>b.v-a.v):[];
-      // 계좌 원금·수익금 합산: 시트의 매입금액·평가손익 컬럼 우선, 없으면 수익률 역산
-      let accCost=0, accProfit=0, accVal=0, hasCost=false;
-      items.forEach(s=>{
-        const vv=s.v||0; accVal+=vv;
-        if(s.cost!=null && s.pnl!=null){ accCost+=s.cost; accProfit+=s.pnl; hasCost=true; }
-        else if(s.cost!=null){ accCost+=s.cost; accProfit+=(vv-s.cost); hasCost=true; }
-        else { const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); if(!isNaN(rr)){ const c=vv/(1+rr/100); accCost+=c; accProfit+=(vv-c); hasCost=true; } }
-      });
+      // 계좌 원금·수익금: 시트 상단 계좌요약 블록(총 매입 금액·수익금)을 최우선으로 사용 — 종목 재합산보다 정확함.
+      const fin=PORT.acctFin && PORT.acctFin[x.t.replace(/\s/g,"")];
+      let accCost, accProfit, hasCost=false;
+      if(fin && fin.cost!=null && fin.profit!=null){
+        accCost=fin.cost; accProfit=fin.profit; hasCost=true;
+      } else {
+        // 폴백: 종목별 매입금액·평가손익 합산, 그마저 없으면 수익률 역산
+        accCost=0; accProfit=0;
+        items.forEach(s=>{
+          const vv=s.v||0;
+          if(s.cost!=null && s.pnl!=null){ accCost+=s.cost; accProfit+=s.pnl; hasCost=true; }
+          else if(s.cost!=null){ accCost+=s.cost; accProfit+=(vv-s.cost); hasCost=true; }
+          else { const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); if(!isNaN(rr)){ const c=vv/(1+rr/100); accCost+=c; accProfit+=(vv-c); hasCost=true; } }
+        });
+      }
       const summaryBar = (hasCost && accCost>0) ?
         `<div class="accsum"><span>원금 <b>${M(accCost)}</b></span><span>수익금 <b style="color:${accProfit>=0?'var(--red)':'var(--blue)'}">${accProfit>=0?'+':'−'}${cur}${Math.abs(Math.round(accProfit)).toLocaleString("en-US")}</b> <span style="color:${accProfit>=0?'var(--red)':'var(--blue)'}">(${accProfit>=0?'+':''}${(accProfit/accCost*100).toFixed(2)}%)</span></span></div>` : "";
       const sub=items.length?`<div class="substocks" style="display:none">`+summaryBar+items.map(s=>
@@ -2349,12 +2401,19 @@ function drawPort(){
 }
 // 전일대비 수익금(원)과 전일대비 수익률(%)
 function dailyGain(){
-  // 1순위: History 탭 자체 비교 — U2(오늘 총자산) vs History 마지막 날짜행(어제 총자산)
+  // 1순위: History 탭 자체 비교 — U2(오늘 총자산) vs History의 "오늘 이전 가장 최근 날짜행"(=어제 총자산)
   const H1=PORT&&PORT.history;
   if(H1 && H1.length>=1 && H1.dayRetU2!=null && isFinite(H1.dayRetU2) && H1.dayRetU2>0){
-    const prevAsset=H1[H1.length-1].asset; // History 탭의 가장 최근 날짜행 = 어제 총자산
-    const curAsset=H1.dayRetU2;            // History 탭 U2 셀 = 오늘 총자산
-    if(prevAsset>0){
+    const now=new Date();
+    const todayKey=now.getFullYear()*10000+(now.getMonth()+1)*100+now.getDate();
+    // 오늘 날짜 행이 이미 시트에 기록되어 있어도 건너뛰고, 오늘보다 이전인 가장 최근 행을 찾는다
+    let prevRow=null;
+    for(let i=H1.length-1;i>=0;i--){
+      if(H1[i].key<todayKey){ prevRow=H1[i]; break; }
+    }
+    if(prevRow && prevRow.asset>0){
+      const prevAsset=prevRow.asset;   // 오늘 이전 가장 최근(=어제) 총자산
+      const curAsset=H1.dayRetU2;      // History 탭 U2 셀 = 오늘 총자산
       const won=curAsset-prevAsset;
       const pct=won/prevAsset*100;
       return {won: isFinite(won)?won:null, pct};
