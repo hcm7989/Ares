@@ -2373,20 +2373,36 @@ function drawPort(){
       }).join("");
     } else {
       tb.innerHTML=data.map((x,i)=>{
-        const items=(x.items||[]).slice().sort((a,b)=>b.v-a.v);
-        let themeCost=0, themeProfit=0, hasCost=false;
-        items.forEach(s=>{
-          const vv=s.v||0;
-          if(s.cost!=null && s.pnl!=null){ themeCost+=s.cost; themeProfit+=s.pnl; hasCost=true; }
-          else if(s.cost!=null){ themeCost+=s.cost; themeProfit+=(vv-s.cost); hasCost=true; }
-          else { const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); if(!isNaN(rr)){ const c=vv/(1+rr/100); themeCost+=c; themeProfit+=(vv-c); hasCost=true; } }
+        const rawItems=(x.items||[]);
+        // 같은 종목이 여러 계좌에 나뉘어 있으면 하나로 합산 (종목별 탭과 정확히 같은 금액·비율이 되도록)
+        const grouped={};
+        rawItems.forEach(s=>{
+          const k=s.code||s.name;
+          const o=grouped[k]||(grouped[k]={name:s.name,code:s.code,v:0,cost:0,profit:0,hasCost:false,accounts:[]});
+          const vv=s.v||0; o.v+=vv;
+          if(s.cost!=null && s.pnl!=null){ o.cost+=s.cost; o.profit+=s.pnl; o.hasCost=true; }
+          else if(s.cost!=null){ o.cost+=s.cost; o.profit+=(vv-s.cost); o.hasCost=true; }
+          else { const rr=parseFloat(String(s.ret==null?"":s.ret).replace(/[%\s]/g,"")); if(!isNaN(rr)){ const c=vv/(1+rr/100); o.cost+=c; o.profit+=(vv-c); o.hasCost=true; } }
+          o.accounts.push(s);
         });
+        const items=Object.values(grouped).sort((a,b)=>b.v-a.v);
+        let themeCost=0, themeProfit=0, hasCost=false;
+        items.forEach(o=>{ if(o.hasCost){ themeCost+=o.cost; themeProfit+=o.profit; hasCost=true; } });
         const summaryBar = (hasCost && themeCost>0) ?
           `<div class="accsum"><span>원금 <b>${M(themeCost)}</b></span><span>수익금 <b style="color:${themeProfit>=0?'var(--red)':'var(--blue)'}">${themeProfit>=0?'+':'−'}${cur}${Math.abs(Math.round(themeProfit)).toLocaleString("en-US")}</b> <span style="color:${themeProfit>=0?'var(--red)':'var(--blue)'}">(${themeProfit>=0?'+':''}${(themeProfit/themeCost*100).toFixed(2)}%)</span></span></div>` : "";
-        const sub=items.length?`<div class="substocks" style="display:none">`+summaryBar+items.map(s=>
-          `<div class="srow"><div class="sleft"><div class="sname">${s.name}${s.code?` <span class="scode">${s.code}</span>`:""}</div>`+
-          `<div class="schips">${s.acc?`<span class="mchip" style="opacity:.75">${s.acc}</span>`:""}${mchip("전일",s.day)}${mchip("주",s.week)}${mchip("월",s.month)}</div></div>`+
-          `<div class="sright"><div class="sval">${M(s.v)}</div><div class="sret">수익 ${chgSpan(s.ret)}</div></div></div>`).join("")+`</div>`:"";
+        const sub=items.length?`<div class="substocks" style="display:none">`+summaryBar+items.map((o,j)=>{
+          const multi=o.accounts.length>1;
+          const tid=`th${i}-${j}`;
+          const retPct = o.hasCost && o.cost>0 ? (o.profit/o.cost*100) : null;
+          const accDetail = multi ? `<div class="substocks" id="${tid}" style="display:none;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)">`+
+            o.accounts.slice().sort((a,b)=>b.v-a.v).map(s=>
+              `<div class="srow" style="padding:6px 0"><div class="sleft"><div class="sname" style="font-size:12px;color:var(--sub)">${s.acc||"—"}</div></div>`+
+              `<div class="sright"><div class="sval" style="font-size:12.5px">${M(s.v)}</div></div></div>`).join("")+`</div>` : "";
+          return `<div class="srow"${multi?` style="cursor:pointer" onclick="toggleAcc('${tid}')"`:""}><div class="sleft">`+
+            `<div class="sname">${o.name}${o.code?` <span class="scode">${o.code}</span>`:""}${multi?` <span class="caret">▸</span> <span style="font-size:10.5px;color:var(--sub)">${o.accounts.length}개 계좌</span>`:""}</div>`+
+            (accDetail?"":`<div class="schips">${o.accounts[0]&&o.accounts[0].acc?`<span class="mchip" style="opacity:.75">${o.accounts[0].acc}</span>`:""}${mchip("전일",o.accounts[0]&&o.accounts[0].day)}${mchip("주",o.accounts[0]&&o.accounts[0].week)}${mchip("월",o.accounts[0]&&o.accounts[0].month)}</div>`)+
+            `</div><div class="sright"><div class="sval">${M(o.v)}</div><div class="sret">${retPct!=null?`수익 ${chgSpan(retPct.toFixed(2)+"%")}`:""}</div></div></div>${accDetail}`;
+        }).join("")+`</div>`:"";
         const caret=items.length?` <span class="caret">▸</span>`:"";
         return `<div class="pacc" data-i="th${i}"><div class="prow" data-name="${x.t}"${items.length?` style="cursor:pointer" onclick="toggleAcc('th${i}')"`:""}>`+
           `<span class="pnm"><span class="dot2" style="background:${colFull[i]}"></span>${x.t}${caret}</span>`+
