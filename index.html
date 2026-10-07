@@ -545,6 +545,14 @@
     </div>
 
     <div class="sec">
+      <h2 class="fold" onclick="toggleCard('benchBody','bench',this)"><span>내 수익률 vs SPY·QQQ·QLD <span style="font-size:11px;font-weight:400;color:var(--sub)">(2026 YTD)</span></span><span class="foldcaret">▸</span></h2>
+      <div id="benchBody" style="display:none">
+        <div class="chartbox" style="height:210px;"><canvas id="benchCv"></canvas></div>
+        <div id="benchNote" class="sub" style="text-align:center;margin-top:6px;line-height:1.5">불러오는 중…</div>
+      </div>
+    </div>
+
+    <div class="sec">
       <h2 class="fold" onclick="toggleCard('monthlyBody','monthly',this)"><span>월별 손익 <span style="font-size:11px;font-weight:400;color:var(--sub)">(막대 + 누적)</span></span><span class="foldcaret">▸</span></h2>
       <div id="monthlyBody" style="display:none">
         <div class="chartbox" style="height:170px;"><canvas id="monthly"></canvas></div>
@@ -2163,6 +2171,22 @@ function extractHistory(rows){
     const u2n = u2!=null ? pnum(u2) : NaN;
     out.dayRetU2 = isNaN(u2n) ? null : u2n;
   }catch(e){ out.dayRetU2=null; }
+  // X1805(주식수익) / X1863(26년 총수익) 셀 직접 참조 (행1805=index1804, X=index23)
+  const pcell=v=>{ if(v==null) return null; let t=String(v).trim(); if(!t) return null;
+    const neg=/^\(.*\)$/.test(t)||/^[\\\-−–]/.test(t);
+    const n=parseFloat(t.replace(/[^0-9.]/g,'')); if(isNaN(n)) return null; return neg?-n:n; };
+  try{ out.stockProfitX=pcell(rows[1804]&&rows[1804][23]); }catch(e){ out.stockProfitX=null; }
+  try{ out.totalProfit26X=pcell(rows[1862]&&rows[1862][23]); }catch(e){ out.totalProfit26X=null; }
+  // 벤치마크: "2026 SPY/QQQ/QLD" 라벨 오른쪽 셀의 수익률(%) (예: Z1472 라벨 → AA1472)
+  out.bench={};
+  try{
+    for(let r=0;r<rows.length;r++){ const row=rows[r]; if(!row) continue;
+      for(let c=0;c<row.length;c++){
+        const mt=String(row[c]==null?"":row[c]).trim().match(/^2026\s*(SPY|QQQ|QLD)$/i);
+        if(mt){ for(let k=c+1;k<row.length&&k<=c+3;k++){ const t=String(row[k]==null?"":row[k]).trim(); if(!t) continue;
+          const n=parseFloat(t.replace(/[^0-9.\-]/g,'')); if(!isNaN(n)){ out.bench[mt[1].toUpperCase()]=n; } break; } }
+      } }
+  }catch(e){}
   return out;
 }
 function toggleAcc(i){
@@ -2488,7 +2512,14 @@ function xirr(){
 function toggleXirrHelp(){ const e=document.getElementById("xirrHelp"); if(e) e.style.display=(e.style.display==="none"||!e.style.display)?"block":"none"; }
 function drawHero(){
   if(!PORT) return;
-  const cur=PORT.cur, m=(PORT.summ&&PORT.summ.metrics)||{};
+  const cur=PORT.cur, m=Object.assign({},(PORT.summ&&PORT.summ.metrics)||{});
+  { const HH=PORT.history;
+    if(HH){
+      const tp=HH.totalProfit26X, sp=HH.stockProfitX;
+      if(tp!=null) m["총수익"]=tp;
+      if(sp!=null) m["주식수익"]=sp;
+      if(tp!=null && sp!=null) m["무매수익"]=tp-sp;
+    } }
   const M=v=>{ const n=pnum(v); return isNaN(n)?(v||"-"):cur+n.toLocaleString("en-US",{maximumFractionDigits:0}); };
   const rate=m["총수익률"], rn=pnum(rate);
   const ys=PORT.yearStart;
@@ -2518,7 +2549,13 @@ function drawHero(){
     `<div class="chip chip-h"><div class="chL"><div class="k">26년 총수익</div><div class="v" style="color:${sc(m["총수익"])}">${M(m["총수익"])}</div></div>`+
       `<div class="chR"><div class="cmini2"><span>주식수익</span><b style="color:${sc(m["주식수익"])}">${M(m["주식수익"])}</b></div>`+
       `<div class="cmini2"><span>무한매수</span><b style="color:${sc(m["무매수익"])}">${M(m["무매수익"])}</b></div></div></div>`
-  ].join("");
+  ].concat((()=>{
+    const B=(PORT.history&&PORT.history.bench)||{}; const ks=["SPY","QQQ","QLD"].filter(k=>B[k]!=null);
+    if(!ks.length) return [];
+    const bc=v=>v<0?'var(--blue)':v>0?'var(--red)':'var(--ink)';
+    return [`<div class="chip" style="padding:10px 14px"><div class="k" style="margin-bottom:6px">2026 벤치마크 수익률 (YTD)</div><div style="display:flex;justify-content:space-between;gap:8px">`+
+      ks.map(k=>`<div style="flex:1;text-align:center"><div style="font-size:11px;color:var(--sub)">${k}</div><b style="font-size:15px;color:${bc(B[k])}">${B[k]>0?'+':''}${B[k].toFixed(2)}%</b></div>`).join("")+`</div></div>`];
+  })()).join("");
   // 2026 예상자산(FIRE 25% 시나리오) 대비 현재 자산 달성률
   const FIRE2026=2.12e8;
   const fpEl=document.getElementById("fireProg");
@@ -2627,6 +2664,59 @@ function drawMonthly(){
       tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${cur}${Number(c.parsed.y).toLocaleString()}`}}},
     scales:{y:{ticks:{callback:(v)=>short(v)}},x:{grid:{display:false}}}}});
 }
+
+// ── 내 수익률 vs SPY·QQQ·QLD (2026 YTD) ──
+let benchChart=null; const BENCH_PX={};
+async function benchFetch(tk){
+  if(BENCH_PX[tk]) return BENCH_PX[tk];
+  const url="https://query1.finance.yahoo.com/v8/finance/chart/"+tk+"?range=1y&interval=1d&includePrePost=false";
+  let j=null;
+  for(const u of [url, idxProxy(url)]){
+    try{ const r=await fetch(u,{cache:"no-store"}); j=await r.json(); if(j&&j.chart&&j.chart.result) break; }catch(e){ j=null; }
+  }
+  if(!j||!j.chart||!j.chart.result) throw new Error(tk+" 시세 로드 실패");
+  const res=j.chart.result[0], ts=res.timestamp||[], cl=res.indicators.quote[0].close||[];
+  const arr=[];
+  for(let i=0;i<ts.length;i++){ if(cl[i]==null) continue;
+    const d=new Date(new Date(ts[i]*1000).toLocaleString("en-US",{timeZone:"America/New_York"}));
+    arr.push({key:d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(), c:cl[i]}); }
+  BENCH_PX[tk]=arr; return arr;
+}
+async function drawBench(){
+  const note=document.getElementById("benchNote"), cv=document.getElementById("benchCv");
+  if(!cv||!PORT||!PORT.history||!PORT.history.length){ if(note) note.textContent="History 데이터를 불러온 뒤 다시 열어주세요."; return; }
+  note.textContent="불러오는 중…";
+  const H=PORT.history;
+  let bi=-1; for(let i=0;i<H.length;i++){ if(H[i].key<20260101) bi=i; }
+  const start=bi>=0?bi:0;
+  const pts=H.slice(start).filter((p,i)=>i===0||p.key>=20260101);
+  if(pts.length<2){ note.textContent="2026년 History 데이터가 부족합니다."; return; }
+  // 내 수익률: 입출금 제외 일간수익 연쇄(TWR 근사)
+  const mine=[0]; let cum=1;
+  for(let i=1;i<pts.length;i++){
+    const a0=pts[i-1].asset, flow=pts[i].invest-pts[i-1].invest;
+    const r=a0>0?(pts[i].asset-a0-flow)/a0:0; cum*=(1+r); mine.push((cum-1)*100);
+  }
+  const tks=["SPY","QQQ","QLD"]; const px={};
+  try{ await Promise.all(tks.map(async t=>{px[t]=await benchFetch(t);})); }catch(e){ note.textContent=e.message+" — 새로고침 후 다시 시도하세요."; }
+  const at=(arr,key)=>{ let v=null; for(const x of arr){ if(x.key<=key) v=x.c; else break; } return v; };
+  const labels=pts.map(p=>{const k=String(p.key); return (+k.slice(4,6))+"/"+(+k.slice(6,8));});
+  const colors={SPY:"#8e8e93",QQQ:"#34a853",QLD:"#ff9f0a"};
+  const ds=[{label:"내 포트폴리오",data:mine,borderColor:"#ff3b5c",backgroundColor:"#ff3b5c",borderWidth:3,pointRadius:0,tension:.2}];
+  const ends={};
+  tks.forEach(t=>{ if(!px[t]) return; const base=at(px[t],20251231); if(!base) return;
+    const d=pts.map((p,i)=>{ const c=at(px[t],p.key); return (i===0)?0:(c?(c/base-1)*100:null); });
+    ends[t]=d[d.length-1];
+    ds.push({label:t,data:d,borderColor:colors[t],backgroundColor:colors[t],borderWidth:1.6,pointRadius:0,tension:.2,spanGaps:true}); });
+  if(benchChart) benchChart.destroy();
+  benchChart=new Chart(cv,{type:"line",data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:11}}},datalabels:{display:false},
+      tooltip:{callbacks:{label:c=>c.dataset.label+": "+(c.parsed.y>=0?"+":"")+c.parsed.y.toFixed(2)+"%"}}},
+    scales:{x:{ticks:{maxTicksLimit:7,font:{size:10}},grid:{display:false}},y:{ticks:{callback:v=>v+"%",font:{size:10}}}}}});
+  const sh=(PORT.history.bench)||{}; const f=v=>v==null?"-":(v>=0?"+":"")+v.toFixed(2)+"%";
+  note.innerHTML=`현재: <b style="color:#ff3b5c">내 ${f(mine[mine.length-1])}</b>`+tks.map(t=>` · ${t} ${f(ends[t])}${sh[t]!=null?` <span style="opacity:.7">(시트 ${f(sh[t])})</span>`:""}`).join("")
+   +`<br><span style="font-size:10px">내 수익률 = History 총자산 변동에서 입출금(총투자금액 변화)을 제외해 연쇄 계산한 근사치(시간가중). ETF는 2025말 종가 대비 가격 수익률.</span>`;
+}
 function toggleCard(bodyId, chartKey, hEl){
   const b=document.getElementById(bodyId); if(!b) return;
   const open=b.style.display==="none";
@@ -2636,6 +2726,7 @@ function toggleCard(bodyId, chartKey, hEl){
     const ch = chartKey==="asset"?assetChart : chartKey==="monthly"?monthlyChart : null;
     if(ch) setTimeout(()=>{ try{ ch.resize(); }catch(e){} },60);
     if(chartKey==="portmode" && !portMode){ setMode("tick"); }
+    if(chartKey==="bench"){ try{ drawBench(); }catch(e){ const n=document.getElementById("benchNote"); if(n) n.textContent="그래프 오류: "+e.message; } }
   }
 }
 function drawQuotes(){
