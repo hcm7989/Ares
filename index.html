@@ -2767,13 +2767,33 @@ function restoreSettings(){
 /* ── PWA: 항상 최신 버전 자동 로드 + 새 워커 적용 시 자동 새로고침 ── */
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("sw.js").then(reg=>{ try{ reg.update(); }catch(e){} }).catch(()=>{});
+    navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{ try{ reg.update(); }catch(e){} }).catch(()=>{});
   });
   let _swRefreshed=false;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
     if(_swRefreshed) return; _swRefreshed=true; location.reload();
   });
 }
+/* ── 홈화면 앱 자동 업데이트: 앱으로 돌아올 때 서버의 index.html이 바뀌었으면 자동 새로고침 ── */
+(function(){
+  let base=null, busy=false, lastHide=0;
+  const sig=t=>{ let h=0; for(let i=0;i<t.length;i++){ h=(h*31+t.charCodeAt(i))|0; } return t.length+":"+h; };
+  async function fetchSig(){
+    const u=location.href.split("#")[0].split("?")[0]; 
+    const r=await fetch(u+"?_="+Date.now(),{cache:"no-store"}); if(!r.ok) throw 0; return sig(await r.text());
+  }
+  async function check(){
+    if(busy) return; busy=true;
+    try{ const n=await fetchSig(); if(base==null) base=n; else if(n!==base){ location.reload(); return; } }catch(e){}
+    busy=false;
+  }
+  window.addEventListener("load",()=>setTimeout(check,2500));
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){ lastHide=Date.now(); return; }
+    if(Date.now()-lastHide>3000) check();
+  });
+  window.addEventListener("pageshow",e=>{ if(e.persisted) check(); });
+})();
 /* ── 캐시 강제 비우기(오래된 데이터가 남을 때) — 키·설정은 유지 ── */
 async function hardReset(){
   try{

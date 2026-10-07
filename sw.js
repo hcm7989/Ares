@@ -1,11 +1,11 @@
-/* DIP ALERT 서비스워커 (v4)
+/* DIP ALERT 서비스워커 (v5)
    중요: 실시간 데이터(주가·VIX·국채·공포탐욕·구글시트·프록시)는 절대 캐시하지 않습니다.
         오직 앱 화면(HTML)과 정적 자원(차트 라이브러리·폰트·아이콘)만 캐시합니다.
    - HTML: 네트워크 우선(network-first, 타임아웃 있음) → 느린 네트워크에서도 오래 기다리지 않고,
      실패/타임아웃 시에만 캐시로 폴백. 성공하면 항상 캐시를 최신으로 갱신.
    - 라이브러리/폰트/아이콘: 캐시 우선(빠르게).
    - 그 외 모든 요청(API·시트·프록시): 서비스워커가 개입하지 않음 → 항상 최신 네트워크. */
-const CACHE = "dipalert-cache-v4";
+const CACHE = "dipalert-cache-v5";
 const HTML_TIMEOUT_MS = 4000; // 이 시간 안에 네트워크 응답이 없으면 캐시로 폴백 (무한 대기 방지)
 
 self.addEventListener("install", (e) => { self.skipWaiting(); });
@@ -37,7 +37,8 @@ self.addEventListener("fetch", (e) => {
           // 네트워크 요청에 타임아웃을 걸어, 느린/불안정한 연결에서 무한 대기하지 않게 함
           const controller = new AbortController();
           const timer = setTimeout(() => controller.abort(), HTML_TIMEOUT_MS);
-          const res = await fetch(req, { signal: controller.signal });
+          // 브라우저 HTTP 캐시(GitHub Pages 약 10분)를 우회해 항상 서버 최신본을 받음
+          const res = await fetch(req.url, { signal: controller.signal, cache: "no-store" });
           clearTimeout(timer);
           const c = res.clone();
           caches.open(CACHE).then((x) => x.put(req, c));
