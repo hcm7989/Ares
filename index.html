@@ -268,6 +268,13 @@
 .mh-sign button{border:none;cursor:pointer;padding:11px 15px;font-size:16px;font-weight:800;font-family:inherit;background:var(--fill);color:var(--sub)}
 .mh-sign button.on-pos{background:var(--red);color:#fff}
 .mh-sign button.on-neg{background:var(--blue);color:#fff}
+.benchChips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.bchip{border:1.5px solid var(--line,#e5e8ef);border-radius:12px;padding:8px 6px;text-align:center;cursor:pointer;background:var(--card,#fff);transition:.15s;-webkit-tap-highlight-color:transparent}
+.bchip .bn{font-size:11px;color:var(--sub);display:flex;align-items:center;justify-content:center;gap:5px;line-height:1.2}
+.bchip .bd{width:9px;height:9px;border-radius:50%;display:inline-block}
+.bchip .bv{font-size:19px;font-weight:800;letter-spacing:-.5px;margin-top:3px;font-variant-numeric:tabular-nums}
+.bchip .bs{font-size:10px;color:var(--sub);margin-top:1px;min-height:12px}
+.bchip.off{opacity:.38}.bchip.off .bv{text-decoration:line-through}
 </style>
 </head>
 <body>
@@ -547,7 +554,12 @@
     <div class="sec">
       <h2 class="fold" onclick="toggleCard('benchBody','bench',this)"><span>내 수익률 vs SPY·QQQ·QLD <span style="font-size:11px;font-weight:400;color:var(--sub)">(2026 YTD)</span></span><span class="foldcaret">▸</span></h2>
       <div id="benchBody" style="display:none">
-        <div class="chartbox" style="height:210px;"><canvas id="benchCv"></canvas></div>
+        <div id="benchChips" class="benchChips"></div>
+        <div class="chartbox" style="height:230px;"><canvas id="benchCv"></canvas></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+          <span class="sub" style="font-size:10px">🔍 두 손가락/휠로 확대·이동 · 위 항목을 눌러 표시/숨김</span>
+          <button class="miniedit" onclick="if(benchChart)benchChart.resetZoom()">↺ 확대 초기화</button>
+        </div>
         <div id="benchNote" class="sub" style="text-align:center;margin-top:6px;line-height:1.5">불러오는 중…</div>
       </div>
     </div>
@@ -2158,11 +2170,20 @@ function extractHistory(rows){
       const pd=parseDate((row[dCol]||"").toString());
       const inv=pnum(row[invCol]), pro=proCol>=0?pnum(row[proCol]):0;
       if(!pd || !(inv>0)) continue;
-      pts.push({key:pd.key, dstr:(pd.y%100)+"."+pd.mo, invest:inv, asset:inv+(isNaN(pro)?0:pro)});
+      pts.push({key:pd.key, dstr:(pd.y%100)+"."+pd.mo, invest:inv, asset:inv+(isNaN(pro)?0:pro), pro:pro, gap:(proCol>=0&&isNaN(pro))});
     }
   }
   const map={}; pts.forEach(p=>map[p.key]=p);
   const out=Object.values(map).sort((a,b)=>a.key-b.key);
+  // 값이 비어(또는 0으로 끊겨) 자산이 원금으로 뚝 떨어지는 '골짜기' 행은 gap 처리 → 그래프에서 앞뒤를 직선으로 연결
+  for(let i=0;i<out.length;i++){
+    const q=out[i]; if(q.gap) continue;
+    if(q.pro===0){
+      const a=out[i-1], b=out[i+1];
+      const big=x=>x&&!x.gap&&Math.abs(x.pro)>0.03*x.invest;
+      if(big(a)||big(b)) q.gap=true;
+    }
+  }
   const st=extractHistoryStats(rows);
   out.peakSheet=st.peak; out.mddSheet=st.mdd; out.dropSheet=st.drop;
   // U2 셀(=U열 21번째, 2행) : 전일대비 수익률(%) 직접 참조
@@ -2594,11 +2615,11 @@ function drawAsset(){
   }
   if(H && H.length){
     if(note) note.textContent="";
-    const labels=H.map(p=>p.dstr), asset=H.map(p=>p.asset), inv=H.map(p=>p.invest);
+    const labels=H.map(p=>p.dstr), asset=H.map(p=>p.gap?null:p.asset), inv=H.map(p=>p.invest);
     assetChart=new Chart(el,{type:"line",data:{labels,datasets:[
-      {label:"자산",data:asset,borderColor:"#7c5cfc",backgroundColor:(ctx)=>{const c=ctx.chart.ctx,gr=c.createLinearGradient(0,0,0,230);gr.addColorStop(0,"rgba(124,92,252,.28)");gr.addColorStop(1,"rgba(124,92,252,.02)");return gr;},fill:true,tension:.35,pointRadius:0,borderWidth:2.5,datalabels:{display:false}},
+      {label:"자산",data:asset,spanGaps:true,borderColor:"#7c5cfc",backgroundColor:(ctx)=>{const c=ctx.chart.ctx,gr=c.createLinearGradient(0,0,0,230);gr.addColorStop(0,"rgba(124,92,252,.28)");gr.addColorStop(1,"rgba(124,92,252,.02)");return gr;},fill:true,tension:.35,pointRadius:0,borderWidth:2.5,datalabels:{display:false}},
       {label:"원금",data:inv,borderColor:"#cbd0dc",borderDash:[4,4],fill:false,tension:.35,pointRadius:0,borderWidth:2,datalabels:{display:false}},
-      {label:"수익금",data:H.map(p=>p.asset-p.invest),borderColor:"#00c471",fill:false,tension:.35,pointRadius:0,borderWidth:2,datalabels:{display:false}}
+      {label:"수익금",data:H.map(p=>p.gap?null:p.asset-p.invest),spanGaps:true,borderColor:"#00c471",fill:false,tension:.35,pointRadius:0,borderWidth:2,datalabels:{display:false}}
     ]},
     options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
       plugins:{legend:{display:true,labels:{boxWidth:12,font:{size:11}}},
@@ -2682,40 +2703,52 @@ async function benchFetch(tk){
     arr.push({key:d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(), c:cl[i]}); }
   BENCH_PX[tk]=arr; return arr;
 }
+const BENCH_OFF={}; // 숨긴 항목 기억
 async function drawBench(){
-  const note=document.getElementById("benchNote"), cv=document.getElementById("benchCv");
+  const note=document.getElementById("benchNote"), cv=document.getElementById("benchCv"), chipBox=document.getElementById("benchChips");
   if(!cv||!PORT||!PORT.history||!PORT.history.length){ if(note) note.textContent="History 데이터를 불러온 뒤 다시 열어주세요."; return; }
   note.textContent="불러오는 중…";
-  const H=PORT.history;
+  if(!zoomReg){ try{ const zp=window.ChartZoom||(window["chartjs-plugin-zoom"]); if(zp) Chart.register(zp); }catch(e){} zoomReg=true; }
+  const H=PORT.history.filter(p=>!p.gap);   // 값이 빈 행 제외 → 앞뒤가 직선으로 이어짐
   let bi=-1; for(let i=0;i<H.length;i++){ if(H[i].key<20260101) bi=i; }
   const start=bi>=0?bi:0;
   const pts=H.slice(start).filter((p,i)=>i===0||p.key>=20260101);
   if(pts.length<2){ note.textContent="2026년 History 데이터가 부족합니다."; return; }
-  // 내 수익률: 입출금 제외 일간수익 연쇄(TWR 근사)
   const mine=[0]; let cum=1;
   for(let i=1;i<pts.length;i++){
     const a0=pts[i-1].asset, flow=pts[i].invest-pts[i-1].invest;
     const r=a0>0?(pts[i].asset-a0-flow)/a0:0; cum*=(1+r); mine.push((cum-1)*100);
   }
+  const ys0=(PORT.yearStart>0)?PORT.yearStart:pts[0].asset;
+  const simple=pts.map(p=>((p.asset-pts[0].asset)-(p.invest-pts[0].invest))/ys0*100);
   const tks=["SPY","QQQ","QLD"]; const px={};
   try{ await Promise.all(tks.map(async t=>{px[t]=await benchFetch(t);})); }catch(e){ note.textContent=e.message+" — 새로고침 후 다시 시도하세요."; }
   const at=(arr,key)=>{ let v=null; for(const x of arr){ if(x.key<=key) v=x.c; else break; } return v; };
   const labels=pts.map(p=>{const k=String(p.key); return (+k.slice(4,6))+"/"+(+k.slice(6,8));});
-  const colors={SPY:"#8e8e93",QQQ:"#34a853",QLD:"#ff9f0a"};
-  const ds=[{label:"내 포트폴리오",data:mine,borderColor:"#ff3b5c",backgroundColor:"#ff3b5c",borderWidth:3,pointRadius:0,tension:.2}];
-  const ends={};
+  const defs=[
+    {id:"mine",label:"내 (시간가중)",sub:"입금 제외",data:mine,color:"#ff3b5c",w:3.2},
+    {id:"simple",label:"내 (총수익÷연초)",sub:"YTD 배지 방식",data:simple,color:"#af52de",w:2.4,dash:[6,3]}];
+  const cl={SPY:"#6b7280",QQQ:"#16a34a",QLD:"#f59e0b"};
   tks.forEach(t=>{ if(!px[t]) return; const base=at(px[t],20251231); if(!base) return;
     const d=pts.map((p,i)=>{ const c=at(px[t],p.key); return (i===0)?0:(c?(c/base-1)*100:null); });
-    ends[t]=d[d.length-1];
-    ds.push({label:t,data:d,borderColor:colors[t],backgroundColor:colors[t],borderWidth:1.6,pointRadius:0,tension:.2,spanGaps:true}); });
+    defs.push({id:t,label:t,sub:"",data:d,color:cl[t],w:1.8}); });
+  const sh=(PORT.history.bench)||{};
   if(benchChart) benchChart.destroy();
-  benchChart=new Chart(cv,{type:"line",data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
-    plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:11}}},datalabels:{display:false},
-      tooltip:{callbacks:{label:c=>c.dataset.label+": "+(c.parsed.y>=0?"+":"")+c.parsed.y.toFixed(2)+"%"}}},
+  benchChart=new Chart(cv,{type:"line",data:{labels,datasets:defs.map(d=>({label:d.label,data:d.data,borderColor:d.color,backgroundColor:d.color,borderWidth:d.w,borderDash:d.dash||[],pointRadius:0,pointHoverRadius:4,tension:.25,spanGaps:true,hidden:!!BENCH_OFF[d.id],datalabels:{display:false}}))},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{display:false},datalabels:{display:false},
+      tooltip:{callbacks:{label:c=>" "+c.dataset.label+": "+(c.parsed.y>=0?"+":"")+c.parsed.y.toFixed(2)+"%"}},
+      zoom:{pan:{enabled:true,mode:"x"},zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:"x"},limits:{x:{minRange:3}}}},
     scales:{x:{ticks:{maxTicksLimit:7,font:{size:10}},grid:{display:false}},y:{ticks:{callback:v=>v+"%",font:{size:10}}}}}});
-  const sh=(PORT.history.bench)||{}; const f=v=>v==null?"-":(v>=0?"+":"")+v.toFixed(2)+"%";
-  note.innerHTML=`현재: <b style="color:#ff3b5c">내 ${f(mine[mine.length-1])}</b>`+tks.map(t=>` · ${t} ${f(ends[t])}${sh[t]!=null?` <span style="opacity:.7">(시트 ${f(sh[t])})</span>`:""}`).join("")
-   +`<br><span style="font-size:10px">내 수익률 = History 총자산 변동에서 입출금(총투자금액 변화)을 제외해 연쇄 계산한 근사치(시간가중). ETF는 2025말 종가 대비 가격 수익률.</span>`;
+  const f=v=>v==null?"-":(v>=0?"+":"")+v.toFixed(2)+"%";
+  const bc=v=>v==null?'var(--sub)':v<0?'var(--blue)':v>0?'var(--red)':'var(--ink)';
+  chipBox.innerHTML=defs.map((d,i)=>{ const v=d.data[d.data.length-1];
+    return `<div class="bchip${BENCH_OFF[d.id]?' off':''}" data-i="${i}"><div class="bn"><span class="bd" style="background:${d.color}"></span>${d.label}</div><div class="bv" style="color:${bc(v)}">${f(v)}</div><div class="bs">${d.sub||(sh[d.id]!=null?'시트 '+f(sh[d.id]):'')}</div></div>`; }).join("");
+  chipBox.querySelectorAll(".bchip").forEach(el=>el.onclick=()=>{
+    const i=+el.dataset.i, d=defs[i]; BENCH_OFF[d.id]=!BENCH_OFF[d.id];
+    benchChart.setDatasetVisibility(i,!BENCH_OFF[d.id]); benchChart.update();
+    el.classList.toggle("off",!!BENCH_OFF[d.id]); });
+  note.innerHTML=`<span style="font-size:10px">빨강=입출금을 제외해 연쇄 계산한 시간가중 근사치(ETF와 공정 비교) · 보라 점선=올해 손익÷연초자산(올해 입금이 크면 과대). ETF는 2025말 종가 대비 가격 수익률. 값이 빈 날짜는 건너뛰고 앞뒤를 직선으로 연결했습니다.</span>`;
 }
 function toggleCard(bodyId, chartKey, hEl){
   const b=document.getElementById(bodyId); if(!b) return;
