@@ -286,9 +286,11 @@
   .acctCardBot{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-top:3px}
   .acctCardVal{font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.3px;font-variant-numeric:tabular-nums}
   .acctCardRet{font-size:12.5px;font-weight:700;flex:0 0 auto;font-variant-numeric:tabular-nums}
-  .liqCard{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;background:var(--accent-soft);padding:11px 13px;border-radius:12px}
-  .liqLabel{font-size:12.5px;font-weight:700;color:var(--accent)}
+  .liqCard{grid-column:1/-1;display:block;background:var(--accent-soft);padding:11px 13px;border-radius:12px}
+  .liqTop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .liqLabel{font-size:12.5px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:6px}
   .liqVal{font-size:16px;font-weight:800;color:var(--accent);letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+  .liqHelp{font-size:11px;color:var(--sub);margin-top:8px;line-height:1.5;border-top:1px dashed var(--line);padding-top:7px}
   .sec.hero .hval{font-size:25px;margin:3px 0 8px}
   .sec.hero .hbadges{margin:0 0 10px;padding-bottom:10px}
   .sec.hero .chips{gap:8px}
@@ -2120,6 +2122,12 @@ function extractSummary(rows){
   const months=[]; for(let i=1;i<=12;i++) months.push({m:i, v:mm[i]||0});
   return {metrics, months};
 }
+function extractLiquid(rows){
+  // Portfolio 탭 L16:M16 (0-index: row 15, col 11) 병합셀 = 즉시가용자산 금액
+  var r=rows&&rows[15]; if(!r) return null;
+  var v=pnum(r[11]); if(!(v>0)) v=pnum(r[12]);
+  return (v>0)?v:null;
+}
 function extractCash(rows){
   // Portfolio 시트의 "현금 비중" 오른쪽 금액을 총 현금으로 사용
   for(let r=0;r<rows.length;r++) for(let c=0;c<rows[r].length;c++){
@@ -2320,7 +2328,7 @@ async function loadPortfolio(){
     });
     const cashAmt=extractCash(rows0)||sres.cash||0;
     if(cashAmt>0) (th["현금"]=th["현금"]||{t:"현금",v:0}).v+=cashAmt;
-    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:cashAmt, xirrSheet:extractXirrSheet(rows0), deposits2026:extractDeposits2026(rows0), yearStart:extractYearStart(rows0), acctFin:extractAccountFinancials(rows0)};
+    PORT={accounts:h.slice(), total, cur, summ, history:hist, byAcc:sres.byAcc, byTicker:Object.values(tick), byTheme:Object.values(th), cash:cashAmt, xirrSheet:extractXirrSheet(rows0), deposits2026:extractDeposits2026(rows0), yearStart:extractYearStart(rows0), acctFin:extractAccountFinancials(rows0), liq:extractLiquid(rows0)};
     try{ window.PORT=PORT; }catch(e){}
     drawHero(); drawAsset(); drawMonthly(); drawPort(); drawQuotes(); renderAcctDash();
     st.textContent="업데이트 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
@@ -2510,6 +2518,7 @@ function drawPort(){
 // ===== 계좌 요약 대시보드 (계좌 그리드 · 리밸런싱 · 하이라이트) =====
 var acctDashSort="value";
 function setAcctSort(s){ acctDashSort=s; renderAcctDash(); }
+function toggleLiqHelp(e){ if(e&&e.stopPropagation) e.stopPropagation(); var h=document.getElementById("liqHelp"); if(h) h.style.display=(h.style.display==="none"||!h.style.display)?"block":"none"; }
 function dashShortC(v){ var cur=PORT?PORT.cur:"₩"; var a=Math.abs(v); if(cur==="₩"){ if(a>=1e8) return (v/1e8).toFixed(2)+"억"; if(a>=1e4) return Math.round(v/1e4).toLocaleString()+"만"; } return cur+Math.round(v).toLocaleString(); }
 function renderAcctDash(){
   if(!PORT) return;
@@ -2535,10 +2544,8 @@ function renderAcctDash(){
   var sb=document.getElementById("acctSortBar");
   var btn=function(lab,key){ return '<button class="acctSortBtn'+(acctDashSort===key?' on':'')+'" onclick="setAcctSort(\''+key+'\')">'+lab+'</button>'; };
   if(sb) sb.innerHTML=btn("금액","value")+btn("수익률","retDesc");
-  // 즉시가용자산: 키움2(하창만)+키움(하연우)+금+비트코인+삼성(안진국내주식) 평가금액 합
-  var liqNorm={"키움2(하창만)":1,"키움(하연우)":1,"금":1,"비트코인":1,"삼성(안진국내주식)":1};
-  var liqSum=0;
-  accts.forEach(function(x){ var n=norm(x.t); if(liqNorm[n]||/비트|코인/.test(n)) liqSum+=x.v; });
+  // 즉시가용자산: Portfolio 탭 L16:M16 셀 값
+  var liqSum=(PORT.liq!=null && isFinite(PORT.liq) && PORT.liq>0) ? PORT.liq : 0;
   var grid=document.getElementById("acctGrid");
   if(grid){
     var cards=arr.map(function(x){
@@ -2551,8 +2558,10 @@ function renderAcctDash(){
         '<div class="acctCardBot"><span class="acctCardVal">'+dashShortC(x.v)+'</span><span class="acctCardRet" style="color:'+retCol+'">'+retTxt+'</span></div>'+
         '</div>';
     }).join("");
-    if(liqSum>0) cards+='<div class="acctCard liqCard"><span class="liqLabel">⚡ 즉시가용자산</span>'+
-      '<span class="liqVal">'+PORT.cur+Math.round(liqSum).toLocaleString("en-US")+'</span></div>';
+    if(liqSum>0) cards+='<div class="acctCard liqCard">'+
+      '<div class="liqTop"><span class="liqLabel">⚡ 즉시가용자산 <span class="qhelp" onclick="toggleLiqHelp(event)">?</span></span>'+
+      '<span class="liqVal">'+PORT.cur+Math.round(liqSum).toLocaleString("en-US")+'</span></div>'+
+      '<div class="liqHelp" id="liqHelp" style="display:none">포함 계좌: 키움2(하창만) · 키움(하연우) · 금 · 비트코인 · 삼성(안진국내주식)</div></div>';
     grid.innerHTML=cards;
   }
   renderRebal();
@@ -2577,7 +2586,8 @@ function renderRebal(){
                 :'목표 대비 약 '+dashShortC(diff)+' 여유';
   el.innerHTML='<div class="dashSubCard">'+
     '<div class="dashSubHead"><span>⚖️ 리밸런싱 상태</span>'+badge+'</div>'+
-    '<div class="rbRow"><span>현금 비중</span><span><b style="color:var(--ink)">'+pct.toFixed(1)+'%</b> <span style="color:var(--sub)">/ 목표 '+target+'%</span></span></div>'+
+    '<div class="rbRow" style="margin:10px 0 4px"><span>현재 현금</span><span><b style="color:var(--ink)">'+PORT.cur+Math.round(cash).toLocaleString("en-US")+'</b></span></div>'+
+    '<div class="rbRow" style="margin:0 0 6px"><span>현금 비중</span><span><b style="color:var(--ink)">'+pct.toFixed(1)+'%</b> <span style="color:var(--sub)">/ 목표 '+target+'%</span></span></div>'+
     '<div class="rbBar"><div class="rbFill" style="width:'+Math.min(100,pct).toFixed(1)+'%;background:'+(below?'var(--amber)':'var(--green)')+'"></div>'+
     '<div class="rbTarget" style="left:'+target+'%"></div></div>'+
     '<div class="rbNote">'+note+'</div></div>';
@@ -2590,16 +2600,12 @@ function renderHighlight(){
   var withDay=ticks.map(function(x){ return {t:x.t,d:pd(x.day)}; }).filter(function(x){ return x.d!=null; });
   var top=null,bot=null;
   withDay.forEach(function(x){ if(top==null||x.d>top.d) top=x; if(bot==null||x.d<bot.d) bot=x; });
-  // 오늘 손익 기여: 전일대비%로 환산한 당일 손익금이 가장 큰 종목
-  var bestToday=null;
-  ticks.forEach(function(x){ var d=pd(x.day); if(d==null||!x.v) return; var f=d/100; var won=x.v*(f/(1+f)); if(bestToday==null||won>bestToday.won) bestToday={t:x.t,won:won}; });
-  if(!withDay.length && !bestToday){ el.innerHTML=""; el.style.display="none"; return; }
+  if(!withDay.length){ el.innerHTML=""; el.style.display="none"; return; }
   el.style.display="block";
   var row=function(l,r){ return '<div class="hlRow">'+l+r+'</div>'; };
   var rows="";
   if(top) rows+=row('<span>🔺 '+top.t+'</span>','<span style="color:var(--red);font-weight:700">'+(top.d>=0?'+':'')+top.d.toFixed(2)+'%</span>');
   if(bot && (!top || bot.t!==top.t)) rows+=row('<span>🔻 '+bot.t+'</span>','<span style="color:var(--blue);font-weight:700">'+bot.d.toFixed(2)+'%</span>');
-  if(bestToday) rows+=row('<span style="color:var(--sub)">오늘 손익 기여</span>','<span><b>'+bestToday.t+'</b> <span style="color:'+(bestToday.won>=0?'var(--red)':'var(--blue)')+'">'+(bestToday.won>=0?'+':'−')+dashShortC(Math.abs(bestToday.won))+'</span></span>');
   el.innerHTML='<div class="dashSubCard"><div class="dashSubHead" style="margin-bottom:8px"><span>🔥 오늘의 하이라이트</span></div>'+rows+'</div>';
 }
 // 전일대비 수익금(원)과 전일대비 수익률(%)
