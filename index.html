@@ -278,13 +278,19 @@
   #acctDashSec .acctSortBar{display:flex;gap:5px}
   .acctSortBtn{font-size:11px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer;font-weight:600;-webkit-tap-highlight-color:transparent}
   .acctSortBtn.on{background:var(--accent-soft);color:var(--accent);border-color:transparent}
-  .acctGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .acctCard{background:var(--fill);border-radius:12px;padding:10px 12px}
-  .acctCardName{font-size:12px;color:var(--sub);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .acctCardVal{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.3px}
-  .acctCardRow{display:flex;justify-content:space-between;font-size:12px;margin-top:5px}
-  .acctCardBar{height:4px;background:var(--line);border-radius:999px;margin-top:6px;overflow:hidden}
-  .acctCardBar>div{height:100%;background:var(--accent);border-radius:999px}
+  .acctGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .acctCard{background:var(--fill);border-radius:11px;padding:8px 11px}
+  .acctCardTop{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+  .acctCardName{font-size:11.5px;color:var(--sub);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .acctCardWt{font-size:10.5px;color:var(--sub);flex:0 0 auto;font-variant-numeric:tabular-nums}
+  .acctCardBot{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-top:3px}
+  .acctCardVal{font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+  .acctCardRet{font-size:12.5px;font-weight:700;flex:0 0 auto;font-variant-numeric:tabular-nums}
+  .sec.hero .hval{font-size:25px;margin:3px 0 8px}
+  .sec.hero .hbadges{margin:0 0 10px;padding-bottom:10px}
+  .sec.hero .chips{gap:8px}
+  .sec.hero .chip-h{padding:9px 11px}
+  .sec.hero .chip-h .chL .v{font-size:15px}
   .dashSubCard{background:var(--fill);border-radius:14px;padding:12px 14px}
   .dashSubHead{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--ink)}
   .rbBadge{font-size:11px;padding:3px 9px;border-radius:999px;font-weight:700}
@@ -518,14 +524,17 @@
       </div>
     </div>
 
+    <div class="sec" id="dashTopSec" style="display:none">
+      <div id="rebalCard"></div>
+      <div id="hlCard" style="margin-top:12px"></div>
+    </div>
+
     <div class="sec" id="acctDashSec" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <h2 style="font-size:14px;margin:0">🏦 계좌 요약</h2>
         <div class="acctSortBar" id="acctSortBar"></div>
       </div>
       <div id="acctGrid" class="acctGrid"></div>
-      <div id="rebalCard" style="margin-top:14px"></div>
-      <div id="hlCard" style="margin-top:12px"></div>
     </div>
 
     <div class="sec">
@@ -2513,11 +2522,10 @@ function renderAcctDash(){
   var mt=accts.reduce(function(s,x){return s+x.v;},0)||1;
   var arr=accts.slice();
   if(acctDashSort==="retDesc") arr.sort(function(a,b){ return (b._ret==null?-1e9:b._ret)-(a._ret==null?-1e9:a._ret); });
-  else if(acctDashSort==="name") arr.sort(function(a,b){ return String(a.t).localeCompare(String(b.t),"ko"); });
   else arr.sort(function(a,b){ return b.v-a.v; });
   var sb=document.getElementById("acctSortBar");
   var btn=function(lab,key){ return '<button class="acctSortBtn'+(acctDashSort===key?' on':'')+'" onclick="setAcctSort(\''+key+'\')">'+lab+'</button>'; };
-  if(sb) sb.innerHTML=btn("금액","value")+btn("수익률","retDesc")+btn("이름","name");
+  if(sb) sb.innerHTML=btn("금액","value")+btn("수익률","retDesc");
   var grid=document.getElementById("acctGrid");
   if(grid) grid.innerHTML=arr.map(function(x){
     var ret=x._ret;
@@ -2525,14 +2533,18 @@ function renderAcctDash(){
     var retTxt=ret==null?'—':(ret>=0?'+':'')+ret.toFixed(1)+'%';
     var w=x.v/mt*100;
     return '<div class="acctCard">'+
-      '<div class="acctCardName">'+x.t+'</div>'+
-      '<div class="acctCardVal">'+dashShortC(x.v)+'</div>'+
-      '<div class="acctCardRow"><span style="color:'+retCol+';font-weight:700">'+retTxt+'</span>'+
-      '<span style="color:var(--sub)">비중 '+w.toFixed(0)+'%</span></div>'+
-      '<div class="acctCardBar"><div style="width:'+Math.min(100,w).toFixed(1)+'%"></div></div></div>';
+      '<div class="acctCardTop"><span class="acctCardName">'+x.t+'</span><span class="acctCardWt">'+w.toFixed(0)+'%</span></div>'+
+      '<div class="acctCardBot"><span class="acctCardVal">'+dashShortC(x.v)+'</span><span class="acctCardRet" style="color:'+retCol+'">'+retTxt+'</span></div>'+
+      '</div>';
   }).join("");
   renderRebal();
   renderHighlight();
+  var topSec=document.getElementById("dashTopSec");
+  if(topSec){
+    var rb=document.getElementById("rebalCard"), hl=document.getElementById("hlCard");
+    var hasTop=((rb&&rb.innerHTML)||(hl&&hl.innerHTML));
+    topSec.style.display=hasTop?"block":"none";
+  }
 }
 function renderRebal(){
   var el=document.getElementById("rebalCard"); if(!el) return;
