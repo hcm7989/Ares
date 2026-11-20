@@ -291,6 +291,12 @@
   .liqLabel{font-size:12.5px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:6px}
   .liqVal{font-size:16px;font-weight:800;color:var(--accent);letter-spacing:-.3px;font-variant-numeric:tabular-nums}
   .liqHelp{font-size:11px;color:var(--sub);margin-top:8px;line-height:1.5;border-top:1px dashed var(--line);padding-top:7px}
+  .splitRow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px}
+  .splitLab{font-size:11.5px;font-weight:700;margin-bottom:2px}
+  .splitVal{font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+  .splitPct{font-size:11.5px;font-weight:700;color:var(--sub)}
+  .splitBar{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--line)}
+  .splitBar>div{height:100%}
   .sec.hero .hval{font-size:25px;margin:3px 0 8px}
   .sec.hero .hbadges{margin:0 0 10px;padding-bottom:10px}
   .sec.hero .chips{gap:8px}
@@ -537,6 +543,7 @@
     <div class="sec" id="acctDashSec" style="display:none">
       <h2 class="fold" onclick="toggleCard('acctDashBody','acctDash',this)"><span>🏦 계좌 요약</span><span class="foldcaret">▸</span></h2>
       <div id="acctDashBody" style="display:none">
+        <div id="acctSplit"></div>
         <div style="display:flex;justify-content:flex-end;margin:2px 0 10px">
           <div class="acctSortBar" id="acctSortBar"></div>
         </div>
@@ -2544,6 +2551,23 @@ function renderAcctDash(){
   var sb=document.getElementById("acctSortBar");
   var btn=function(lab,key){ return '<button class="acctSortBtn'+(acctDashSort===key?' on':'')+'" onclick="setAcctSort(\''+key+'\')">'+lab+'</button>'; };
   if(sb) sb.innerHTML=btn("금액","value")+btn("수익률","retDesc");
+  // 연금·ISA 계좌 vs 일반 계좌 금액·비율 비교
+  var isPen=function(nm){ return /연금/.test(nm)||/ISA/i.test(nm)||/아이에스에이/.test(nm); };
+  var penSum=0, othSum=0;
+  accts.forEach(function(x){ if(isPen(x.t)) penSum+=x.v; else othSum+=x.v; });
+  var splitEl=document.getElementById("acctSplit");
+  if(splitEl){
+    var tt=penSum+othSum||1, pP=penSum/tt*100, oP=othSum/tt*100;
+    var fmt=function(v){ return PORT.cur+Math.round(v).toLocaleString("en-US"); };
+    splitEl.innerHTML='<div class="dashSubCard" style="margin-bottom:12px">'+
+      '<div class="dashSubHead" style="margin-bottom:10px"><span>📊 연금·ISA vs 일반 계좌</span></div>'+
+      '<div class="splitRow"><div><div class="splitLab" style="color:var(--accent)">연금·ISA</div>'+
+      '<div class="splitVal">'+fmt(penSum)+' <span class="splitPct">('+pP.toFixed(0)+'%)</span></div></div>'+
+      '<div style="text-align:right"><div class="splitLab" style="color:var(--sub)">일반</div>'+
+      '<div class="splitVal">'+fmt(othSum)+' <span class="splitPct">('+oP.toFixed(0)+'%)</span></div></div></div>'+
+      '<div class="splitBar"><div style="width:'+pP.toFixed(1)+'%;background:var(--accent)"></div>'+
+      '<div style="width:'+oP.toFixed(1)+'%;background:var(--sub)"></div></div></div>';
+  }
   // 즉시가용자산: Portfolio 탭 L16:M16 셀 값
   var liqSum=(PORT.liq!=null && isFinite(PORT.liq) && PORT.liq>0) ? PORT.liq : 0;
   var grid=document.getElementById("acctGrid");
