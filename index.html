@@ -2744,8 +2744,8 @@ function drawHero(){
     const B=(PORT.history&&PORT.history.bench)||{}; const ks=["SPY","QQQ","QLD"].filter(k=>B[k]!=null);
     if(!ks.length) return [];
     const bc=v=>v<0?'var(--blue)':v>0?'var(--red)':'var(--ink)';
-    return [`<div class="chip" style="padding:10px 14px"><div class="k" style="margin-bottom:6px">2026 벤치마크 수익률 (YTD)</div><div style="display:flex;justify-content:space-between;gap:8px">`+
-      ks.map(k=>`<div style="flex:1;text-align:center"><div style="font-size:11px;color:var(--sub)">${k}</div><b style="font-size:15px;color:${bc(B[k])}">${B[k]>0?'+':''}${B[k].toFixed(2)}%</b></div>`).join("")+`</div></div>`];
+    return [`<div class="chip" style="padding:8px 13px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="k">2026 벤치마크 (YTD)</span><span style="display:flex;gap:10px">`+
+      ks.map(k=>`<span style="font-size:11px;color:var(--sub);white-space:nowrap">${k} <b style="font-size:12.5px;color:${bc(B[k])}">${B[k]>0?'+':''}${B[k].toFixed(2)}%</b></span>`).join("")+`</span></div></div>`];
   })()).join("");
   // 2026 예상자산(FIRE 25% 시나리오) 대비 현재 자산 달성률
   const FIRE2026=2.12e8;
